@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Marketplace\MarketplaceController as Market;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Controllers\Marketplace\ProviderApplicationController as Application;
 use Illuminate\Support\Facades\Route;
 Route::get('/explore', [Market::class,'index']);
 Route::get('/offers/{service}/{id}', [Market::class,'show']);
@@ -12,7 +13,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/my-listings/{service}/{id}', [Market::class,'update']);
     Route::delete('/my-listings/{service}/{id}', [Market::class,'destroy']);
     Route::post('/listing-photos', [Market::class,'upload'])->middleware('throttle:30,1');
-    Route::post('/provider-applications/{service}', [Market::class,'apply'])->middleware('throttle:6,1');
-    Route::get('/admin/approvals', [Market::class,'approvals'])->middleware(EnsureAdmin::class);
-    Route::post('/admin/approvals/{id}/{service}', [Market::class,'decide'])->middleware(EnsureAdmin::class);
+    Route::get('/become-provider', [Application::class,'index']);
+    Route::get('/provider-applications/{service}', [Application::class,'show']);
+    Route::get('/provider-documents/{id}/{index}', [Application::class,'document']);
+    Route::post('/provider-applications/{service}', [Application::class,'store'])->middleware('throttle:6,1');
+    Route::get('/admin/approvals', [Application::class,'queue'])->middleware(EnsureAdmin::class);
+    Route::post('/admin/approvals/{id}/{service}', [Application::class,'decide'])->middleware(EnsureAdmin::class);
 });

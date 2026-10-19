@@ -10,7 +10,7 @@ const page = usePage();
       <nav aria-label="Main navigation">
         <Link href="/" :class="{ current: page.url === '/' || page.url.startsWith('/explore') }">Explore</Link>
         <template v-if="page.props.auth?.user">
-          <Link href="/my-listings">My listings</Link>
+          <Link v-if="Object.values(page.props.auth.providerRoles || {}).includes('approved')" href="/my-listings">Provider workspace</Link><Link v-else href="/become-provider">Become a provider</Link>
           <Link v-if="page.props.auth.user.is_admin" href="/admin/approvals">Approvals</Link>
           <Link href="/profile">{{ page.props.auth.user.name }}</Link>
           <Link href="/logout" method="post" as="button" class="quiet">Log out</Link>

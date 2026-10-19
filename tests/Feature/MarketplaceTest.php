@@ -46,18 +46,24 @@ class MarketplaceTest extends TestCase {
             $this->getJson('/api/v1/offers?service='.$service)->assertJsonPath('meta.total',0);
         }
     }
-    public function test_unapproved_users_can_draft_but_cannot_publish_or_self_approve(): void {
+    public function test_unapproved_users_cannot_manage_listings_or_self_approve(): void {
         $user=User::factory()->create();
-        $this->actingAs($user)->postJson('/api/v1/offers/spaces',$this->payload('spaces','draft'))->assertCreated();
+        $this->actingAs($user)->postJson('/api/v1/offers/spaces',$this->payload('spaces','draft'))->assertForbidden();
         $this->postJson('/api/v1/offers/spaces',$this->payload('spaces'))->assertForbidden();
-        $this->post('/provider-applications/spaces')->assertRedirect();
-        $this->assertSame('pending',$user->fresh()->landlord_status->value);
+        $this->get('/my-listings')->assertRedirect('/become-provider');
+        $this->get('/my-listings/spaces/new')->assertRedirect('/provider-applications/spaces');
         $this->postJson('/api/me/landlord-application/approve')->assertForbidden();
         $this->get('/admin/dashboard')->assertForbidden();
         $this->get('/admin/approvals')->assertForbidden();
     }
     public function test_admin_can_approve_and_publishing_then_succeeds(): void {
-        $owner=User::factory()->create(['landlord_status'=>'pending']);
+        Storage::fake('local');
+        $owner=User::factory()->create();
+        $this->actingAs($owner)->post('/provider-applications/spaces', [
+            'displayName'=>'Local property host','phone'=>'09171234567','area'=>'Catbalogan',
+            'description'=>'I manage a property for long-term rental.',
+            'documents'=>[UploadedFile::fake()->image('id.jpg')],'confirmed'=>true,
+        ])->assertRedirect('/provider-applications/spaces');
         $admin=User::factory()->create();$admin->forceFill(['is_admin'=>true])->save();
         $this->actingAs($admin)->post('/admin/approvals/'.$owner->id.'/spaces',['status'=>'approved'])->assertRedirect();
         $this->actingAs($owner->fresh())->postJson('/api/v1/offers/spaces',$this->payload('spaces'))->assertCreated();
