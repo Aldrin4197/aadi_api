@@ -11,11 +11,11 @@ const page = usePage();
         <Link href="/" :class="{ current: page.url === '/' || page.url.startsWith('/explore') }">Explore</Link>
         <template v-if="page.props.auth?.user">
           <Link v-if="Object.values(page.props.auth.providerRoles || {}).includes('approved')" href="/my-listings">Provider workspace</Link><Link v-else href="/become-provider">Become a provider</Link>
-          <Link v-if="page.props.auth.user.is_admin" href="/admin/approvals">Approvals</Link>
+          <Link v-if="page.props.auth.user.is_admin" href="/admin/dashboard">Admin dashboard</Link>
           <Link href="/profile">{{ page.props.auth.user.name }}</Link>
           <Link href="/logout" method="post" as="button" class="quiet">Log out</Link>
         </template>
-        <template v-else><Link href="/login">Log in</Link><Link href="/register" class="button primary">Get started</Link></template>
+        <template v-else><Link href="/login">Log in</Link><Link href="/register" class="button primary">Register</Link></template>
       </nav>
     </header>
     <div v-if="page.props.flash?.success" class="notice success" role="status">{{ page.props.flash.success }}</div>

@@ -4,7 +4,7 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\Marketplace\ProviderApplicationController as Application;
 use Illuminate\Support\Facades\Route;
 Route::get('/explore', [Market::class,'index']);
-Route::get('/offers/{service}/{id}', [Market::class,'show']);
+Route::get('/offers/{service}/{id}', [Market::class,'show'])->middleware('auth');
 Route::middleware('auth')->group(function () {
     Route::get('/my-listings', [Market::class,'manage']);
     Route::get('/my-listings/{service}/new', [Market::class,'form']);
