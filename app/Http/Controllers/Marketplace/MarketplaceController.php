@@ -31,10 +31,13 @@ class MarketplaceController extends Controller {
             $records = $this->market->model($service)::where($service === 'raketeer' ? 'provider_id' : 'owner_id',$r->user()->id)->latest()->get();
             foreach ($records as $record) $listings->push($this->market->dto($record,$service));
         }
+        if (!$listings->count() && !in_array('approved', $statuses, true)) return redirect('/become-provider');
         return Inertia::render('Marketplace/Manage',['listings'=>$listings,'statuses'=>$statuses]);
     }
     public function form(Request $r, string $service, ?string $id = null) {
-        $this->market->model($service); $record = $id ? $this->market->find($service,$id) : null;
+        $this->market->model($service);
+        if (!$this->market->approved($r->user(),$service) && !$r->user()->is_admin) return redirect('/provider-applications/'.$service);
+        $record = $id ? $this->market->find($service,$id) : null;
         if ($record) $this->market->authorize($r->user(),$record,$service);
         return Inertia::render('Marketplace/Form',['service'=>$service,'listing'=>$record ? $this->market->dto($record,$service) : null,'types'=>Marketplace::TYPES[$service], 'approved'=>$this->market->approved($r->user(),$service)]);
     }
@@ -55,20 +58,5 @@ class MarketplaceController extends Controller {
         $r->validate(['photo'=>'required|image|mimes:jpg,jpeg,png,webp|max:5120']);
         $path=$r->file('photo')->store('listing-photos/'.$r->user()->id,'public');
         return response()->json(['url'=>\Illuminate\Support\Facades\Storage::disk('public')->url($path)],201);
-    }
-    public function apply(Request $r,string $service) {
-        $field=$this->market->statusField($service);
-        abort_if(in_array($r->user()->$field?->value,['pending','approved']),422,'Application already submitted.');
-        $r->user()->update([$field=>'pending']);
-        return back()->with('success','Application submitted. An administrator will review your account.');
-    }
-    public function approvals() {
-        return Inertia::render('Marketplace/Approvals',['users'=>User::where(fn($q)=>$q->where('landlord_status','pending')->orWhere('vehicle_owner_status','pending')->orWhere('service_provider_status','pending'))->get(['id','name','email','landlord_status','vehicle_owner_status','service_provider_status'])]);
-    }
-    public function decide(Request $r,string $id,string $service) {
-        $data=$r->validate(['status'=>['required',Rule::in(['approved','rejected'])]]);
-        $user=User::findOrFail($id); $field=$this->market->statusField($service);
-        abort_unless($user->$field?->value === 'pending',422,'No pending application.');
-        $user->update([$field=>$data['status']]); return back()->with('success','Application reviewed.');
     }
 }

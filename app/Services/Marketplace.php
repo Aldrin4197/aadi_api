@@ -95,6 +95,7 @@ class Marketplace
     }
     public function save(User $user, string $service, array $data, ?Model $record = null): Model {
         if ($record) $this->authorize($user, $record, $service);
+        abort_unless($user->is_admin || $this->approved($user, $service), 403, 'Apply and get approved for this provider role before managing listings.');
         $owner = $record ? User::findOrFail($record->{$service === 'raketeer' ? 'provider_id' : 'owner_id'}) : $user;
         abort_if($data['status'] === 'active' && !$this->approved($owner, $service), 403, 'Provider approval is required to publish. Save a draft while your application is reviewed.');
         if ($service === 'spaces') $status = $data['status'];

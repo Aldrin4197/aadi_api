@@ -34,6 +34,11 @@ class HandleInertiaRequests extends Middleware
             'flash' => ['success' => fn () => $request->session()->get('success')],
             'auth' => [
                 'user' => $request->user()?->only(['id', 'name', 'email', 'is_admin']),
+                'providerRoles' => $request->user() ? [
+                    'spaces' => $request->user()->landlord_status?->value ?? 'none',
+                    'haul' => $request->user()->vehicle_owner_status?->value ?? 'none',
+                    'raketeer' => $request->user()->service_provider_status?->value ?? 'none',
+                ] : [],
             ],
         ];
     }

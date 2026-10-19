@@ -27,11 +27,11 @@ There are no default administrator credentials. The new admin flag defaults to f
 - `/` and `/explore`: public discovery for Spaces, Vehicles and Rakets, synchronized map pins/list selection, title/city search, type and price filters, current-location search, map-center/radius search, pagination and mobile list/map switching.
 - `/offers/{service}/{id}`: listing details, photo gallery, location and owner name. Only owners/admins may inspect unpublished records.
 - `/login`, `/register`, existing password-reset and profile routes: session authentication using the existing Laravel flow, with Aadi branding.
-- `/my-listings`: private listing management, application submission and provider approval status.
+- `/my-listings`: a separate provider workspace with photo-led rows, filters, sorting and a linked map. Users without approved roles go to `/become-provider`.
 - Create/edit forms: shared canonical fields, vehicle details, map location selection, image uploads, drafts, publishing, editing and confirmed deletion.
 - `/admin/approvals`: administrator-only approve/reject queue. The existing admin tables continue displaying the same records.
 
-Applicants submit an account-level review request in this initial version. Document collection and verification evidence remain follow-up work. Approval is required to publish, but not to save drafts. Admins can edit records through their detail-page link; publication still checks the owner's provider status.
+Every account begins as a User. Users apply independently as landlords/property merchants, vehicle owners, or freelance service providers. Applications collect display/business name, phone, area, offering description, supporting documents and confirmation. Documents use private storage and authenticated owner/admin downloads. Approval is required to create or edit listings for that role, including drafts. Existing approved accounts retain access. Admins can edit records; publication still checks the owner's status. Rejections include review notes and allow resubmission. Existing pending requests without evidence must complete the application before approval. A merchant is a business acting in one of these three provider roles; this does not add a separate product-sales marketplace.
 
 ## Shared API
 
@@ -57,10 +57,19 @@ Photos are JPEG/PNG/WebP up to 5 MB each, 12 per listing. Set APP_URL correctly;
 
 ## Boundaries and next work
 
-This is the first web implementation, not complete mobile feature parity. Follow-up: saved listings/searches, viewing requests, notifications, messaging/booking, document-backed provider verification, mandatory email verification and Google/Facebook login. Flutter remains unchanged. Legacy unversioned APIs remain for compatibility; they still need full contract migration and authorization review before production mobile integration. Do not treat the versioned API as a drop-in replacement without updating Flutter repositories and serializers.
+This is the first web implementation, not complete mobile feature parity. Follow-up: saved listings/searches, viewing requests, notifications, messaging/booking, mandatory email verification and Google/Facebook login. Flutter remains unchanged. Legacy unversioned APIs remain for compatibility; they still need full contract migration and authorization review before production mobile integration. Do not treat the versioned API as a drop-in replacement without updating Flutter repositories and serializers.
 
 ## Verification
 
 `npm run build` checks TypeScript and generates the production bundle. `php artisan test` covers the new contract, CRUD for all services, draft visibility, ownership, publication approval, admin boundaries, nearby search and uploads. GitHub Actions runs both. Historical MySQL-specific ULID migrations now skip SQLite, permitting test database creation; MySQL behavior remains unchanged.
 
 Local verification: production frontend build and static parsing of 18 changed PHP files passed. The first GitHub Actions job failed before executing any steps, with no retrievable log; backend runtime tests and browser QA remain unverified.
+
+
+## Provider workspace update
+
+Run `php artisan migrate` for the provider_applications table. Login returns to browsing. The same account can hold multiple independently approved roles. The new provider shell is used by My listings, listing forms, role selection, application status/forms and review pages. It has an explicit switch back to customer browsing. Listing previews and public discovery keep the customer shell.
+
+Private uploads accept up to five JPEG/PNG/WebP/PDF files, 5 MB per file. Resubmission replaces the previous documents after a successful database transaction. Files are not added to the public storage symlink. Only administrators and the applicant may download them. Apply the deployment's normal backup and retention controls to private application storage.
+
+Validation for this update: frontend production build and static PHP parsing. The new feature tests cover application validation, independent roles, approval, rejection/resubmission, private downloads and duplicate submissions. Backend execution remains unverified in this environment; GitHub Actions was previously blocked by an account billing lock. Browser visual QA has not been run.
