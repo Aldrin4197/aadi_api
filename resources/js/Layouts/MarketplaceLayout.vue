@@ -1,6 +1,7 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import '../../css/marketplace.css';
+import '../../css/map-explorer.css';
 const page = usePage();
 </script>
 <template>
