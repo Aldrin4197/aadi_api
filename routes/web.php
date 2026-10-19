@@ -5,18 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'index'])->name('explore');
+Route::get('/dashboard', fn () => redirect('/my-listings'))->middleware('auth')->name('dashboard');
+require __DIR__.'/marketplace.php';
 
 // Admin Panel (Inertia.js)
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -27,7 +18,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
     // Authenticated routes
-    Route::middleware('auth')->group(function () {
+    Route::middleware(['auth', \App\Http\Middleware\EnsureAdmin::class])->group(function () {
         Route::post('/logout', [App\Http\Controllers\Admin\LoginController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/users', [App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users.index');

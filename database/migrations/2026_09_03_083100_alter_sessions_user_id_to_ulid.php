@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::hasTable('sessions')) {
+        if (DB::getDriverName() !== 'mysql' || ! Schema::hasTable('sessions')) {
             return;
         }
 
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! Schema::hasTable('sessions')) {
+        if (DB::getDriverName() !== 'mysql' || ! Schema::hasTable('sessions')) {
             return;
         }
 

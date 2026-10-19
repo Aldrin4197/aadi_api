@@ -12,6 +12,8 @@ class ServiceListing extends Model
 
     protected $fillable = [
         'provider_id',
+        'latitude',
+        'longitude',
         'title',
         'description',
         'service_type',
@@ -34,6 +36,8 @@ class ServiceListing extends Model
     ];
 
     protected $casts = [
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
         'skills_required' => 'array',
         'availability_schedule' => 'array',
         'images' => 'array',

@@ -1,22 +1,4 @@
 <script setup lang="ts">
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { Link } from '@inertiajs/vue3';
 </script>
-
-<template>
-    <div
-        class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0"
-    >
-        <div>
-            <Link href="/">
-                <ApplicationLogo class="h-20 w-20 fill-current text-gray-500" />
-            </Link>
-        </div>
-
-        <div
-            class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg"
-        >
-            <slot />
-        </div>
-    </div>
-</template>
+<template><main class="min-h-screen bg-[#f5f8f3] flex flex-col items-center justify-center px-5 py-10"><Link href="/" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" class="h-12 w-auto mb-8"/></Link><div class="w-full max-w-md rounded-2xl border border-[#dce6e2] bg-white p-8"><slot/></div><Link href="/" class="mt-6 text-sm text-[#167c71]">← Explore nearby listings</Link></main></template>

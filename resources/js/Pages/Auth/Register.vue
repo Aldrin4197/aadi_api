@@ -26,6 +26,7 @@ const submit = () => {
     <GuestLayout>
         <Head title="Register" />
 
+        <h1 class="text-2xl font-semibold text-[#193e3b] mb-2">Your neighborhood awaits.</h1><p class="text-sm text-gray-500 mb-6">One account for Spaces, Vehicles, and Rakets.</p>
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="name" value="Name" />

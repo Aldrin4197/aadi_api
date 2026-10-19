@@ -35,6 +35,7 @@ const submit = () => {
             {{ status }}
         </div>
 
+        <h1 class="text-2xl font-semibold text-[#193e3b] mb-2">Welcome back.</h1><p class="text-sm text-gray-500 mb-6">Log in to manage your listings.</p>
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="email" value="Email" />
@@ -93,6 +94,6 @@ const submit = () => {
                     Log in
                 </PrimaryButton>
             </div>
-        </form>
+        </form><p class="mt-6 text-sm text-gray-600">New to Aadi? <Link href="/register" class="text-[#167c71] underline">Create an account</Link></p>
     </GuestLayout>
 </template>

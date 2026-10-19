@@ -98,6 +98,7 @@ class ListingController extends Controller
         ]);
 
         $user = $request->user();
+        abort_unless(app(\App\Services\Marketplace::class)->approved($user, 'spaces'), 403, 'Provider approval required.');
 
         $listing = Listing::create([
             'owner_id' => $user->id,
@@ -161,10 +162,11 @@ class ListingController extends Controller
         return response()->noContent();
     }
 
-    public function analytics(string $id)
+    public function analytics(Request $request, string $id)
     {
         $listing = Listing::findOrFail($id);
 
+        abort_unless($request->user()->is_admin || (string) $listing->owner_id === (string) $request->user()->id, 403);
         $views = $listing->views()->count();
         $interested = $listing->favorites()->count();
         $viewingRequests = $listing->viewingRequests()->count();

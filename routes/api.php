@@ -33,19 +33,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
     Route::post('me/landlord-application', [AuthController::class, 'applyForLandlord']);
-    Route::post('me/landlord-application/approve', [AuthController::class, 'approveLandlord']); // Demo only
+    Route::post('me/landlord-application/approve', [AuthController::class, 'approveLandlord'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/vehicle-owner-application', [AuthController::class, 'applyForVehicleOwner']);
-    Route::post('me/vehicle-owner-application/approve', [AuthController::class, 'approveVehicleOwner']); // Demo only
-    Route::post('me/vehicle-owner-application/approve/{userId}', [AuthController::class, 'approveVehicleOwner']); // Admin only
+    Route::post('me/vehicle-owner-application/approve', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
+    Route::post('me/vehicle-owner-application/approve/{userId}', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/service-provider-application', [AuthController::class, 'applyForServiceProvider']);
-    Route::post('me/service-provider-application/approve', [AuthController::class, 'approveServiceProvider']); // Demo only
-    Route::post('me/service-provider-application/approve/{userId}', [AuthController::class, 'approveServiceProvider']); // Admin only
+    Route::post('me/service-provider-application/approve', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
+    Route::post('me/service-provider-application/approve/{userId}', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/aadi-haul-application', [AuthController::class, 'applyForVehicleOwner']);
-    Route::post('me/aadi-haul-application/approve', [AuthController::class, 'approveVehicleOwner']); // Demo only
-    Route::post('me/aadi-haul-application/approve/{userId}', [AuthController::class, 'approveVehicleOwner']); // Admin only
+    Route::post('me/aadi-haul-application/approve', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
+    Route::post('me/aadi-haul-application/approve/{userId}', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/aadi-raketeer-application', [AuthController::class, 'applyForServiceProvider']);
-    Route::post('me/aadi-raketeer-application/approve', [AuthController::class, 'approveServiceProvider']); // Demo only
-    Route::post('me/aadi-raketeer-application/approve/{userId}', [AuthController::class, 'approveServiceProvider']); // Admin only
+    Route::post('me/aadi-raketeer-application/approve', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
+    Route::post('me/aadi-raketeer-application/approve/{userId}', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     
     // Listings
     Route::get('listings', [ListingController::class, 'search']);
@@ -101,8 +101,20 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Admin API Routes
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('web')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
     Route::post('/logout', [AdminAuthController::class, 'logout'])->middleware('web');
-    Route::get('/me', [AdminAuthController::class, 'me'])->middleware('web');
+    Route::get('/me', [AdminAuthController::class, 'me'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
+});
+
+// Versioned marketplace contract; web and mobile call the same application service.
+Route::prefix('v1')->group(function () {
+    Route::get('/offers', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'search']);
+    Route::get('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'show']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/offers/{service}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'store']);
+        Route::put('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'update']);
+        Route::delete('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'destroy']);
+        Route::post('/photos', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'upload'])->middleware('throttle:30,1');
+    });
 });
