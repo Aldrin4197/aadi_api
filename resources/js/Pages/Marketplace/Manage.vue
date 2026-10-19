@@ -1,12 +1,13 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import Layout from '@/Layouts/MarketplaceLayout.vue';
 defineProps({listings:Array,statuses:Object});
-const deleting=ref(null),busy=ref(false);
+const deleting=ref(null),busy=ref(false),dialog=ref(null);
+watch(deleting,async item=>{await nextTick();if(item)dialog.value?.showModal();else dialog.value?.close();});
 const services={spaces:'Spaces',haul:'Vehicles',raketeer:'Rakets'};
 function remove(){busy.value=true;router.delete(`/my-listings/${deleting.value.service}/${deleting.value.id}`,{onFinish:()=>{busy.value=false;deleting.value=null;}});}
 </script>
 <template><Layout><Head title="My listings"/><main class="content"><p class="eyebrow">YOUR PROVIDER WORKSPACE</p><h1>Make room for opportunity.</h1><p>Create a draft, get approved, and share what you offer with your neighborhood.</p><div class="provider-grid"><section v-for="(label,key) in services" class="provider-card"><h2>{{ label }}</h2><p>Provider status: <strong>{{ statuses[key] }}</strong></p><div class="actions"><Link :href="`/my-listings/${key}/new`" class="button primary">Create listing</Link><Link v-if="['none','rejected'].includes(statuses[key])" :href="`/provider-applications/${key}`" method="post" as="button" class="button">Apply to publish</Link></div></section></div>
 <h2>Your listings <span class="muted">({{ listings.length }})</span></h2><div v-if="!listings.length" class="empty-state"><h3>Your first listing starts here</h3><p>Choose a service above. Drafts are private until you publish them.</p></div><div v-else class="table-scroll"><table><thead><tr><th>Listing</th><th>Service</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead><tbody><tr v-for="item in listings" :key="item.service+item.id"><td><Link :href="`/offers/${item.service}/${item.id}`">{{ item.title }}</Link></td><td>{{ services[item.service] }}</td><td>₱{{ Number(item.price).toLocaleString() }} / {{ item.priceUnit }}</td><td><span class="status">{{ item.status }}</span></td><td><div class="actions"><Link :href="`/my-listings/${item.service}/${item.id}/edit`">Edit</Link><button class="text-button danger" @click="deleting=item">Delete</button></div></td></tr></tbody></table></div>
-<dialog :open="!!deleting" class="confirm-dialog" @keydown.esc="deleting=null"><h2>Delete this listing?</h2><p>{{ deleting?.title }} will be removed. This cannot be undone here.</p><div class="actions"><button class="button" @click="deleting=null" :disabled="busy">Keep listing</button><button class="button danger" @click="remove" :disabled="busy">{{ busy?'Deleting…':'Delete listing' }}</button></div></dialog></main></Layout></template>
+<dialog ref="dialog" class="confirm-dialog" @cancel.prevent="deleting=null"><h2>Delete this listing?</h2><p>{{ deleting?.title }} will be removed. This cannot be undone here.</p><div class="actions"><button class="button" @click="deleting=null" :disabled="busy">Keep listing</button><button class="button danger" @click="remove" :disabled="busy">{{ busy?'Deleting…':'Delete listing' }}</button></div></dialog></main></Layout></template>

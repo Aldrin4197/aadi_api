@@ -73,6 +73,14 @@ class MarketplaceTest extends TestCase {
         $service->save($owner,'spaces',[...$this->payload('spaces'),'location'=>['lat'=>14.6,'lng'=>120.98,'address'=>'Manila']]);
         $this->getJson('/api/v1/offers?service=spaces&lat=11.7753&lng=124.8861&radiusKm=5&maxPrice=0')->assertOk()->assertJsonPath('meta.total',1)->assertJsonPath('data.0.id',(string)$near->id);
     }
+    public function test_busy_and_rented_statuses_survive_edits(): void {
+        $owner=$this->provider();
+        foreach (['spaces'=>'rented','haul'=>'rented','raketeer'=>'reserved'] as $service=>$status) {
+            $response=$this->actingAs($owner)->postJson('/api/v1/offers/'.$service,$this->payload($service,$status))->assertCreated();
+            $this->putJson('/api/v1/offers/'.$service.'/'.$response->json('data.id'),[...$this->payload($service,$status),'title'=>'Edited'])->assertOk()->assertJsonPath('data.status',$status);
+            $this->getJson('/api/v1/offers?service='.$service)->assertJsonPath('meta.total',0);
+        }
+    }
     public function test_image_upload_is_authenticated_and_validated(): void {
         Storage::fake('public');
         $this->actingAs($this->provider())->post('/listing-photos',['photo'=>UploadedFile::fake()->image('room.jpg')],['Accept'=>'application/json'])->assertCreated()->assertJsonStructure(['url']);

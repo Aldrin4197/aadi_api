@@ -45,7 +45,7 @@ The web controller and versioned API share `App\Services\Marketplace` for valida
 | PUT / DELETE | `/api/v1/offers/{service}/{id}` | Owner or admin |
 | POST | `/api/v1/photos` | Sanctum account |
 
-Service values: `spaces`, `haul`, `raketeer`. Listings return `id`, `service`, `ownerId`, `ownerName`, `title`, `description`, `type`, `price`, `priceUnit`, `currency`, nested `location`, `photos`, `status`, `details`, `createdAt`. Collections return `{data, meta: {total, currentPage, lastPage}}`; single results return `{data}`. Money is PHP major units. Create/update accept editable fields only; ownership is server assigned. Vehicles require `details.brand`, `details.model`, `details.year`. Writes support `draft` and `active`; underlying specialized states remain preserved on reads but saving the form intentionally selects draft or published.
+Service values: `spaces`, `haul`, `raketeer`. Listings return `id`, `service`, `ownerId`, `ownerName`, `title`, `description`, `type`, `price`, `priceUnit`, `currency`, nested `location`, `photos`, `status`, `details`, `createdAt`. Collections return `{data, meta: {total, currentPage, lastPage}}`; single results return `{data}`. Money is PHP major units. Create/update accept editable fields only; ownership is server assigned. Vehicles require `details.brand`, `details.model`, `details.year`. Writes support `draft`, `active`, and `reserved`; Spaces and Vehicles also support `rented`, and Spaces supports `archived`. Vehicle maintenance and Raketeer busy map to canonical `reserved`; inactive maps to `draft`.
 
 Search supports `q`, `type`, `minPrice`, `maxPrice`, `lat`, `lng`, `radiusKm` (1–200), and `page`. Coordinates must be supplied together. With coordinates, search is distance sorted and excludes legacy records without coordinates. Without coordinates, it searches all published records, newest first. Text search matches existing title/city/address data; it is not a geocoding service. Move the map or use GPS to choose an arbitrary geographic center. Maps show the current page's results.
 
@@ -62,3 +62,5 @@ This is the first web implementation, not complete mobile feature parity. Follow
 ## Verification
 
 `npm run build` checks TypeScript and generates the production bundle. `php artisan test` covers the new contract, CRUD for all services, draft visibility, ownership, publication approval, admin boundaries, nearby search and uploads. GitHub Actions runs both. Historical MySQL-specific ULID migrations now skip SQLite, permitting test database creation; MySQL behavior remains unchanged.
+
+Local verification: production frontend build and static parsing of 18 changed PHP files passed. The first GitHub Actions job failed before executing any steps, with no retrievable log; backend runtime tests and browser QA remain unverified.

@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 const props = defineProps({ listings: { type: Array, default: () => [] }, center: { type: Array, default: () => [12.0, 124.75] }, selected: String, pick: Boolean });
+const selectedListing = computed(() => props.listings.find(item => item.id === props.selected));
 const emit = defineEmits(['select','search','pick']);
 const el = ref(null); const tileError = ref(false); let map, markers, resize;
 const money = n => new Intl.NumberFormat('en-PH', {maximumFractionDigits:0}).format(n);
@@ -32,6 +33,7 @@ function search(){const c=map.getCenter();emit('search',[c.lat,c.lng]);}
 </script>
 <template><div class="map-wrap"><div ref="el" class="discovery-map" aria-label="Nearby listings map" />
 <button v-if="!pick" class="button map-search" @click="search">Search this area</button>
+<a v-if="selectedListing && !pick" :href="`/offers/${selectedListing.service}/${selectedListing.id}`" class="map-selection"><strong>{{ selectedListing.title }}</strong><span>View listing →</span></a>
 <div v-if="pick" class="map-hint">Click the map to set the listing location</div>
 <div v-if="tileError" class="map-hint" role="status">Map tiles unavailable. You can still browse the results.</div>
 </div></template>

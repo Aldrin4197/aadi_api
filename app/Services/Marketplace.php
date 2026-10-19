@@ -43,7 +43,7 @@ class Marketplace
                 'lng' => ($space ? $r->lng : $r->longitude) === null ? null : (float) ($space ? $r->lng : $r->longitude),
                 'address' => $space ? $r->address : ($vehicle ? $r->location : $r->service_area), 'city' => $space ? $r->city : null],
             'photos' => ($space ? $r->photos : $r->images) ?? [],
-            'status' => $space ? $status : match($status) { 'available' => 'active', 'inactive' => 'draft', default => 'reserved' },
+            'status' => $space ? $status : match($status) { 'available' => 'active', 'inactive' => 'draft', 'rented' => 'rented', default => 'reserved' },
             'details' => $vehicle ? ['brand' => $r->brand, 'model' => $r->model, 'year' => $r->year] : [],
             'createdAt' => $r->created_at->toIso8601String(),
         ];
@@ -83,7 +83,7 @@ class Marketplace
         return $request->validate([
             'title' => 'required|string|max:255', 'description' => 'required|string|max:10000',
             'type' => ['required', Rule::in(self::TYPES[$service])], 'price' => 'required|numeric|min:0|max:99999999.99',
-            'status' => ['required', Rule::in(['draft','active'])],
+            'status' => ['required', Rule::in($service === 'spaces' ? ['draft','active','reserved','rented','archived'] : ($service === 'haul' ? ['draft','active','reserved','rented'] : ['draft','active','reserved']))],
             'location.lat' => 'required|numeric|between:-90,90', 'location.lng' => 'required|numeric|between:-180,180',
             'location.address' => 'required|string|max:255', 'location.city' => 'nullable|string|max:255',
             'photos' => 'present|array|max:12', 'photos.*' => 'required|url:http,https|max:2048',
@@ -97,7 +97,9 @@ class Marketplace
         if ($record) $this->authorize($user, $record, $service);
         $owner = $record ? User::findOrFail($record->{$service === 'raketeer' ? 'provider_id' : 'owner_id'}) : $user;
         abort_if($data['status'] === 'active' && !$this->approved($owner, $service), 403, 'Provider approval is required to publish. Save a draft while your application is reviewed.');
-        $base = ['title' => $data['title'], 'description' => $data['description'], 'status' => $service === 'spaces' ? $data['status'] : ($data['status'] === 'active' ? 'available' : 'inactive')];
+        if ($service === 'spaces') $status = $data['status'];
+        else $status = match($data['status']) { 'active' => 'available', 'draft' => 'inactive', 'rented' => 'rented', default => $service === 'haul' ? 'maintenance' : 'busy' };
+        $base = ['title' => $data['title'], 'description' => $data['description'], 'status' => $status];
         $location = $data['location'];
         $fields = match($service) {
             'spaces' => ['owner_id'=>$owner->id,'owner_name'=>$owner->name,'category'=>'space_rental','type'=>$data['type'],'price'=>$data['price'],'lat'=>$location['lat'],'lng'=>$location['lng'],'address'=>$location['address'],'city'=>$location['city'] ?? null,'photos'=>$data['photos']],
