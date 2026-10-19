@@ -77,3 +77,9 @@ Validation for this update: frontend production build and static PHP parsing. Th
 ## Public homepage and sign-in flow
 
 The customer entry point is `/`: visitors can search properties, vehicle rentals, and rakets, filter prices/types/location, and browse results alongside a map without an account. Opening a listing card or clicking a map marker requests the protected `/offers/{service}/{id}` page and prompts login, with registration available on that screen. Both successful login and registration return to the selected listing using the server session's intended URL. Ordinary Users can view active listing details without applying as providers. The existing admin dashboard stays at `/admin/dashboard`. This gate applies to web detail routes; the mobile API contract is unchanged.
+
+## Flutter-themed map homepage
+
+The customer shell uses Flutter's bundled Quicksand font, teal #1FA6A0, dark teal #0B3A38, orange #F59E42, neutral surfaces, and rounded controls. The homepage map fills the width with search/filter controls and a horizontally scrollable listing rail over it. Markers include billing units. Selecting a marker previews/highlights its card; View/title links open the existing protected detail route.
+
+Nearby search uses the existing server radius filter and distance ordering. The map and rail display the same current page (up to 30 records), with an explicit count and pagination; listings without coordinates remain in the rail. Search near map center applies the chosen radius, not viewport bounds. Comparison retains up to three listing summaries during Inertia searches and displays original rates/units without inventing normalized prices. Distances are straight-line estimates from the applied search center. Admin routes and mobile API contracts are unchanged.
