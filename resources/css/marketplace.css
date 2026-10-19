@@ -7,3 +7,5 @@
 .map-selection{position:absolute;z-index:500;bottom:32px;left:20px;right:20px;background:#fff;padding:16px;border-radius:10px;box-shadow:0 3px 14px #0002;display:flex;justify-content:space-between;gap:12px;font-size:13px}.map-selection span{white-space:nowrap;color:#167c71}
 
 .confirm-dialog::backdrop{background:#193e3b66}.confirm-dialog{box-shadow:0 12px 50px #193e3b33}
+
+.browse-hint{margin:0;padding:12px 4%;font-size:13px;color:var(--muted);background:#f0f5f1}

@@ -73,3 +73,7 @@ Run `php artisan migrate` for the provider_applications table. Login returns to 
 Private uploads accept up to five JPEG/PNG/WebP/PDF files, 5 MB per file. Resubmission replaces the previous documents after a successful database transaction. Files are not added to the public storage symlink. Only administrators and the applicant may download them. Apply the deployment's normal backup and retention controls to private application storage.
 
 Validation for this update: frontend production build and static PHP parsing. The new feature tests cover application validation, independent roles, approval, rejection/resubmission, private downloads and duplicate submissions. Backend execution remains unverified in this environment; GitHub Actions was previously blocked by an account billing lock. Browser visual QA has not been run.
+
+## Public homepage and sign-in flow
+
+The customer entry point is `/`: visitors can search properties, vehicle rentals, and rakets, filter prices/types/location, and browse results alongside a map without an account. Opening a listing card or clicking a map marker requests the protected `/offers/{service}/{id}` page and prompts login, with registration available on that screen. Both successful login and registration return to the selected listing using the server session's intended URL. Ordinary Users can view active listing details without applying as providers. The existing admin dashboard stays at `/admin/dashboard`. This gate applies to web detail routes; the mobile API contract is unchanged.
