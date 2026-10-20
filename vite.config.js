@@ -4,6 +4,10 @@ import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+    // Tailwind runs through its Vite plugin. Ignore leftover or parent PostCSS configs.
+    css: {
+        postcss: { plugins: [] },
+    },
     plugins: [
         tailwindcss(),
         laravel({
