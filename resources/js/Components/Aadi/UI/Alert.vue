@@ -67,7 +67,7 @@ const iconPath = computed(() => {
         <div class="flex items-start gap-3">
             <!-- Icon -->
             <svg
-                :class="['h-5 w-5 flex-shrink-0 mt-0.5', typeClasses.icon]"
+                :class="['h-5 w-5 shrink-0 mt-0.5', typeClasses.icon]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -89,7 +89,7 @@ const iconPath = computed(() => {
             <button
                 v-if="dismissible"
                 type="button"
-                :class="['flex-shrink-0 rounded p-1 hover:bg-black/5', typeClasses.icon]"
+                :class="['shrink-0 rounded p-1 hover:bg-black/5', typeClasses.icon]"
                 @click="emit('dismiss')"
             >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

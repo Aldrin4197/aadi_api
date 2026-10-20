@@ -33,7 +33,7 @@ const formatPrice = (price) => {
       </div>
     </template>
 
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-xs border border-slate-200 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-slate-50 border-b border-slate-200">

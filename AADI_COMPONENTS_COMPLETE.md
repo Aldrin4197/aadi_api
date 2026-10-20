@@ -273,33 +273,23 @@ http://127.0.0.1:8000/admin-demo/users
 
 ## 🎨 Customization
 
-All Aadi colors are configured in the layout file:
+All Aadi colors are configured in the shared Tailwind 4 stylesheet:
 
-**File**: `resources/views/admin/layouts/app.blade.php`
+**File**: `resources/css/app.css`
 
-```javascript
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                brand: {
-                    DEFAULT: '#1FA6A0',   // Primary teal
-                    dark: '#0B3A38',      // Dark sidebar
-                    light: '#C4ECEA',     // Light accents
-                    lighter: '#E3F6F4',   // Subtle backgrounds
-                },
-                accent: {
-                    DEFAULT: '#F59E42',   // Orange
-                    deep: '#D9822B',      // Deep orange
-                    light: '#FCE6CE',     // Light orange
-                }
-            }
-        }
-    }
+```css
+@theme {
+    --color-brand: #1FA6A0;
+    --color-brand-dark: #0B3A38;
+    --color-brand-light: #C4ECEA;
+    --color-brand-lighter: #E3F6F4;
+    --color-accent: #F59E42;
+    --color-accent-deep: #D9822B;
+    --color-accent-light: #FCE6CE;
 }
 ```
 
-To change brand colors, simply update these hex values.
+To change brand colors, update these hex values and rebuild with `npm run build`.
 
 ---
 

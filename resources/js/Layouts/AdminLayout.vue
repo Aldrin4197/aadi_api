@@ -66,13 +66,13 @@ const isActive = (routeName) => {
   <div class="flex h-screen bg-slate-100">
     <!-- Sidebar -->
     <aside 
-      class="w-64 bg-gradient-to-b from-aadi-teal-800 to-aadi-teal-900 text-aadi-teal-100 flex flex-col transition-all duration-300"
+      class="w-64 bg-linear-to-b from-aadi-teal-800 to-aadi-teal-900 text-aadi-teal-100 flex flex-col transition-all duration-300"
       :class="{ 'w-20': !sidebarOpen }"
     >
       <!-- Logo -->
       <div class="p-6 border-b border-aadi-teal-700">
         <div class="flex items-center justify-between">
-          <Logo variant="icon" size="md" class="flex-shrink-0" />
+          <Logo variant="icon" size="md" class="shrink-0" />
           <button
             @click="sidebarOpen = !sidebarOpen"
             class="p-2 hover:bg-aadi-teal-700 rounded-lg transition-colors"
@@ -100,7 +100,7 @@ const isActive = (routeName) => {
                 ? 'bg-aadi-teal-700 text-white' 
                 : 'text-aadi-teal-100 hover:bg-aadi-teal-700/50'"
             >
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="icons[item.icon]" />
               </svg>
               <span v-if="sidebarOpen" class="ml-3">{{ item.name }}</span>
@@ -112,7 +112,7 @@ const isActive = (routeName) => {
       <!-- User Profile -->
       <div class="p-4 border-t border-aadi-teal-700">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-aadi-teal to-aadi-teal-800 flex items-center justify-center text-white font-semibold">
+          <div class="w-10 h-10 rounded-full bg-linear-to-br from-aadi-teal to-aadi-teal-800 flex items-center justify-center text-white font-semibold">
             {{ user?.name?.charAt(0) || 'A' }}
           </div>
           <div v-if="sidebarOpen" class="flex-1">

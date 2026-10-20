@@ -39,7 +39,7 @@ const initials = computed(() => {
 <template>
     <div
         :class="[
-            'relative inline-flex items-center justify-center rounded-full flex-shrink-0 overflow-hidden',
+            'relative inline-flex items-center justify-center rounded-full shrink-0 overflow-hidden',
             sizeClasses,
         ]"
     >
@@ -54,7 +54,7 @@ const initials = computed(() => {
         <!-- Initials Fallback -->
         <div
             v-else
-            class="flex h-full w-full items-center justify-center bg-gradient-to-br from-aadi-teal to-aadi-teal-800 text-white font-semibold"
+            class="flex h-full w-full items-center justify-center bg-linear-to-br from-aadi-teal to-aadi-teal-800 text-white font-semibold"
         >
             {{ initials || alt[0]?.toUpperCase() }}
         </div>

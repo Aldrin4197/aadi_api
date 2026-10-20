@@ -10,7 +10,7 @@ import BaseButton from '../components/BaseButton.vue';
       <h1 class="text-2xl font-bold text-slate-900">Analytics</h1>
     </template>
 
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+    <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-8">
       <EmptyState
         title="Analytics Dashboard Coming Soon"
         description="View platform statistics, user growth metrics, revenue charts, and performance indicators."

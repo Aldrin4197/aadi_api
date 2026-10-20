@@ -20,7 +20,7 @@ $sizeClasses = [
 ];
 @endphp
 
-<div {{ $attributes->merge(['class' => 'relative inline-flex items-center justify-center rounded-full bg-gradient-to-br from-[#1FA6A0] to-[#0B3A38] text-white font-semibold overflow-hidden ' . $sizeClasses[$size]]) }}>
+<div {{ $attributes->merge(['class' => 'relative inline-flex items-center justify-center rounded-full bg-linear-to-br from-[#1FA6A0] to-[#0B3A38] text-white font-semibold overflow-hidden ' . $sizeClasses[$size]]) }}>
     @if($imageSrc)
         <img src="{{ $imageSrc }}" alt="{{ $displayName }}" class="w-full h-full object-cover">
     @else

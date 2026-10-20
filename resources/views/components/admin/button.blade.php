@@ -8,14 +8,14 @@
 
 @php
 $variantClasses = [
-    'primary' => 'bg-[#1FA6A0] hover:bg-[#1A8F8A] text-white shadow-sm', // Aadi teal
-    'secondary' => 'bg-slate-600 hover:bg-slate-700 text-white shadow-sm',
-    'success' => 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm',
-    'danger' => 'bg-red-600 hover:bg-red-700 text-white shadow-sm',
-    'warning' => 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm',
+    'primary' => 'bg-[#1FA6A0] hover:bg-[#1A8F8A] text-white shadow-xs', // Aadi teal
+    'secondary' => 'bg-slate-600 hover:bg-slate-700 text-white shadow-xs',
+    'success' => 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs',
+    'danger' => 'bg-red-600 hover:bg-red-700 text-white shadow-xs',
+    'warning' => 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs',
     'outline' => 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300',
     'ghost' => 'hover:bg-slate-100 text-slate-700',
-    'orange' => 'bg-[#F59E42] hover:bg-[#D9822B] text-white shadow-sm', // Aadi accent
+    'orange' => 'bg-[#F59E42] hover:bg-[#D9822B] text-white shadow-xs', // Aadi accent
 ];
 
 $sizeClasses = [

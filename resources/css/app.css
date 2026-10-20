@@ -1,3 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+
+/* Paths are relative to this stylesheet, including ignored Laravel views. */
+@source "../js";
+@source "../views";
+@source "../../storage/framework/views/*.php";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@plugin "@tailwindcss/forms";
+
+@theme {
+  --font-sans: 'Quicksand', 'Figtree', ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --color-aadi-teal: #1FA6A0;
+  --color-aadi-teal-50: #E3F6F4;
+  --color-aadi-teal-100: #C4ECEA;
+  --color-aadi-teal-200: #8DD9D4;
+  --color-aadi-teal-300: #56C6BF;
+  --color-aadi-teal-400: #1FA6A0;
+  --color-aadi-teal-500: #1A8F8A;
+  --color-aadi-teal-600: #157873;
+  --color-aadi-teal-700: #0F5F5C;
+  --color-aadi-teal-800: #0B3A38;
+  --color-aadi-teal-900: #062827;
+  --color-aadi-orange: #F59E42;
+  --color-aadi-orange-50: #FEF5EB;
+  --color-aadi-orange-100: #FCE6CE;
+  --color-aadi-orange-200: #F9CE9C;
+  --color-aadi-orange-300: #F7B66B;
+  --color-aadi-orange-400: #F59E42;
+  --color-aadi-orange-500: #D9822B;
+  --color-aadi-orange-600: #BD6615;
+  --color-aadi-orange-700: #8F4D10;
+  --color-aadi-orange-800: #61340B;
+  --color-aadi-orange-900: #331B06;
+  /* Preserve the aliases used by Blade admin components. */
+  --color-brand: #1FA6A0;
+  --color-brand-dark: #0B3A38;
+  --color-brand-light: #C4ECEA;
+  --color-brand-lighter: #E3F6F4;
+  --color-accent: #F59E42;
+  --color-accent-deep: #D9822B;
+  --color-accent-light: #FCE6CE;
+  --default-ring-width: 3px;
+  --default-ring-color: var(--color-blue-500);
+}
+
+/* Preserve existing v3 defaults while using the v4 utility engine. */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  input::placeholder, textarea::placeholder { color: var(--color-gray-400); }
+  button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+  dialog { margin: auto; }
+}

@@ -19,15 +19,15 @@ defineProps({
 });
 
 const colorClasses = {
-  teal: 'bg-gradient-to-br from-aadi-teal to-aadi-teal-600',
-  orange: 'bg-gradient-to-br from-aadi-orange to-aadi-orange-600',
-  blue: 'bg-gradient-to-br from-blue-500 to-blue-600',
-  emerald: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+  teal: 'bg-linear-to-br from-aadi-teal to-aadi-teal-600',
+  orange: 'bg-linear-to-br from-aadi-orange to-aadi-orange-600',
+  blue: 'bg-linear-to-br from-blue-500 to-blue-600',
+  emerald: 'bg-linear-to-br from-emerald-500 to-emerald-600',
 };
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+  <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6 hover:shadow-md transition-shadow">
     <div class="flex items-start justify-between">
       <div class="flex-1">
         <p class="text-sm font-medium text-slate-600 mb-2">{{ title }}</p>

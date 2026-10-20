@@ -10,7 +10,7 @@ import BaseButton from '../components/BaseButton.vue';
       <h1 class="text-2xl font-bold text-slate-900">Listings</h1>
     </template>
 
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+    <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-8">
       <EmptyState
         title="Listings Management Coming Soon"
         description="Browse property listings, approve or reject submissions, and manage featured listings."

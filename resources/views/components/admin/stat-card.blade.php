@@ -19,7 +19,7 @@ $colorClasses = [
 ];
 @endphp
 
-<div {{ $attributes->merge(['class' => 'bg-white rounded-lg shadow-sm border border-slate-200 p-6']) }}>
+<div {{ $attributes->merge(['class' => 'bg-white rounded-lg shadow-xs border border-slate-200 p-6']) }}>
     <div class="flex items-center justify-between">
         <div class="flex-1">
             <p class="text-sm font-medium text-slate-600">{{ $label }}</p>
