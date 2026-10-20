@@ -1,63 +1,47 @@
-# Aadi MySQL database
+# Aadi application tables for MySQL
 
-`aadi_mysql.sql` is an empty-database schema snapshot for MySQL 8.0 or newer. It matches the 19 migrations in `database/migrations` through `2026_10_19_000002_create_provider_applications`. It includes 19 tables, ULID relationships, indexes, JSON fields, provider applications, and Laravel's migration history. It contains no user accounts, passwords, API tokens, or sample listings.
+`aadi_mysql.sql` contains only these **nine Aadi application tables**:
 
-## Import with phpMyAdmin
+- `trust_badges`
+- `listings`
+- `viewing_requests`
+- `favorites`
+- `saved_searches`
+- `listing_views`
+- `vehicle_listings`
+- `service_listings`
+- `provider_applications`
 
-1. Create a new empty database (for example `aadi`) with `utf8mb4_unicode_ci` collation. On shared hosting, create it using the hosting database panel and use the assigned database name and user.
-2. Select that database, open **Import**, choose `aadi_mysql.sql`, keep UTF-8 encoding, and run the import.
-3. Configure the application's `.env` using the values in `mysql.env.example`, replacing the database name, username, and password with your own.
-4. From the application directory run:
+Excluded: `users`, `password_reset_tokens`, `sessions`, `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `personal_access_tokens`, and `migrations`. No migration-history rows, accounts, passwords, tokens, or demo data are included.
 
-```sh
-php artisan config:clear
-php artisan migrate:status
-php artisan migrate
-```
+## Prerequisite: existing Aadi users table
 
-The supplied migrations should show as **Ran**. `migrate` applies only migrations added after this snapshot. Do not import this file and then run `migrate:fresh`, `migrate:refresh`, or baseline rollbacks; these rebuild or remove tables and can destroy data.
+This is an application-table export, not a complete Laravel database bootstrap. The selected database must already contain Aadi's `users` table. Its `id` must be `CHAR(26)` with a primary or unique index, InnoDB storage, and `utf8mb4_unicode_ci` collation, matching the repository's ULID user identifiers. A default Laravel `BIGINT` user ID will cause foreign-key errors. Do not change existing user ID types blindly.
 
-For a fresh application only, generate an application key if `APP_KEY` is empty:
+The full web app also needs Aadi's custom user fields (provider role statuses and `is_admin`) and whichever framework tables its configured authentication, session, queue, and cache drivers use. These remain managed by Laravel's migrations and are intentionally outside this SQL export.
 
-```sh
-php artisan key:generate
-php artisan storage:link
-```
+## phpMyAdmin import
 
-Keep an existing `APP_KEY` unchanged. The public storage link is for listing photos; provider verification documents remain on the private local disk.
+1. Select the MySQL database containing the compatible Aadi users table.
+2. Confirm that none of the nine tables above already exists.
+3. Open **Import**, select `aadi_mysql.sql`, use UTF-8 encoding, and import.
 
-## Import from the MySQL command line
-
-Create/select your empty database first, then import (the `-p` option prompts for your password):
+For a command-line import:
 
 ```sh
-mysql -u YOUR_DB_USER -p aadi < database/mysql/aadi_mysql.sql
+mysql -u YOUR_DB_USER -p YOUR_DATABASE < database/mysql/aadi_mysql.sql
 ```
 
-If your account may create databases, you can run this in the MySQL client before importing:
+There is no `CREATE DATABASE` or `USE` statement, allowing hosting-prefixed database names. There are no destructive statements or disabled foreign-key checks. Stop on any error; MySQL DDL commits implicitly and a failed import can leave partial tables.
 
-```sql
-CREATE DATABASE aadi CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+## Laravel installation and migrations
 
-The SQL file deliberately has no `CREATE DATABASE` or `USE` statement, so phpMyAdmin can import into hosting-prefixed database names. It also has no `DROP TABLE`, `IF NOT EXISTS`, or disabled foreign-key checks: importing into a populated database should fail rather than silently mixing schemas. Stop on an import error; MySQL DDL is not transactional, so a failed import can leave partial tables. Fix the cause and restart in a new empty database.
+For a normal new Aadi installation, configure `.env` with `DB_CONNECTION=mysql` and run `php artisan migrate` **instead of importing this SQL**. This lets Laravel create and track all required tables itself.
 
-## Existing installations
+Do not import this SQL and then run the complete migration history against the same tables: this export intentionally omits the migration ledger, so Laravel will not know the application tables were imported. Existing installations should use their migrations for updates, not this export. Do not run `migrate:fresh` or `migrate:refresh` to resolve a duplicate-table error; they can destroy existing data.
 
-Do not import this snapshot into an existing database. Set `DB_CONNECTION=mysql` only when that installation actually uses MySQL, back up its data, and use `php artisan migrate` for schema updates. This SQL does not transfer existing SQLite data.
-
-Alternatively, for a new empty MySQL database with PHP dependencies installed, configure `.env` and run `php artisan migrate` directly instead of importing SQL. Migrations remain the source of truth.
-
-## First administrator
-
-Register your own account through `/register`, then promote that exact account in phpMyAdmin:
-
-```sql
-UPDATE users SET is_admin = 1 WHERE email = 'YOUR_REGISTERED_EMAIL';
-```
-
-Replace the email with your actual registered email and confirm exactly one row was matched. You can then use `/admin/login` and `/admin/dashboard`. Provider approvals remain separate from admin access. No default administrator or shared password is supplied. Do not run the existing demo seeders for a production setup.
+`mysql.env.example` contains only MySQL connection settings. It does not change session, cache, or queue drivers or remove their dependencies. This export does not transfer SQLite data.
 
 ## Validation
 
-The snapshot was checked against the repository's migration table/column inventory and foreign-key targets. All 19 CREATE TABLE statements and the migration-history INSERT passed MySQL-dialect static parsing (the parser does not support the standard SET NAMES statement, so that statement was excluded from this check). A PHP/MySQL runtime was unavailable in the generation environment, so an actual MySQL import and Laravel integration run remain to be performed in your environment. The snapshot does not add unimplemented Google/Facebook identity storage or invent new application features.
+All nine application table definitions retain the original snapshot's columns, indexes, and constraints, matching repository migrations through `2026_10_19_000002_create_provider_applications`. All nine CREATE TABLE statements are byte-for-byte identical to definitions that passed MySQL-dialect static parsing in the original snapshot. The standard SET NAMES statement was excluded from that parser check because the parser does not support it. No PHP/MySQL runtime was available, so an actual MySQL import remains untested.
