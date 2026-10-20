@@ -83,3 +83,16 @@ The customer entry point is `/`: visitors can search properties, vehicle rentals
 The customer shell uses Flutter's bundled Quicksand font, teal #1FA6A0, dark teal #0B3A38, orange #F59E42, neutral surfaces, and rounded controls. The homepage map fills the width with search/filter controls and a horizontally scrollable listing rail over it. Markers include billing units. Selecting a marker previews/highlights its card; View/title links open the existing protected detail route.
 
 Nearby search uses the existing server radius filter and distance ordering. The map and rail display the same current page (up to 30 records), with an explicit count and pagination; listings without coordinates remain in the rail. Search near map center applies the chosen radius, not viewport bounds. Comparison retains up to three listing summaries during Inertia searches and displays original rates/units without inventing normalized prices. Distances are straight-line estimates from the applied search center. Admin routes and mobile API contracts are unchanged.
+
+## Tailwind/PostCSS dependency setup
+
+The current CSS directives and JavaScript theme configuration use Tailwind **3.4.19**, pinned in `package.json` and `package-lock.json`. PostCSS uses `tailwindcss` and `autoprefixer`; the Tailwind 4 Vite adapter is not used.
+
+If Vite reports that the PostCSS plugin moved to `@tailwindcss/postcss`, stop the running dev server, pull the dependency fix, then run these commands from the directory containing `package.json` (PowerShell or a terminal):
+
+```sh
+npm ci
+npm run dev
+```
+
+Keep the committed lockfile. `npm ci` replaces the local installed dependency tree with its locked versions. Do not add the v4 PostCSS/Vite adapter to this v3 configuration; a future v4 upgrade must also migrate CSS directives, theme loading, and compatibility changes. `npm run build` checks the production frontend build. Use Node 24, matching the repository's CI configuration.
