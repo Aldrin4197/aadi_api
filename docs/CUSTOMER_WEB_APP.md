@@ -84,6 +84,12 @@ The customer shell uses Flutter's bundled Quicksand font, teal #1FA6A0, dark tea
 
 Nearby search uses the existing server radius filter and distance ordering. The map and rail display the same current page (up to 30 records), with an explicit count and pagination; listings without coordinates remain in the rail. Search near map center applies the chosen radius, not viewport bounds. Comparison retains up to three listing summaries during Inertia searches and displays original rates/units without inventing normalized prices. Distances are straight-line estimates from the applied search center. Admin routes and mobile API contracts are unchanged.
 
+## Homepage landing content
+
+The public `/` page combines the full-width map with scrollable landing sections: an Aadi introduction, Spaces / Vehicles / Rakets, how discovery works, provider applications, common questions, and a navigation footer. Category buttons update the existing search and return focus to its input. Header anchors and a keyboard skip link let visitors reach the informational sections directly. Quicksand and the Flutter teal/orange colors continue throughout.
+
+Mouse-wheel zoom is disabled on the homepage map so scrolling can reach the content below; zoom buttons and touch gestures remain available. `/explore` retains the map-only view. Guest discovery and comparison remain public, listing details still require authentication, and provider calls to action use the existing application/workspace routes. The landing copy describes the current offering without advertising online booking or payments. The old repository `Welcome.vue` contains Laravel's default welcome screen, so the new sections use Aadi-specific copy rather than reusing that template.
+
 ## Tailwind CSS 4
 
 The Vue 3/Inertia app and Blade admin pages use Tailwind CSS 4 through `@tailwindcss/vite`. The Aadi teal/orange palette, Quicksand font stack, Blade brand aliases, source paths, and forms plugin are configured in `resources/css/app.css`. There is no longer a JavaScript Tailwind configuration or a PostCSS configuration; do not register `tailwindcss` directly as a PostCSS plugin.

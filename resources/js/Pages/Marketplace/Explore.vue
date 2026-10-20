@@ -3,14 +3,24 @@ import { computed, ref, watch, nextTick } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import Layout from '@/Layouts/MarketplaceLayout.vue';
 import DiscoveryMap from '@/Components/Marketplace/DiscoveryMap.vue';
+import HomeLanding from '@/Components/Marketplace/HomeLanding.vue';
 import { distanceKm, formatPrice, compareKey } from '@/Components/Marketplace/comparison.mjs';
 const props=defineProps({results:Object,filters:Object,types:Object});
 const form=ref({service:props.filters.service||'spaces',q:props.filters.q||'',type:props.filters.type||'',minPrice:props.filters.minPrice??'',maxPrice:props.filters.maxPrice??'',radiusKm:props.filters.radiusKm||10,lat:props.filters.lat??'',lng:props.filters.lng??''});
 const page = usePage();
+const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
+function exploreCategory(value) {
+  form.value.service = value;
+  form.value.type = '';
+  search(1, () => {
+    document.getElementById('explore-map')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    document.getElementById('explorer-query')?.focus({ preventScroll: true });
+  });
+}
 const selected=ref(null), loading=ref(false), locationError=ref(''), locating=ref(false), filtersOpen=ref(false), cardsOpen=ref(true), comparisons=ref([]), compareDialog=ref(null), compareError=ref('');
 const center=computed(()=>form.value.lat!==''&&form.value.lng!==''?[Number(form.value.lat),Number(form.value.lng)]:props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null)?[props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lat,props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lng]:[12.0,124.75]);
 const headings={spaces:['A place to call yours.','Rooms, homes, and spaces around you.'],haul:['Your next ride is nearby.','Find the right vehicle for wherever life takes you.'],raketeer:['Good help, close to home.','Find local skills and services for your next project.']};
-function search(page=1){loading.value=true;const query=Object.fromEntries(Object.entries({...form.value,page}).filter(([,v])=>v!==''&&v!==null));router.get('/',query,{preserveScroll:true,preserveState:true,onFinish:()=>loading.value=false,onError:()=>locationError.value='Search could not be completed. Check your filters and try again.'});}
+function search(page=1,afterSearch=null){loading.value=true;const query=Object.fromEntries(Object.entries({...form.value,page}).filter(([,v])=>v!==''&&v!==null));router.get('/',query,{preserveScroll:true,preserveState:true,onSuccess:()=>afterSearch?.(),onFinish:()=>loading.value=false,onError:()=>locationError.value='Search could not be completed. Check your filters and try again.'});}
 function selectListing(id){selected.value=id;cardsOpen.value=true;nextTick(()=>document.getElementById('map-card-'+id)?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}));}
 function toggleCompare(item){const key=compareKey(item);compareError.value='';if(comparisons.value.some(l=>compareKey(l)===key)) comparisons.value=comparisons.value.filter(l=>compareKey(l)!==key);else if(comparisons.value.length<3) comparisons.value.push(item);else compareError.value='Choose up to three listings. Remove one to add another.';}
 const distanceLabel=item=>{const km=distanceKm(props.filters.lat,props.filters.lng,item.location.lat,item.location.lng);return km===null?'':`${km.toFixed(1)} km away`;};
@@ -22,13 +32,14 @@ function area(coords){[form.value.lat,form.value.lng]=coords;search();}
 function locate(){locationError.value='';if(!navigator.geolocation){locationError.value='Location is unavailable. Search a city or move the map.';return;}locating.value=true;navigator.geolocation.getCurrentPosition(p=>{locating.value=false;area([p.coords.latitude,p.coords.longitude]);},()=>{locating.value=false;locationError.value='Location access failed. Search a city or move the map instead.';},{timeout:10000});}
 function clear(){form.value={service:form.value.service,q:'',type:'',minPrice:'',maxPrice:'',radiusKm:10,lat:'',lng:''};search();}
 </script>
-<template><Layout><Head title="Find properties, vehicles & rakets nearby"/>
-<main class="map-explorer" aria-label="Explore nearby listings">
-<DiscoveryMap :listings="results.data" :center="center" :selected="selected" :fit-listings="form.lat===''" immersive :preview="false" @select="selectListing" @search="area" />
+<template><Layout><Head title="Find properties, vehicles & rakets nearby"><meta name="description" content="Find rental spaces, vehicles, and local services near you with Aadi. Browse the map, compare listed rates, and apply to offer your own space, vehicle, or skills." /></Head>
+<main id="main-content">
+<section id="explore-map" class="map-explorer" aria-label="Explore nearby listings" tabindex="-1">
+<DiscoveryMap :scroll-wheel-zoom="!isHome" :listings="results.data" :center="center" :selected="selected" :fit-listings="form.lat===''" immersive :preview="false" @select="selectListing" @search="area" />
 <section class="explorer-controls" aria-label="Search and filter">
 <div class="explorer-heading"><h1>Find your nearby.</h1><span>{{ headings[form.service][1] }}</span></div>
 <div class="service-tabs" aria-label="Service"><button v-for="(label,key) in {spaces:'Spaces',haul:'Vehicles',raketeer:'Rakets'}" :key="key" :aria-pressed="form.service===key" :class="{active:form.service===key}" :disabled="loading" @click="service(key)">{{ label }}</button></div>
-<form @submit.prevent="search()"><div class="explorer-search"><label><span class="sr-only">Search title or city</span><input v-model="form.q" placeholder="Where are you looking?" maxlength="150" /></label><button class="button primary" :disabled="loading">{{ loading?'Searching…':'Search' }}</button><button type="button" class="button" :aria-expanded="filtersOpen" aria-controls="explorer-filters" @click="filtersOpen=!filtersOpen">Filters</button></div>
+<form @submit.prevent="search()"><div class="explorer-search"><label><span class="sr-only">Search title or city</span><input id="explorer-query" v-model="form.q" placeholder="Where are you looking?" maxlength="150" /></label><button class="button primary" :disabled="loading">{{ loading?'Searching…':'Search' }}</button><button type="button" class="button" :aria-expanded="filtersOpen" aria-controls="explorer-filters" @click="filtersOpen=!filtersOpen">Filters</button></div>
 <div v-show="filtersOpen" id="explorer-filters" class="explorer-filters"><label>Type<select v-model="form.type"><option value="">All types</option><option v-for="type in types[form.service]" :key="type" :value="type">{{ type.replace(/([A-Z])/g,' $1') }}</option></select></label><label>Minimum rate ₱<input v-model="form.minPrice" type="number" min="0" placeholder="Any" /></label><label>Maximum rate ₱<input v-model="form.maxPrice" type="number" :min="form.minPrice||0" placeholder="Any" /></label><label>Search radius<select v-model="form.radiusKm"><option v-for="km in [2,5,10,25,50,100,200]" :key="km" :value="km">{{ km }} km</option></select></label><p>Radius applies around your location or the map search center. Rates are per month, day, hour, or job.</p><button class="button primary" :disabled="loading">Apply filters</button><button type="button" class="text-button" @click="clear">Reset</button></div></form>
 <div class="explorer-tools"><button class="text-button" :disabled="locating||loading" @click="locate">{{ locating?'Finding you…':'Use my location' }}</button><button class="text-button" @click="clear">Clear search</button><button class="text-button" :aria-expanded="cardsOpen" aria-controls="map-results" @click="cardsOpen=!cardsOpen">{{ cardsOpen?'Hide listings':'Show listings' }}</button></div>
 <p v-if="locationError" role="alert" class="explorer-message">{{ locationError }}</p>
@@ -43,4 +54,16 @@ function clear(){form.value={service:form.value.service,q:'',type:'',minPrice:''
 </section>
 <div v-if="comparisons.length" class="map-compare-bar"><span>{{ comparisons.length }}/3 selected</span><button class="button primary" :disabled="comparisons.length<2" @click="compareDialog.showModal()">Compare prices</button><button class="text-button" @click="comparisons=[];compareError=''">Clear</button><span v-if="compareError" role="status">{{ compareError }}</span></div>
 <dialog ref="compareDialog" class="price-comparison" aria-labelledby="comparison-title"><div class="comparison-header"><h2 id="comparison-title">Compare your nearby finds</h2><button class="button" @click="compareDialog.close()">Close</button></div><p>Check the billing unit and scope. A monthly rental, daily vehicle rate, and hourly service are different costs. Distances are straight-line estimates.</p><div class="comparison-table" tabindex="0" role="region" aria-label="Scrollable listing comparison"><table><thead><tr><th scope="col">Listing</th><th v-for="item in comparisons" :key="compareKey(item)" scope="col">{{ item.title }}</th></tr></thead><tbody><tr><th scope="row">Rate</th><td v-for="item in comparisons" :key="compareKey(item)"><strong>{{ formatPrice(item.price) }}</strong> / {{ item.priceUnit }}</td></tr><tr><th scope="row">Type</th><td v-for="item in comparisons" :key="compareKey(item)">{{ item.type }}</td></tr><tr><th scope="row">Location</th><td v-for="item in comparisons" :key="compareKey(item)">{{ item.location.city||item.location.address||'Not provided' }}</td></tr><tr><th scope="row">Distance</th><td v-for="item in comparisons" :key="compareKey(item)">{{ distanceLabel(item)||'Set a search location' }}</td></tr><tr><th scope="row">Details</th><td v-for="item in comparisons" :key="compareKey(item)"><Link :href="`/offers/${item.service}/${item.id}`">View listing →</Link></td></tr><tr><th scope="row">Selection</th><td v-for="item in comparisons" :key="compareKey(item)"><button class="text-button" @click="toggleCompare(item)">Remove</button></td></tr></tbody></table></div><p v-if="comparisons.length<2">Select at least two listings to compare.</p></dialog>
-</main></Layout></template>
+</section>
+<template v-if="isHome">
+  <div class="explorer-scroll-cue"><a href="#about-aadi">There’s more to your nearby <span aria-hidden="true">↓</span></a><p>Scroll to discover Aadi. Use the map’s + / − buttons to zoom.</p></div>
+  <HomeLanding :loading="loading" @explore="exploreCategory" />
+</template>
+</main>
+<template v-if="isHome" #footer>
+  <footer class="landing-footer">
+    <div><Link href="/" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" width="92" height="42" loading="lazy" /></Link><p>Good things. Nearby.</p></div>
+    <nav aria-label="Footer navigation"><a href="#explore-map">Explore the map</a><a href="#how-it-works">How it works</a><Link href="/become-provider">Become a provider</Link><Link v-if="!page.props.auth?.user" href="/register">Create an account</Link><Link v-else href="/profile">Your account</Link></nav>
+  </footer>
+</template>
+</Layout></template>

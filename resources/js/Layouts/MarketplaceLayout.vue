@@ -1,15 +1,20 @@
 <script setup>
+import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import '../../css/marketplace.css';
 import '../../css/map-explorer.css';
 const page = usePage();
+const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
 </script>
 <template>
   <div class="marketplace">
+    <a v-if="isHome" href="#about-aadi" class="market-skip-link">Skip map and learn about Aadi</a>
     <header class="market-header">
       <Link href="/" class="brand" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" /><span>Good things. Nearby.</span></Link>
       <nav aria-label="Main navigation">
-        <Link href="/" :class="{ current: page.url === '/' || page.url.startsWith('/explore') }">Explore</Link>
+        <Link href="/" :class="{ current: isHome || page.url.startsWith('/explore') }">Explore</Link>
+        <a v-if="isHome" href="#how-it-works" class="landing-nav-link">How it works</a>
+        <a v-if="isHome" href="#for-providers" class="landing-nav-link">For providers</a>
         <template v-if="page.props.auth?.user">
           <Link v-if="Object.values(page.props.auth.providerRoles || {}).includes('approved')" href="/my-listings">Provider workspace</Link><Link v-else href="/become-provider">Become a provider</Link>
           <Link v-if="page.props.auth.user.is_admin" href="/admin/dashboard">Admin dashboard</Link>
@@ -21,5 +26,6 @@ const page = usePage();
     </header>
     <div v-if="page.props.flash?.success" class="notice success" role="status">{{ page.props.flash.success }}</div>
     <slot />
+    <slot name="footer" />
   </div>
 </template>
