@@ -99,3 +99,19 @@ npm run dev
 Use `npm run dev` for local development alongside the Laravel server. Production deployments should run `npm run build` and serve the generated `public/build` assets. Blade admin layouts now load that compiled stylesheet through `@vite`, so they also require built assets or a running Vite development server.
 
 Existing utility names have been migrated for Tailwind 4, with compatibility defaults for borders, placeholders, focus rings, and button cursors. Tailwind 4 targets Safari 16.4+, Chrome 111+, and Firefox 128+; see the [official upgrade guide](https://tailwindcss.com/docs/upgrade-guide). Vue 3 supports either Tailwind major version; this project now standardizes on version 4.
+
+### Troubleshooting local builds
+
+Both npm scripts explicitly load `vite.config.js`, which registers the Vue SFC and Tailwind Vite plugins. Inline `css.postcss` configuration prevents Vite from loading leftover PostCSS configuration files in this checkout or its parent directories. Add any future PostCSS plugins in that inline configuration.
+
+An `Unexpected JSX expression` error at the opening `<script setup>` of a `.vue` file means the raw Vue component reached the JavaScript parser without the required transformation. Enabling JSX is not a fix for a Vue single-file component. Confirm your checkout includes the current Vite config and package scripts, then stop the development server and run these commands from the directory containing `artisan` and `package.json`:
+
+```powershell
+git status --short
+git branch --show-current
+npm ci
+npm run build
+npm run dev -- --force
+```
+
+The build banner should show `vite build --config vite.config.js`. If it does not, you are running older package scripts or a different project directory. If the failure persists, capture `node --version`, `npm ls vite @vitejs/plugin-vue tailwindcss @tailwindcss/vite`, and `npm run build -- --debug`. The frontend CI checks run on Linux and Windows, including a regression fixture that compiles a TypeScript Vue component, scoped styles, and Aadi utilities with a stale PostCSS config present.
