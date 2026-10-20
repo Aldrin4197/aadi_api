@@ -24,12 +24,12 @@ const props = withDefaults(defineProps<Props>(), {
 
 const variantClasses = computed(() => {
     const variants = {
-        primary: 'bg-aadi-teal hover:bg-aadi-teal-500 focus:ring-aadi-teal text-white shadow-sm',
-        orange: 'bg-aadi-orange hover:bg-aadi-orange-500 focus:ring-aadi-orange text-white shadow-sm',
-        secondary: 'bg-slate-600 hover:bg-slate-700 focus:ring-slate-500 text-white shadow-sm',
-        success: 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500 text-white shadow-sm',
-        danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white shadow-sm',
-        warning: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500 text-white shadow-sm',
+        primary: 'bg-aadi-teal hover:bg-aadi-teal-500 focus:ring-aadi-teal text-white shadow-xs',
+        orange: 'bg-aadi-orange hover:bg-aadi-orange-500 focus:ring-aadi-orange text-white shadow-xs',
+        secondary: 'bg-slate-600 hover:bg-slate-700 focus:ring-slate-500 text-white shadow-xs',
+        success: 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500 text-white shadow-xs',
+        danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white shadow-xs',
+        warning: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500 text-white shadow-xs',
         outline: 'border-2 border-aadi-teal text-aadi-teal hover:bg-aadi-teal-50 focus:ring-aadi-teal',
         ghost: 'text-aadi-teal hover:bg-aadi-teal-50 focus:ring-aadi-teal',
     };
@@ -50,7 +50,7 @@ const sizeClasses = computed(() => {
 const buttonClasses = computed(() => {
     return [
         'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'focus:outline-hidden focus:ring-2 focus:ring-offset-2',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         variantClasses.value,
         sizeClasses.value,

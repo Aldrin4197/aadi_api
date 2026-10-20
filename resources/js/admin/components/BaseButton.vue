@@ -19,9 +19,9 @@ defineProps({
 });
 
 const variantClasses = {
-  primary: 'bg-aadi-teal hover:bg-aadi-teal-600 text-white shadow-sm',
+  primary: 'bg-aadi-teal hover:bg-aadi-teal-600 text-white shadow-xs',
   secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300',
-  danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm',
+  danger: 'bg-red-600 hover:bg-red-700 text-white shadow-xs',
   ghost: 'hover:bg-slate-100 text-slate-700',
 };
 
@@ -36,7 +36,7 @@ const sizeClasses = {
   <button
     :class="[
       'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors',
-      'focus:outline-none focus:ring-2 focus:ring-aadi-teal focus:ring-offset-2',
+      'focus:outline-hidden focus:ring-2 focus:ring-aadi-teal focus:ring-offset-2',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       variantClasses[variant],
       sizeClasses[size],

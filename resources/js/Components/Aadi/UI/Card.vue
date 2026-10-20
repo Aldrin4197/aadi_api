@@ -15,7 +15,7 @@ withDefaults(defineProps<Props>(), {
     <div
         :class="[
             'bg-white rounded-lg',
-            border ? 'border border-slate-200 shadow-sm' : '',
+            border ? 'border border-slate-200 shadow-xs' : '',
         ]"
     >
         <!-- Header -->

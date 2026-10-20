@@ -83,3 +83,19 @@ The customer entry point is `/`: visitors can search properties, vehicle rentals
 The customer shell uses Flutter's bundled Quicksand font, teal #1FA6A0, dark teal #0B3A38, orange #F59E42, neutral surfaces, and rounded controls. The homepage map fills the width with search/filter controls and a horizontally scrollable listing rail over it. Markers include billing units. Selecting a marker previews/highlights its card; View/title links open the existing protected detail route.
 
 Nearby search uses the existing server radius filter and distance ordering. The map and rail display the same current page (up to 30 records), with an explicit count and pagination; listings without coordinates remain in the rail. Search near map center applies the chosen radius, not viewport bounds. Comparison retains up to three listing summaries during Inertia searches and displays original rates/units without inventing normalized prices. Distances are straight-line estimates from the applied search center. Admin routes and mobile API contracts are unchanged.
+
+## Tailwind CSS 4
+
+The Vue 3/Inertia app and Blade admin pages use Tailwind CSS 4 through `@tailwindcss/vite`. The Aadi teal/orange palette, Quicksand font stack, Blade brand aliases, source paths, and forms plugin are configured in `resources/css/app.css`. There is no longer a JavaScript Tailwind configuration or a PostCSS configuration; do not register `tailwindcss` directly as a PostCSS plugin.
+
+After pulling this upgrade, stop any running Vite process and use Node 24 to install the committed dependency versions:
+
+```sh
+npm ci
+npm run build
+npm run dev
+```
+
+Use `npm run dev` for local development alongside the Laravel server. Production deployments should run `npm run build` and serve the generated `public/build` assets. Blade admin layouts now load that compiled stylesheet through `@vite`, so they also require built assets or a running Vite development server.
+
+Existing utility names have been migrated for Tailwind 4, with compatibility defaults for borders, placeholders, focus rings, and button cursors. Tailwind 4 targets Safari 16.4+, Chrome 111+, and Firefox 128+; see the [official upgrade guide](https://tailwindcss.com/docs/upgrade-guide). Vue 3 supports either Tailwind major version; this project now standardizes on version 4.

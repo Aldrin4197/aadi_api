@@ -49,7 +49,7 @@ const hasError = computed(() => !!props.error);
             :class="[
                 'block w-full rounded-lg border px-4 py-2.5 text-sm transition-colors',
                 'placeholder:text-slate-400',
-                'focus:outline-none focus:ring-2 focus:ring-offset-2',
+                'focus:outline-hidden focus:ring-2 focus:ring-offset-2',
                 hasError
                     ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                     : 'border-slate-300 focus:border-aadi-teal focus:ring-aadi-teal',

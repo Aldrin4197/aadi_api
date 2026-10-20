@@ -62,7 +62,7 @@ npm run dev
   - Responsive grid layouts
 
 ### ✅ **Configuration**
-- ✅ `tailwind.config.js` - Aadi brand colors added:
+- ✅ `resources/css/app.css` - Tailwind 4 `@theme` with Aadi brand colors:
   - `aadi-teal` (50-900 shades) with #1FA6A0 primary
   - `aadi-orange` (50-900 shades) with #F59E42 primary
   - Quicksand font configured

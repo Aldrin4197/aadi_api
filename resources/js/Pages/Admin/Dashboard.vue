@@ -99,7 +99,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString();
     <!-- Recent Activity Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- Recent Listings -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-slate-900">Recent Listings</h2>
           <Link :href="route('admin.listings.index')" class="text-sm text-aadi-teal hover:text-aadi-teal-600">
@@ -124,7 +124,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString();
       </div>
 
       <!-- Recent Users -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-slate-900">Recent Users</h2>
           <Link :href="route('admin.users.index')" class="text-sm text-aadi-teal hover:text-aadi-teal-600">
@@ -151,7 +151,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString();
     </div>
 
     <!-- Quick Actions -->
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+    <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
       <h2 class="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Link

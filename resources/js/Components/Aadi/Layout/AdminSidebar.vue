@@ -39,7 +39,7 @@ const isSidebarOpen = ref(true);
         <!-- Sidebar -->
         <aside
             :class="[
-                'flex flex-col bg-gradient-to-b from-aadi-teal-800 to-aadi-teal-900 text-aadi-teal-100 transition-all duration-300',
+                'flex flex-col bg-linear-to-b from-aadi-teal-800 to-aadi-teal-900 text-aadi-teal-100 transition-all duration-300',
                 isSidebarOpen ? 'w-64' : 'w-20',
             ]"
         >
@@ -48,7 +48,7 @@ const isSidebarOpen = ref(true);
                 <img 
                     src="/images/logos/Aadi_icon.png" 
                     alt="Aadi" 
-                    class="h-10 w-10 object-contain flex-shrink-0"
+                    class="h-10 w-10 object-contain shrink-0"
                 />
                 <Transition name="fade">
                     <div v-if="isSidebarOpen">
@@ -82,7 +82,7 @@ const isSidebarOpen = ref(true);
                         ]"
                     >
                         <!-- Icon placeholder -->
-                        <div class="h-5 w-5 flex-shrink-0">
+                        <div class="h-5 w-5 shrink-0">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>

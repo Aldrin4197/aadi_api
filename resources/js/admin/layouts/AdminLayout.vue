@@ -47,13 +47,13 @@ const navSections = [
 <template>
     <div class="flex h-screen bg-slate-100">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gradient-to-b from-aadi-teal-800 to-aadi-teal-900 text-aadi-teal-100 flex flex-col">
+        <aside class="w-64 bg-linear-to-b from-aadi-teal-800 to-aadi-teal-900 text-aadi-teal-100 flex flex-col">
             <!-- Logo -->
             <div class="flex items-center gap-3 px-6 py-5 border-b border-aadi-teal-700">
                 <img 
                     src="/images/logos/Aadi_icon.png" 
                     alt="Aadi" 
-                    class="h-10 w-10 object-contain flex-shrink-0"
+                    class="h-10 w-10 object-contain shrink-0"
                 />
                 <div>
                     <h1 class="text-xl font-bold text-white">Aadi</h1>
@@ -79,7 +79,7 @@ const navSections = [
                             ? 'bg-aadi-teal text-white' 
                             : 'text-aadi-teal-100 hover:bg-aadi-teal-700 hover:text-white'"
                     >
-                        <svg class="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                         <span>{{ item.name }}</span>
@@ -90,7 +90,7 @@ const navSections = [
             <!-- User Profile Footer -->
             <div class="border-t border-aadi-teal-700 px-3 py-4">
                 <div v-if="authStore.user" class="flex items-center gap-3 px-3 py-2">
-                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-aadi-teal to-aadi-teal-800 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                    <div class="h-8 w-8 rounded-full bg-linear-to-br from-aadi-teal to-aadi-teal-800 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                         {{ authStore.user.name?.charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">

@@ -34,7 +34,7 @@ const formatDate = (date) => {
       </div>
     </template>
 
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-xs border border-slate-200 overflow-hidden">
       <!-- Table -->
       <div class="overflow-x-auto">
         <table class="w-full">

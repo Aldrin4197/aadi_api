@@ -235,31 +235,24 @@ resources/views/
 1. **Use the components** in your existing admin pages
 2. **Reference COMPONENTS.md** for usage examples
 3. **Check examples/users-index.blade.php** for a complete implementation
-4. **Customize** the components to match your brand (update colors in layout)
+4. **Customize** the components to match your brand (update colors in `resources/css/app.css`)
 5. **Extend** the library with new components as needed
 
 ---
 
 ## 🎨 Customization
 
-To customize the brand colors, edit `resources/views/admin/layouts/app.blade.php`:
+To customize the brand colors, edit `resources/css/app.css` and rebuild with `npm run build`:
 
-```javascript
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                brand: {
-                    50:  '#f0f7ff',  // Lightest
-                    100: '#e0effe',
-                    500: '#3b82f6',  // Main brand color
-                    600: '#2563eb',  // Darker
-                    700: '#1d4ed8',
-                    900: '#1e3a8a',  // Darkest
-                }
-            }
-        }
-    }
+```css
+@theme {
+    --color-brand: #1FA6A0;
+    --color-brand-dark: #0B3A38;
+    --color-brand-light: #C4ECEA;
+    --color-brand-lighter: #E3F6F4;
+    --color-accent: #F59E42;
+    --color-accent-deep: #D9822B;
+    --color-accent-light: #FCE6CE;
 }
 ```
 

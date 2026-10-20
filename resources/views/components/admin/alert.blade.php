@@ -34,7 +34,7 @@ $config = $types[$type];
 @endphp
 
 <div {{ $attributes->merge(['class' => 'flex items-start gap-3 p-4 rounded-lg border ' . $config['container']]) }}>
-    <x-icon :name="$config['icon']" class="w-5 h-5 flex-shrink-0 {{ $config['iconColor'] }}" />
+    <x-icon :name="$config['icon']" class="w-5 h-5 shrink-0 {{ $config['iconColor'] }}" />
     <div class="flex-1 {{ $config['text'] }}">
         {{ $slot }}
     </div>

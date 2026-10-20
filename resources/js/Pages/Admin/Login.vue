@@ -21,7 +21,7 @@ const submit = () => {
 <template>
   <Head title="Admin Login" />
   
-  <div class="min-h-screen bg-gradient-to-br from-aadi-teal-50 via-white to-aadi-orange-50 flex items-center justify-center p-6">
+  <div class="min-h-screen bg-linear-to-br from-aadi-teal-50 via-white to-aadi-orange-50 flex items-center justify-center p-6">
     <div class="w-full max-w-md">
       <!-- Logo -->
       <div class="text-center mb-8">

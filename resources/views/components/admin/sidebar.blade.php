@@ -6,10 +6,10 @@
 $currentUser = $user ?? auth()->user() ?? (object)['name' => 'Demo Admin', 'email' => 'demo@aadi.test'];
 @endphp
 
-<aside class="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-[#0B3A38] to-[#062827] text-white shadow-xl z-40">
+<aside class="fixed left-0 top-0 h-full w-64 bg-linear-to-b from-[#0B3A38] to-[#062827] text-white shadow-xl z-40">
     {{-- Logo --}}
     <div class="flex items-center gap-3 px-6 py-5 border-b border-[#1FA6A0]/20">
-        <div class="w-10 h-10 bg-gradient-to-br from-[#1FA6A0] to-[#F59E42] rounded-lg flex items-center justify-center font-bold text-xl">
+        <div class="w-10 h-10 bg-linear-to-br from-[#1FA6A0] to-[#F59E42] rounded-lg flex items-center justify-center font-bold text-xl">
             A
         </div>
         <div>

@@ -31,7 +31,7 @@ const emit = defineEmits<{
             <!-- Sort Icon -->
             <svg
                 v-if="sortable"
-                class="h-4 w-4 flex-shrink-0"
+                class="h-4 w-4 shrink-0"
                 :class="sorted ? 'text-aadi-teal' : 'text-slate-400'"
                 fill="none"
                 stroke="currentColor"

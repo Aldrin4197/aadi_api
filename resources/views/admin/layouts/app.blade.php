@@ -6,37 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') - Aadi</title>
     
-    {{-- Tailwind CSS CDN --}}
-    <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Shared Tailwind 4 theme, built by Vite --}}
+    @vite('resources/css/app.css')
     
     {{-- Alpine.js for interactive components --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
-    {{-- Custom Aadi Brand Colors --}}
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            DEFAULT: '#1FA6A0',
-                            dark: '#0B3A38',
-                            light: '#C4ECEA',
-                            lighter: '#E3F6F4',
-                        },
-                        accent: {
-                            DEFAULT: '#F59E42',
-                            deep: '#D9822B',
-                            light: '#FCE6CE',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Quicksand', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
     
     {{-- Google Fonts - Quicksand --}}
     <link rel="preconnect" href="https://fonts.bunny.net">

@@ -20,7 +20,7 @@ defineProps({
       <h1 class="text-2xl font-bold text-slate-900">Support Tickets</h1>
     </template>
 
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+    <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-8">
       <EmptyState
         title="Ticket Management Coming Soon"
         description="View and respond to support tickets, track resolution status, and manage customer inquiries."

@@ -173,27 +173,27 @@ const barChartOptions = {
 
     <!-- Key Metrics Summary -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-4">
         <p class="text-xs font-medium text-slate-600 uppercase">Total Listings</p>
         <p class="text-2xl font-bold text-aadi-teal mt-1">{{ overview.totalListings }}</p>
       </div>
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-4">
         <p class="text-xs font-medium text-slate-600 uppercase">Active</p>
         <p class="text-2xl font-bold text-green-600 mt-1">{{ overview.activeListings }}</p>
       </div>
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-4">
         <p class="text-xs font-medium text-slate-600 uppercase">Total Users</p>
         <p class="text-2xl font-bold text-blue-600 mt-1">{{ overview.totalUsers }}</p>
       </div>
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-4">
         <p class="text-xs font-medium text-slate-600 uppercase">Viewings</p>
         <p class="text-2xl font-bold text-orange-600 mt-1">{{ overview.totalViewings }}</p>
       </div>
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-4">
         <p class="text-xs font-medium text-slate-600 uppercase">Page Views</p>
         <p class="text-2xl font-bold text-purple-600 mt-1">{{ overview.totalViews }}</p>
       </div>
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-4">
         <p class="text-xs font-medium text-slate-600 uppercase">Favorites</p>
         <p class="text-2xl font-bold text-pink-600 mt-1">{{ overview.totalFavorites }}</p>
       </div>
@@ -202,7 +202,7 @@ const barChartOptions = {
     <!-- Growth Trends -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- Listing Views Trend -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
         <div class="mb-4">
           <h2 class="text-lg font-semibold text-slate-900">Listing Views Trend</h2>
           <p class="text-sm text-slate-600">Daily views over the last 30 days</p>
@@ -216,7 +216,7 @@ const barChartOptions = {
       </div>
 
       <!-- User Growth Trend -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
         <div class="mb-4">
           <h2 class="text-lg font-semibold text-slate-900">User Growth</h2>
           <p class="text-sm text-slate-600">New user registrations over the last 30 days</p>
@@ -233,7 +233,7 @@ const barChartOptions = {
     <!-- Listings Distribution -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <!-- Listings by Type -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
         <div class="mb-4">
           <h2 class="text-lg font-semibold text-slate-900">Listings by Property Type</h2>
           <p class="text-sm text-slate-600">Distribution across different categories</p>
@@ -244,7 +244,7 @@ const barChartOptions = {
       </div>
 
       <!-- Top Performing Listings -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
         <div class="mb-4">
           <h2 class="text-lg font-semibold text-slate-900">Top 10 Most Viewed Listings</h2>
           <p class="text-sm text-slate-600">Properties with the most engagement</p>
@@ -256,7 +256,7 @@ const barChartOptions = {
     </div>
 
     <!-- Insights Summary -->
-    <div class="bg-gradient-to-r from-aadi-teal to-aadi-teal-600 rounded-lg shadow-sm p-6 text-white">
+    <div class="bg-linear-to-r from-aadi-teal to-aadi-teal-600 rounded-lg shadow-xs p-6 text-white">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <h3 class="text-lg font-semibold mb-2">Growth Rate</h3>

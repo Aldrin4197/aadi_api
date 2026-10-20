@@ -33,7 +33,7 @@ $sizeClasses = [
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @click="open = false"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs"
     ></div>
     
     {{-- Modal --}}

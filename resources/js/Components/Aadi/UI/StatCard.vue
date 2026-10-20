@@ -38,7 +38,7 @@ const formattedValue = computed(() => {
 </script>
 
 <template>
-    <div class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div class="bg-white border border-slate-200 rounded-lg p-6 shadow-xs hover:shadow-md transition-shadow">
         <div class="flex items-start justify-between">
             <div class="flex-1">
                 <p class="text-sm font-medium text-slate-600">{{ label }}</p>
