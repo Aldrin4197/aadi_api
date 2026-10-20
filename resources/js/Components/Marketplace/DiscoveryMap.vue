@@ -2,7 +2,7 @@
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-const props = defineProps({ listings: { type: Array, default: () => [] }, center: { type: Array, default: () => [12.0, 124.75] }, selected: String, pick: Boolean, searchable: { type: Boolean, default: true }, fitListings: Boolean, immersive: Boolean, preview: { type: Boolean, default: true } });
+const props = defineProps({ listings: { type: Array, default: () => [] }, center: { type: Array, default: () => [12.0, 124.75] }, selected: String, pick: Boolean, searchable: { type: Boolean, default: true }, fitListings: Boolean, immersive: Boolean, preview: { type: Boolean, default: true }, scrollWheelZoom: { type: Boolean, default: true } });
 const selectedListing = computed(() => props.listings.find(item => item.id === props.selected));
 const emit = defineEmits(['select','search','pick']);
 const el = ref(null); const tileError = ref(false); let map, markers, resize;
@@ -18,7 +18,7 @@ function draw() {
   });
 }
 onMounted(() => {
-  map=L.map(el.value,{scrollWheelZoom:true,zoomControl:false}).setView(props.center,12);
+  map=L.map(el.value,{scrollWheelZoom:props.scrollWheelZoom,zoomControl:false}).setView(props.center,12);
   L.control.zoom({position:props.immersive?'topright':'topleft'}).addTo(map);
   L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:19, attribution: import.meta.env.VITE_MAP_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -27,6 +27,7 @@ onMounted(() => {
   map.on('click', e=>{ if(props.pick) emit('pick',[e.latlng.lat,e.latlng.lng]); });
   resize = new ResizeObserver(()=>map.invalidateSize()); resize.observe(el.value);
 });
+watch(()=>props.scrollWheelZoom,enabled=>{if(map) { if(enabled) map.scrollWheelZoom.enable(); else map.scrollWheelZoom.disable(); }});
 watch(()=>[props.listings,props.selected],draw,{deep:true});
 function fit() {
   if (!map || !props.fitListings) return;
