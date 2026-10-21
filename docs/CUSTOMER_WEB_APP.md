@@ -127,3 +127,20 @@ The build banner should show `vite build --config vite.config.js`. If it does no
 The homepage restores the original Aadi rental explorer's “Make room for possibility” hero and original SVG artwork (retained prototype commit a1c1127), above the full-width discovery map. Category sections, provider information and FAQs explain the current offering. Missing or failed listing photos use labelled illustrations; actual photos are preserved. No demo listings are inserted. Quicksand and the Aadi teal/orange palette remain unchanged.
 
 The map uses compact rounded controls, teal price markers, a search-center dot and a reset-view control. Set `VITE_MAPBOX_TOKEN` to a public, read-only, URL-restricted Mapbox token and rebuild to use the same `mapbox/light-v11` raster style as Flutter (512px tiles with zoom offset -1). Without a token, the existing OpenStreetMap tiles remain available with a muted presentation. `VITE_MAP_TILE_URL` overrides this provider; set its matching `VITE_MAP_ATTRIBUTION`. These Vite values ship to browsers; never use secret tokens. This is a Vue adaptation of the minimal mapcn appearance, not the React mapcn package.
+
+## Sample marketplace listings
+
+To populate a development or demo database with the current marketplace tables, run:
+
+```sh
+php artisan migrate
+php artisan db:seed --class=MarketplaceDemoSeeder
+```
+
+This explicit seeder adds five spaces, five vehicles and five rakets around Catbalogan, Samar, with different prices and types for filters and comparison. Titles and descriptions identify fictional samples. Empty photo arrays intentionally display the category illustrations added with the restored homepage, labelled as illustrations. No external image downloads are needed.
+
+It creates one non-admin sample provider with all three roles approved and a random, undisclosed password; it does not create a usable shared login. Sign in with your own account to view details. Stable ULIDs make repeated runs skip existing records, preserving edits, passwords and soft-deleted vehicles/services. No existing tables or records are cleared. A hard-deleted sample can be recreated by running the seeder again. The complete operation runs in a transaction.
+
+Use this named seeder rather than the older `AadiSeeder`, which uses the legacy mixed-category table. `DatabaseSeeder` is unchanged: samples are opt-in and are not installed automatically by ordinary migrations. The samples are publicly visible once seeded, so use a development/demo database when testing.
+
+Regression coverage: `php artisan test --filter=MarketplaceDemoSeederTest` checks public API visibility, billing units, stable identifiers and repeat-run behavior.
