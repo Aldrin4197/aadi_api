@@ -144,3 +144,11 @@ It creates one non-admin sample provider with all three roles approved and a ran
 Use this named seeder rather than the older `AadiSeeder`, which uses the legacy mixed-category table. `DatabaseSeeder` is unchanged: samples are opt-in and are not installed automatically by ordinary migrations. The samples are publicly visible once seeded, so use a development/demo database when testing.
 
 Regression coverage: `php artisan test --filter=MarketplaceDemoSeederTest` checks public API visibility, billing units, stable identifiers and repeat-run behavior.
+
+## Map comparison and location selection
+
+The map now follows the reference explorer's broad search panel, bottom listing rail, thumbnail selection dock and photo-led “Find your best fit” comparison dialog. Select two or three listings, remove individual columns, or clear the dock. The table scrolls horizontally on small screens and retains the original billing unit for each rate. Features/skills, seating capacity or estimated service duration come from existing records; unspecified inclusions or exclusions are not fabricated. The additive `comparison` object is shared by the web and versioned offers API. Comparisons retain selection-time summaries while browsing and identify that limitation in the dialog.
+
+The city/area selector is populated from published, geolocated records across all three tables, independently of the active category or current result page. Space records prefer their city; vehicles and services use their saved location/service area. Matching labels are grouped and centered on their listings' average coordinates, not an official municipal center. Draft, unavailable, soft-deleted and missing-coordinate records do not contribute. These are available marketplace locations, not a worldwide geocoder or a fixed hard-coded city list.
+
+Choosing an area applies the radius filter and recenters the map. Current-location and map-center searches use the same coordinate filters; selecting “All cities & areas” clears only the geographic restriction. Keywords and price/type filters remain independent. The selected label, coordinates and radius are retained in the URL. `/explore` searches stay on `/explore`; homepage searches remain on `/`. No new map provider or API key is required.
