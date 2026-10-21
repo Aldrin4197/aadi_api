@@ -121,3 +121,9 @@ npm run dev -- --force
 ```
 
 The build banner should show `vite build --config vite.config.js`. If it does not, you are running older package scripts or a different project directory. If the failure persists, capture `node --version`, `npm ls vite @vitejs/plugin-vue tailwindcss @tailwindcss/vite`, and `npm run build -- --debug`. The frontend CI checks run on Linux and Windows, including a regression fixture that compiles a TypeScript Vue component, scoped styles, and Aadi utilities with a stale PostCSS config present.
+
+## Restored illustrated landing and minimal map
+
+The homepage restores the original Aadi rental explorer's “Make room for possibility” hero and original SVG artwork (retained prototype commit a1c1127), above the full-width discovery map. Category sections, provider information and FAQs explain the current offering. Missing or failed listing photos use labelled illustrations; actual photos are preserved. No demo listings are inserted. Quicksand and the Aadi teal/orange palette remain unchanged.
+
+The map uses compact rounded controls, teal price markers, a search-center dot and a reset-view control. Set `VITE_MAPBOX_TOKEN` to a public, read-only, URL-restricted Mapbox token and rebuild to use the same `mapbox/light-v11` raster style as Flutter (512px tiles with zoom offset -1). Without a token, the existing OpenStreetMap tiles remain available with a muted presentation. `VITE_MAP_TILE_URL` overrides this provider; set its matching `VITE_MAP_ATTRIBUTION`. These Vite values ship to browsers; never use secret tokens. This is a Vue adaptation of the minimal mapcn appearance, not the React mapcn package.

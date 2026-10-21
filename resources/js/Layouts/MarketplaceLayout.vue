@@ -8,11 +8,11 @@ const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
 </script>
 <template>
   <div class="marketplace">
-    <a v-if="isHome" href="#about-aadi" class="market-skip-link">Skip map and learn about Aadi</a>
+    <a v-if="isHome" href="#explore-map" class="market-skip-link">Skip to the listings map</a>
     <header class="market-header">
       <Link href="/" class="brand" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" /><span>Good things. Nearby.</span></Link>
       <nav aria-label="Main navigation">
-        <Link href="/" :class="{ current: isHome || page.url.startsWith('/explore') }">Explore</Link>
+        <a v-if="isHome" href="#explore-map" class="current">Explore</a><Link v-else href="/explore" :class="{ current: page.url.startsWith('/explore') }">Explore</Link>
         <a v-if="isHome" href="#how-it-works" class="landing-nav-link">How it works</a>
         <a v-if="isHome" href="#for-providers" class="landing-nav-link">For providers</a>
         <template v-if="page.props.auth?.user">
