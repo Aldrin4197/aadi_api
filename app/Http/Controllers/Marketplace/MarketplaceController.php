@@ -10,13 +10,13 @@ use Inertia\Inertia;
 class MarketplaceController extends Controller {
     public function __construct(private Marketplace $market) {}
     private function filters(Request $r): array {
-        return $r->validate(['service'=>['sometimes',Rule::in(array_keys(Marketplace::TYPES))], 'q'=>'nullable|string|max:150', 'type'=>'nullable|string|max:80',
+        return $r->validate(['service'=>['sometimes',Rule::in(array_keys(Marketplace::TYPES))], 'locationName'=>'nullable|string|max:255', 'q'=>'nullable|string|max:150', 'type'=>'nullable|string|max:80',
             'lat'=>'nullable|required_with:lng|numeric|between:-90,90','lng'=>'nullable|required_with:lat|numeric|between:-180,180',
             'radiusKm'=>'nullable|numeric|min:1|max:200','minPrice'=>'nullable|numeric|min:0','maxPrice'=>['nullable','numeric','min:0',...($r->filled('minPrice') ? ['gte:minPrice'] : [])],'page'=>'nullable|integer|min:1']);
     }
     public function index(Request $r) {
         $filters = $this->filters($r);
-        return Inertia::render('Marketplace/Explore', ['results'=>$this->market->search($filters),'filters'=>(object)$filters,'types'=>Marketplace::TYPES]);
+        return Inertia::render('Marketplace/Explore', ['results'=>$this->market->search($filters),'filters'=>(object)$filters,'types'=>Marketplace::TYPES,'locations'=>$this->market->locations()]);
     }
     public function search(Request $r) { return response()->json($this->market->search($this->filters($r))); }
     public function show(Request $r, string $service, string $id) {

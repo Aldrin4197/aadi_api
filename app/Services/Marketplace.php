@@ -45,8 +45,40 @@ class Marketplace
             'photos' => ($space ? $r->photos : $r->images) ?? [],
             'status' => $space ? $status : match($status) { 'available' => 'active', 'inactive' => 'draft', 'rented' => 'rented', default => 'reserved' },
             'details' => $vehicle ? ['brand' => $r->brand, 'model' => $r->model, 'year' => $r->year] : [],
+            'comparison' => [
+                'features' => array_values(array_filter(($space ? $r->amenities : ($vehicle ? $r->features : $r->skills_required)) ?? [], 'is_string')),
+                'scope' => $vehicle && $r->seating_capacity ? $r->seating_capacity.' seats' :
+                    (!$space && !$vehicle && $r->estimated_duration_minutes ? $r->estimated_duration_minutes.' minutes estimated' : null),
+            ],
             'createdAt' => $r->created_at->toIso8601String(),
         ];
+    }
+    /** Centers of published listings grouped by their saved city or area. */
+    public function locations(): array {
+        $areas = collect();
+        foreach (['spaces', 'haul', 'raketeer'] as $service) {
+            $space = $service === 'spaces';
+            $label = $space ? "COALESCE(NULLIF(TRIM(city), ''), TRIM(address))" : ($service === 'haul' ? 'TRIM(location)' : 'TRIM(service_area)');
+            $lat = $space ? 'lat' : 'latitude';
+            $lng = $space ? 'lng' : 'longitude';
+            $query = $this->model($service)::query()->where('status', $space ? 'active' : 'available')
+                ->whereNotNull($lat)->whereNotNull($lng);
+            if ($space) $query->where('category', 'space_rental');
+            $rows = $query->selectRaw("$label as name, AVG($lat) as lat, AVG($lng) as lng, COUNT(*) as total")
+                ->groupByRaw($label)->get();
+            foreach ($rows as $row) {
+                if (!filled($row->name)) continue;
+                $key = mb_strtolower(trim($row->name));
+                $previous = $areas->get($key);
+                $total = (int) $row->total + ($previous['count'] ?? 0);
+                $areas->put($key, [
+                    'name' => $previous['name'] ?? trim($row->name), 'count' => $total,
+                    'lat' => ((float) $row->lat * $row->total + ($previous['lat'] ?? 0) * ($previous['count'] ?? 0)) / $total,
+                    'lng' => ((float) $row->lng * $row->total + ($previous['lng'] ?? 0) * ($previous['count'] ?? 0)) / $total,
+                ]);
+            }
+        }
+        return $areas->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values()->all();
     }
     public function search(array $filters): array {
         $service = $filters['service'] ?? 'spaces';
