@@ -16,7 +16,7 @@ class MarketplaceController extends Controller {
     }
     public function index(Request $r) {
         $filters = $this->filters($r);
-        return Inertia::render('Marketplace/Explore', ['results'=>$this->market->search($filters),'filters'=>(object)$filters,'types'=>Marketplace::TYPES,'locations'=>$this->market->locations()]);
+        return Inertia::render('Marketplace/Explore', ['results'=>$this->market->search($filters),'filters'=>(object)$filters,'types'=>Marketplace::TYPES]);
     }
     public function search(Request $r) { return response()->json($this->market->search($this->filters($r))); }
     public function show(Request $r, string $service, string $id) {

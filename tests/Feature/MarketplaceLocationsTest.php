@@ -23,25 +23,6 @@ class MarketplaceLocationsTest extends TestCase
         ]);
     }
 
-    public function test_location_choices_use_published_records_across_all_categories(): void
-    {
-        $this->listing('spaces', 'Catbalogan', 11.77);
-        $this->listing('haul', 'Catbalogan', 11.78);
-        $this->listing('raketeer', 'Calbayog', 12.07);
-        $this->listing('spaces', 'Private draft area', 11.77, 'draft');
-        $deleted = $this->listing('haul', 'Deleted area');
-        $deleted->delete();
-        $missing = $this->listing('raketeer', 'No coordinates');
-        $missing->update(['latitude'=>null]);
-
-        $locations = app(Marketplace::class)->locations();
-        $this->assertSame(['Calbayog', 'Catbalogan'], array_column($locations, 'name'));
-        $this->assertSame(2, $locations[1]['count']);
-        $this->assertEqualsWithDelta(11.775, $locations[1]['lat'], 0.000001);
-        $this->withoutVite()->get('/explore')->assertInertia(fn (Assert $page) => $page
-            ->component('Marketplace/Explore')->has('locations', 2));
-    }
-
     public function test_selected_area_coordinates_filter_results_and_survive_the_page_response(): void
     {
         $nearby = $this->listing('spaces', 'Catbalogan');
