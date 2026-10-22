@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\VehicleListing;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /** Explicit opt-in fixtures for the current marketplace, not real offers. */
 class MarketplaceDemoSeeder extends Seeder
@@ -19,11 +18,13 @@ class MarketplaceDemoSeeder extends Seeder
             $owner = User::firstOrCreate(['id' => $this->id(0)], [
                 'name' => 'Aadi Sample Provider',
                 'email' => 'marketplace-demo@aadi.example',
-                'password' => Str::random(64),
+                'password' => 'password',
                 'landlord_status' => 'approved',
                 'vehicle_owner_status' => 'approved',
                 'service_provider_status' => 'approved',
             ]);
+
+            $owner->forceFill(['password'=>'password', 'email_verified_at'=>now()])->save();
 
             $spaces = [
                 ['Studio near the city center', 'apartment', 6500, 11.7753, 124.8861, ['Kitchen', 'Water connection']],
