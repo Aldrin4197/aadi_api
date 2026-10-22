@@ -2,8 +2,11 @@
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import '../../../css/home-landing.css';
+import HomeFeatured from './HomeFeatured.vue';
+import HomeCommunity from './HomeCommunity.vue';
+import HomeDownload from './HomeDownload.vue';
 
-defineProps({ loading: Boolean });
+defineProps({ loading: Boolean, content: { type: Object, default: () => ({}) } });
 const emit = defineEmits(['explore']);
 const page = usePage();
 const hasProviderRole = computed(() => Object.values(page.props.auth?.providerRoles || {}).includes('approved'));
@@ -27,6 +30,8 @@ const questions = [
 
 <template>
     <div class="home-landing">
+        <nav class="landing-section-links" aria-label="Discover more about Aadi"><a href="#featured-listings">Featured finds</a><a href="#community-reviews">Community reviews</a><a href="#download-aadi">Get the app</a><a href="#for-providers">For providers</a></nav>
+        <HomeFeatured :items="content.featured || []" />
         <section id="about-aadi" class="landing-section landing-intro" aria-labelledby="about-title" tabindex="-1">
             <div>
                 <p class="landing-kicker">Good things. Nearby.</p>
@@ -64,6 +69,9 @@ const questions = [
                 </ol>
             </div>
         </section>
+
+        <HomeCommunity :reviews="content.reviews || []" />
+        <HomeDownload :downloads="content.downloads || {}" />
 
         <section id="for-providers" class="landing-section" aria-labelledby="provider-title" tabindex="-1">
             <div class="landing-provider">

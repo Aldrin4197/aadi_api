@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Marketplace;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Marketplace;
+use App\Services\LandingPage;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -16,7 +17,10 @@ class MarketplaceController extends Controller {
     }
     public function index(Request $r) {
         $filters = $this->filters($r);
-        return Inertia::render('Marketplace/Explore', ['results'=>$this->market->search($filters),'filters'=>(object)$filters,'types'=>Marketplace::TYPES]);
+        return Inertia::render('Marketplace/Explore', [
+            'results'=>$this->market->search($filters), 'filters'=>(object)$filters, 'types'=>Marketplace::TYPES,
+            ...($r->path() === '/' ? ['landing'=>fn () => app(LandingPage::class)->content()] : []),
+        ]);
     }
     public function search(Request $r) { return response()->json($this->market->search($this->filters($r))); }
     public function show(Request $r, string $service, string $id) {

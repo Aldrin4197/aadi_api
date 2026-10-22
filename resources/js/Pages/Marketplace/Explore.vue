@@ -9,7 +9,7 @@ import CityPicker from '@/Components/Marketplace/CityPicker.vue';
 import CompareListings from '@/Components/Marketplace/CompareListings.vue';
 import ListingImage from '@/Components/Marketplace/ListingImage.vue';
 import { distanceKm, formatPrice, compareKey } from '@/Components/Marketplace/comparison.mjs';
-const props=defineProps({results:Object,filters:Object,types:Object});
+const props=defineProps({results:Object,filters:Object,types:Object,landing:{type:Object,default:()=>({})}});
 const form=ref({service:props.filters.service||'spaces',locationName:props.filters.locationName||'',q:props.filters.q||'',type:props.filters.type||'',minPrice:props.filters.minPrice??'',maxPrice:props.filters.maxPrice??'',radiusKm:props.filters.radiusKm||10,lat:props.filters.lat??'',lng:props.filters.lng??''});
 const page = usePage();
 const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
@@ -70,14 +70,14 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <CompareListings ref="compareDialog" :items="comparisons" :distance-label="distanceLabel" @remove="toggleCompare" />
 </section>
 <template v-if="isHome">
-  <div class="explorer-scroll-cue"><a href="#about-aadi">Find more than a listing <span aria-hidden="true">↓</span></a><p>Scroll to discover Aadi. Use the map’s + / − buttons to zoom.</p></div>
-  <HomeLanding :loading="loading" @explore="exploreCategory" />
+  <div class="explorer-scroll-cue"><a href="#featured-listings">Find more than a listing <span aria-hidden="true">↓</span></a><p>Scroll to discover Aadi. Use the map’s + / − buttons to zoom.</p></div>
+  <HomeLanding :content="landing" :loading="loading" @explore="exploreCategory" />
 </template>
 </main>
 <template v-if="isHome" #footer>
   <footer class="landing-footer">
     <div><Link href="/" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" width="92" height="42" loading="lazy" /></Link><p>Good things. Nearby.</p></div>
-    <nav aria-label="Footer navigation"><a href="#explore-map">Explore the map</a><a href="#how-it-works">How it works</a><Link href="/become-provider">Become a provider</Link><Link v-if="!page.props.auth?.user" href="/register">Create an account</Link><Link v-else href="/profile">Your account</Link></nav>
+    <nav aria-label="Footer navigation"><a href="#explore-map">Explore the map</a><a href="#featured-listings">Featured finds</a><a href="#community-reviews">Reviews</a><a href="#download-aadi">Get the app</a><Link href="/become-provider">Become a provider</Link><Link v-if="!page.props.auth?.user" href="/register">Create an account</Link><Link v-else href="/profile">Your account</Link></nav>
   </footer>
 </template>
 </Layout></template>
