@@ -145,6 +145,35 @@ Use this named seeder rather than the older `AadiSeeder`, which uses the legacy 
 
 Regression coverage: `php artisan test --filter=MarketplaceDemoSeederTest` checks public API visibility, billing units, stable identifiers and repeat-run behavior.
 
+### Demo users with their own listings
+
+To test login and separate provider workspaces, run this named seeder against your development/demo database:
+
+```bash
+php artisan migrate
+php artisan db:seed --class=MarketplaceUsersSeeder
+```
+
+It adds seven fictional non-admin accounts with three listings each (21 total: seven spaces, seven vehicles and seven rakets):
+
+| Email | Approved roles | Location | Listings |
+| --- | --- | --- | --- |
+| maria@users.aadi.example | Landlord | Catbalogan | 3 properties |
+| pedro@users.aadi.example | Landlord | Calbayog | 3 properties |
+| carlo@users.aadi.example | Vehicle owner | Catbalogan | 3 vehicles |
+| ana@users.aadi.example | Vehicle owner | Calbayog | 3 vehicles |
+| luis@users.aadi.example | Service provider | Catbalogan | 3 rakets |
+| leah@users.aadi.example | Service provider | Tacloban | 3 rakets |
+| alex@users.aadi.example | All three roles | Cebu City | 1 property, 1 vehicle, 1 raket |
+
+The seeder prints a generated password for newly created accounts after the transaction succeeds. Save it and sign in at `/login`; `/my-listings` shows that account's own listings. Alternatively, set `AADI_DEMO_PASSWORD` to a password of at least 12 characters before seeding (run `php artisan config:clear` if configuration is cached). This value applies only to new demo accounts. Rerunning does not reset existing passwords, change roles, overwrite edited listings or restore soft-deleted vehicles/services. Hard-deleted samples are recreated if the account still has the relevant approved role.
+
+Users have verified demo email timestamps and approved provider roles for testing; no verification emails are sent, no admin privileges or trust badges are granted, and no fake reviews are added. Names use `[Demo]`, titles use `[Sample]`, and descriptions identify fictional offers. Coordinates and rates are illustrative. Existing category illustrations appear when photos are empty.
+
+This seeder uses its own stable ULIDs and can coexist with `MarketplaceDemoSeeder`. Neither seeder runs automatically in `DatabaseSeeder`. An existing unrelated account with a reserved demo email causes the transaction to roll back instead of adopting or modifying that account. Do not use `migrate:fresh` to add samples to an existing database.
+
+Regression coverage: `php artisan test --filter=MarketplaceUsersSeederTest` checks per-user ownership, public visibility, password hashing, login/workspace isolation, repeat-run preservation and email-conflict rollback.
+
 ## Map comparison and location selection
 
 The map now follows the reference explorer's broad search panel, bottom listing rail, thumbnail selection dock and photo-led “Find your best fit” comparison dialog. Select two or three listings, remove individual columns, or clear the dock. The table scrolls horizontally on small screens and retains the original billing unit for each rate. Features/skills, seating capacity or estimated service duration come from existing records; unspecified inclusions or exclusions are not fabricated. The additive `comparison` object is shared by the web and versioned offers API. Comparisons retain selection-time summaries while browsing and identify that limitation in the dialog.
