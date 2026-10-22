@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 class ProfileTest extends TestCase
 {
@@ -19,6 +20,16 @@ class ProfileTest extends TestCase
             ->get('/profile');
 
         $response->assertOk();
+    }
+
+    public function test_account_navigation_receives_avatar_without_private_credentials(): void
+    {
+        $user = User::factory()->create(['avatar_url' => '/storage/avatars/sample.jpg']);
+        $this->actingAs($user)->withoutVite()->get('/profile')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('auth.user.avatar_url', '/storage/avatars/sample.jpg')
+                ->missing('auth.user.password')
+                ->missing('auth.user.remember_token'));
     }
 
     public function test_profile_information_can_be_updated(): void

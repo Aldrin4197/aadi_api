@@ -1,5 +1,7 @@
 export interface User {
-    id: number;
+    id: string;
+    avatar_url?: string | null;
+    is_admin?: boolean;
     name: string;
     email: string;
     email_verified_at?: string;

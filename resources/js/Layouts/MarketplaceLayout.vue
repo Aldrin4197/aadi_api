@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import AccountMenu from '@/Components/Account/AccountMenu.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import '../../css/marketplace.css';
 import '../../css/map-explorer.css';
@@ -16,10 +17,7 @@ const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
         <a v-if="isHome" href="#how-it-works" class="landing-nav-link">How it works</a>
         <a v-if="isHome" href="#for-providers" class="landing-nav-link">For providers</a>
         <template v-if="page.props.auth?.user">
-          <Link v-if="Object.values(page.props.auth.providerRoles || {}).includes('approved')" href="/my-listings">Provider workspace</Link><Link v-else href="/become-provider">Become a provider</Link>
-          <Link v-if="page.props.auth.user.is_admin" href="/admin/dashboard">Admin dashboard</Link>
-          <Link href="/profile">{{ page.props.auth.user.name }}</Link>
-          <Link href="/logout" method="post" as="button" class="quiet">Log out</Link>
+          <AccountMenu />
         </template>
         <template v-else><Link href="/login">Log in</Link><Link href="/register" class="button primary">Register</Link></template>
       </nav>
