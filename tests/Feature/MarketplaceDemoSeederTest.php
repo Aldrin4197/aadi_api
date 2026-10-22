@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\VehicleListing;
 use Database\Seeders\MarketplaceDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class MarketplaceDemoSeederTest extends TestCase
@@ -33,11 +34,11 @@ class MarketplaceDemoSeederTest extends TestCase
         $this->assertFalse(User::sole()->is_admin);
     }
 
-    public function test_reseeding_preserves_edits_passwords_and_soft_deletions(): void
+    public function test_reseeding_resets_password_and_preserves_edits_and_soft_deletions(): void
     {
         $this->seed(MarketplaceDemoSeeder::class);
         $owner = User::sole();
-        $password = $owner->password;
+        $owner->update(['password'=>'PreviouslyChangedPassword']);
         $listing = Listing::firstOrFail();
         $listing->update(['title' => 'Edited sample', 'price' => 1234]);
         $vehicle = VehicleListing::firstOrFail();
@@ -51,7 +52,7 @@ class MarketplaceDemoSeederTest extends TestCase
         $this->assertDatabaseCount('listings', 5);
         $this->assertDatabaseCount('vehicle_listings', 5);
         $this->assertDatabaseCount('service_listings', 5);
-        $this->assertSame($password, $owner->fresh()->password);
+        $this->assertTrue(Hash::check('password', $owner->fresh()->password));
         $this->assertSame('Edited sample', $listing->fresh()->title);
         $this->assertEquals(1234, $listing->fresh()->price);
         $this->assertSoftDeleted($vehicle);
