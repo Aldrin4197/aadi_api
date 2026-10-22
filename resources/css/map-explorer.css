@@ -6,7 +6,7 @@
 
 /* Reference map: broad search panel, bottom listing rail and compact compare dock. */
 .explorer-controls{width:min(1060px,calc(100% - 110px));padding:16px 20px;border-radius:18px}
-.explorer-search>.explorer-location{flex:0 1 260px}
+.explorer-search>.city-picker{flex:0 1 280px}
 .explorer-area{margin:10px 0 0;font-size:12px;color:var(--aadi-dark)}
 .map-results{bottom:22px}
 .has-comparison .map-results{bottom:110px}
@@ -47,7 +47,7 @@
   .explorer-controls{width:calc(100% - 24px);padding:12px}
   .explorer-search{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
   .explorer-search>label:first-child{grid-column:1/-1}
-  .explorer-search>.explorer-location{min-width:0}
+  .explorer-search>.city-picker{min-width:0}
   .explorer-search select{font-size:12px;padding-left:8px}
   .map-explorer .map-search{top:320px}
   .map-explorer .leaflet-top.leaflet-right{top:365px}
