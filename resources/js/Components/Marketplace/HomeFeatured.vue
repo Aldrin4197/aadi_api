@@ -33,6 +33,6 @@ const visible = computed(() => props.items.filter(item => active.value === 'all'
             </article>
         </div>
         <div v-else class="featured-empty" role="status"><h3>Make room for the next good find.</h3><p>There are no published {{ active === 'all' ? 'listings' : categories[active].toLowerCase() }} to feature yet. Explore the map or become one of the first providers in your area.</p><Link href="/become-provider" class="landing-text-link">List what you offer <span aria-hidden="true">↗</span></Link></div>
-        <p class="featured-note">Rates keep their original billing units. Log in or register to open listing details.</p>
+        <p class="featured-note">Rates keep their original billing units. Open a preview, then log in for full details and inquiries.</p>
     </section>
 </template>
