@@ -18,10 +18,10 @@ const categories = [
 const steps = [
     { title: 'Find your fit', text: 'Search a city, use your location, or move the map and choose “Search near map center.”' },
     { title: 'Weigh your options', text: 'Filter by type and price. Compare up to three listings, keeping an eye on whether rates are per month, day, hour, or job.' },
-    { title: 'Know the details', text: 'Log in or create an account to open a listing. See its photos, description, location, and provider details.' },
+    { title: 'Know the details', text: 'Open a preview to see the price and general area. Log in for the full gallery, description, exact location, and provider inquiries.' },
 ];
 const questions = [
-    { title: 'Can I browse without an account?', text: 'Yes. Search the map, filter listings, and compare prices freely. You’ll be asked to log in or register when you open listing details.' },
+    { title: 'Can I browse without an account?', text: 'Yes. Search the map, compare prices, and open listing previews freely. Log in or register to see full details and send an inquiry.' },
     { title: 'How do nearby results work?', text: 'Use your location or choose a center on the map, then set a search radius. Results are ordered by distance from that point. Distances are straight-line estimates.' },
     { title: 'Can I list more than one kind of offering?', text: 'Yes. One account can apply separately as a landlord, vehicle owner, and service provider. Each role needs approval before you can publish listings for it.' },
     { title: 'Can I book or pay through Aadi?', text: 'The current web app helps you discover and compare listings. Online booking and payments are not available yet.' },

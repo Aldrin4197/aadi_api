@@ -202,3 +202,10 @@ Home, Explore, and offer details keep `MarketplaceLayout` and the existing brows
 `AccountLayout` provides the teal sidebar for profile settings and provider pages. `ProviderLayout` wraps it for listing management, listing forms, provider applications, and application review. The sidebar links back to Explore. Below 1024px, navigation opens in a modal drawer with keyboard focus containment, Escape dismissal, and scroll locking. Account links do not grant permissions; the existing backend authorization still applies.
 
 Validation: production build and frontend tests; browser fixtures at 320, 768, 1024, and 1440px for listings, profile, provider roles, home, and Explore; avatar fallback, guest navbar, and keyboard dismissal. External map tiles were blocked in the fixture checks. `ProfileTest` checks avatar serialization without password or remember-token exposure.
+
+
+### Guest previews and inquiries
+
+Published listing pages are now public previews. Guests see title, type, rate, cover photo, highlights, and approximate location. Full description, remaining photos, exact address/pin, and provider identity require login. Login/register links preserve the selected listing as the return destination. Search and featured-listing payloads enforce the same preview rule server-side. Earlier references in this document to redirecting guests immediately when opening a listing are superseded by this behavior.
+
+Signed-in users can inquire about other users' published properties, vehicles, and rakets. `/inquiries` contains sent/received threads; only the two participants can read and reply. Inbox links are in the account menu and sidebar. Run `php artisan migrate` before using inquiries. See [the mobile API contract](MOBILE_MARKETPLACE_API.md) for endpoints, payloads, access rules, and Flutter integration status.

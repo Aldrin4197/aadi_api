@@ -18,15 +18,37 @@ class MarketplaceController extends Controller {
     public function index(Request $r) {
         $filters = $this->filters($r);
         return Inertia::render('Marketplace/Explore', [
-            'results'=>$this->market->search($filters), 'filters'=>(object)$filters, 'types'=>Marketplace::TYPES,
+            'results'=>$this->market->search($filters, $r->user()), 'filters'=>(object)$filters, 'types'=>Marketplace::TYPES,
             ...($r->path() === '/' ? ['landing'=>fn () => app(LandingPage::class)->content()] : []),
         ]);
     }
-    public function search(Request $r) { return response()->json($this->market->search($this->filters($r))); }
+    public function search(Request $r) { return response()->json($this->market->search($this->filters($r), $r->user())); }
     public function show(Request $r, string $service, string $id) {
-        $record = $this->market->find($service,$id); $item = $this->market->dto($record,$service);
-        if ($item['status'] !== 'active') { abort_unless($r->user(),404); $this->market->authorize($r->user(),$record,$service); }
+        $record = $this->market->find($service,$id);
+        if (!$this->market->isPublished($record, $service)) {
+            abort_unless($r->user(),404);
+            $this->market->authorize($r->user(),$record,$service);
+        }
+        $item = $this->market->present($record, $service, $r->user());
         return $r->is('api/*') ? response()->json(['data'=>$item]) : Inertia::render('Marketplace/Show',['listing'=>$item]);
+    }
+    public function unlock(Request $r, string $service, string $id) {
+        $record = $this->market->find($service, $id);
+        abort_unless($this->market->isPublished($record, $service), 404);
+        $url = '/offers/'.$service.'/'.$id;
+        if ($r->user()) return redirect($url);
+        $r->session()->put('url.intended', url($url));
+        return redirect($r->query('register') === '1' ? '/register' : '/login');
+    }
+    public function mine(Request $r) {
+        $filters = $this->filters($r);
+        $service = $filters['service'] ?? 'spaces';
+        $records = $this->market->model($service)::where($service === 'raketeer' ? 'provider_id' : 'owner_id', $r->user()->id)
+            ->with($service === 'raketeer' ? 'provider' : 'owner')->latest()->orderByDesc('id')->paginate(30);
+        return response()->json([
+            'data'=>$records->getCollection()->map(fn ($record) => $this->market->present($record, $service, $r->user()))->values(),
+            'meta'=>['total'=>$records->total(), 'currentPage'=>$records->currentPage(), 'lastPage'=>$records->lastPage()],
+        ]);
     }
     public function manage(Request $r) {
         $listings = collect(); $statuses = [];
@@ -47,12 +69,12 @@ class MarketplaceController extends Controller {
     }
     public function store(Request $r, string $service) {
         $record=$this->market->save($r->user(),$service,$this->market->validated($r,$service));
-        return $r->is('api/*') ? response()->json(['data'=>$this->market->dto($record,$service)],201) : redirect('/my-listings')->with('success','Listing created.');
+        return $r->is('api/*') ? response()->json(['data'=>$this->market->present($record,$service,$r->user())],201) : redirect('/my-listings')->with('success','Listing created.');
     }
     public function update(Request $r,string $service,string $id) {
         $record=$this->market->find($service,$id); $this->market->authorize($r->user(),$record,$service);
         $record=$this->market->save($r->user(),$service,$this->market->validated($r,$service),$record);
-        return $r->is('api/*') ? response()->json(['data'=>$this->market->dto($record,$service)]) : redirect('/my-listings')->with('success','Listing updated.');
+        return $r->is('api/*') ? response()->json(['data'=>$this->market->present($record,$service,$r->user())]) : redirect('/my-listings')->with('success','Listing updated.');
     }
     public function destroy(Request $r,string $service,string $id) {
         $record=$this->market->find($service,$id); $this->market->authorize($r->user(),$record,$service); $record->delete();

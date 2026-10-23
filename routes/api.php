@@ -108,10 +108,20 @@ Route::prefix('admin')->middleware('web')->group(function () {
 });
 
 // Versioned marketplace contract; web and mobile call the same application service.
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware([\App\Http\Middleware\OptionalMarketplaceAuth::class, \App\Http\Middleware\PrivateMarketplaceResponse::class])->group(function () {
     Route::get('/offers', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'search']);
     Route::get('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'show']);
+    Route::get('/catalog', fn () => response()->json(['data'=>['types'=>\App\Services\Marketplace::TYPES, 'priceUnits'=>['spaces'=>'month','haul'=>'day','raketeer'=>['job','hour']]]]));
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me/provider-roles', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'index']);
+        Route::get('/me/provider-applications/{service}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'show']);
+        Route::post('/me/provider-applications/{service}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'store'])->middleware('throttle:6,1');
+        Route::get('/provider-documents/{id}/{index}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'document']);
+        Route::get('/me/inquiries', [\App\Http\Controllers\Marketplace\InquiryController::class,'index']);
+        Route::get('/inquiries/{id}', [\App\Http\Controllers\Marketplace\InquiryController::class,'show']);
+        Route::post('/offers/{service}/{id}/inquiries', [\App\Http\Controllers\Marketplace\InquiryController::class,'store'])->middleware('throttle:6,1');
+        Route::post('/inquiries/{id}/messages', [\App\Http\Controllers\Marketplace\InquiryController::class,'reply'])->middleware('throttle:20,1');
+        Route::get('/me/offers', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'mine']);
         Route::post('/offers/{service}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'store']);
         Route::put('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'update']);
         Route::delete('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'destroy']);

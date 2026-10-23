@@ -3,9 +3,14 @@ use App\Http\Controllers\Marketplace\MarketplaceController as Market;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\Marketplace\ProviderApplicationController as Application;
 use Illuminate\Support\Facades\Route;
-Route::get('/explore', [Market::class,'index']);
-Route::get('/offers/{service}/{id}', [Market::class,'show'])->middleware('auth');
-Route::middleware('auth')->group(function () {
+Route::get('/explore', [Market::class,'index'])->middleware(\App\Http\Middleware\PrivateMarketplaceResponse::class);
+Route::get('/offers/{service}/{id}', [Market::class,'show'])->middleware(\App\Http\Middleware\PrivateMarketplaceResponse::class);
+Route::get('/offers/{service}/{id}/unlock', [Market::class,'unlock'])->middleware(\App\Http\Middleware\PrivateMarketplaceResponse::class);
+Route::middleware(['auth', \App\Http\Middleware\PrivateMarketplaceResponse::class])->group(function () {
+    Route::get('/inquiries', [\App\Http\Controllers\Marketplace\InquiryController::class, 'index']);
+    Route::get('/inquiries/{id}', [\App\Http\Controllers\Marketplace\InquiryController::class, 'show']);
+    Route::post('/offers/{service}/{id}/inquiries', [\App\Http\Controllers\Marketplace\InquiryController::class, 'store'])->middleware('throttle:6,1');
+    Route::post('/inquiries/{id}/messages', [\App\Http\Controllers\Marketplace\InquiryController::class, 'reply'])->middleware('throttle:20,1');
     Route::get('/my-listings', [Market::class,'manage']);
     Route::get('/my-listings/{service}/new', [Market::class,'form']);
     Route::get('/my-listings/{service}/{id}/edit', [Market::class,'form']);

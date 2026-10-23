@@ -5,7 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'index'])->name('explore');
+Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'index'])->middleware(\App\Http\Middleware\PrivateMarketplaceResponse::class)->name('explore');
 Route::get('/dashboard', fn () => redirect('/'))->middleware('auth')->name('dashboard');
 require __DIR__.'/marketplace.php';
 

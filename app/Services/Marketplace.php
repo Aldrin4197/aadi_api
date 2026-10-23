@@ -53,7 +53,39 @@ class Marketplace
             'createdAt' => $r->created_at->toIso8601String(),
         ];
     }
-    public function search(array $filters): array {
+    /** Only this projection is used by customer read endpoints. Management uses dto(). */
+    public function present(Model $record, string $service, ?User $viewer = null): array {
+        $item = $this->dto($record, $service);
+        $canManage = $viewer && ($viewer->is_admin || (string) $viewer->id === $item['ownerId']);
+        $access = [
+            'level' => $viewer ? 'full' : 'preview',
+            'canInquire' => (bool) ($viewer && (string) $viewer->id !== $item['ownerId'] && $item['status'] === 'active'),
+            'canManage' => (bool) $canManage,
+            'requiresLogin' => !$viewer,
+        ];
+        if ($viewer) return [...$item, 'access' => $access];
+
+        // An allowlist prevents new fields added to the full DTO leaking to guests.
+        return [
+            'id' => $item['id'], 'service' => $service, 'title' => $item['title'],
+            'type' => $item['type'], 'price' => $item['price'], 'priceUnit' => $item['priceUnit'],
+            'currency' => $item['currency'], 'status' => $item['status'],
+            'photos' => array_slice($item['photos'], 0, 1),
+            'location' => [
+                'city' => $item['location']['city'],
+                'lat' => $item['location']['lat'] === null ? null : round($item['location']['lat'], 2),
+                'lng' => $item['location']['lng'] === null ? null : round($item['location']['lng'], 2),
+                'approximate' => true,
+            ],
+            'comparison' => $item['comparison'], 'access' => $access,
+        ];
+    }
+    public function isPublished(Model $record, string $service): bool {
+        $status = $record->status instanceof \BackedEnum ? $record->status->value : $record->status;
+        return $status === ($service === 'spaces' ? 'active' : 'available')
+            && ($service !== 'spaces' || $record->category?->value === 'space_rental');
+    }
+    public function search(array $filters, ?User $viewer = null): array {
         $service = $filters['service'] ?? 'spaces';
         $space = $service === 'spaces';
         $latColumn = $space ? 'lat' : 'latitude'; $lngColumn = $space ? 'lng' : 'longitude';
@@ -79,8 +111,8 @@ class Marketplace
             $query->whereNotNull($latColumn)->whereNotNull($lngColumn)->whereRaw("($distance) <= ?", [...$bindings, $radius])
                 ->orderByRaw($distance, $bindings);
         } else $query->latest();
-        $page = $query->paginate(30)->withQueryString();
-        return ['data' => $page->getCollection()->map(fn ($r) => $this->dto($r, $service))->values(),
+        $page = $query->orderByDesc('id')->paginate(30)->withQueryString();
+        return ['data' => $page->getCollection()->map(fn ($r) => $this->present($r, $service, $viewer))->values(),
             'meta' => ['total' => $page->total(), 'currentPage' => $page->currentPage(), 'lastPage' => $page->lastPage()]];
     }
     public function validated(Request $request, string $service): array {
