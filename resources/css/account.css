@@ -16,13 +16,13 @@
 .account-sidebar-footer>div { min-width: 0; }
 .account-sidebar-footer strong { display: block; font-size: 12px; overflow-wrap: anywhere; }
 .account-sidebar-footer button { display: block; min-height: 44px; font-size: 12px; color: #c1dcd6; cursor: pointer; }
-.account-body { margin-left: 256px; min-width: 0; }
+.account-body { margin-left: 256px; min-width: 0; min-height: 100dvh; display: flex; flex-direction: column; }
 .account-header { min-height: 88px; display: flex; align-items: center; gap: 24px; padding: 16px 32px; border-bottom: 1px solid var(--line); background: #fff; }
 .account-header-title { display: flex; flex-direction: column; gap: 4px; margin-right: auto; }
 .account-header-title>span { color: var(--muted); font-size: 11px; }
 .account-header-title strong { font-size: 16px; font-weight: 600; }
 .account-explore-link { font-size: 13px; font-weight: 600; color: var(--teal)!important; }
-.account-content { min-width: 0; }
+.account-content { min-width: 0; flex: 1; }
 .account-layout .workspace-services { flex-wrap: wrap; }
 .account-content:focus { outline: none; }
 .account-content>.content { width: 100%; }

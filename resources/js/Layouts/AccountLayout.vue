@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import AccountNavigation from '@/Components/Account/AccountNavigation.vue';
 import AccountMenu from '@/Components/Account/AccountMenu.vue';
+import SiteFooter from '@/Components/Aadi/Layout/SiteFooter.vue';
 import '../../css/marketplace.css';
 import '../../css/account.css';
 const page = usePage();
@@ -43,6 +44,7 @@ watch(() => page.url, closeDrawer);
         <div v-if="page.props.flash?.success" class="notice success" role="status">{{ page.props.flash.success }}</div>
         <slot />
       </div>
+      <SiteFooter />
     </div>
   </div>
 </template>
