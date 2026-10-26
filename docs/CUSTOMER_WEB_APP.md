@@ -195,6 +195,13 @@ Add approved, authentic testimonial quotes to `config/aadi_landing.php` under `r
 Validation: `npm run build`, `npm run test:frontend`, and `php artisan test --filter=LandingPageTest`. The PHP test covers publication visibility, independence from map filters, homepage-only props, empty states and configured external links.
 
 
+### Signed-in account navigation
+
+Home, Explore, and offer details keep `MarketplaceLayout` and the existing browsing navbar. Signed-in visitors have a photo/avatar account menu linking to profile settings, listings, provider roles, and logout; admin links appear only for admins. The menu uses `auth.user.avatar_url`, with initials when the photo is missing or fails to load. This displays existing avatars; it does not add a photo upload flow.
+
+`AccountLayout` provides the teal sidebar for profile settings and provider pages. `ProviderLayout` wraps it for listing management, listing forms, provider applications, and application review. The sidebar links back to Explore. Below 1024px, navigation opens in a modal drawer with keyboard focus containment, Escape dismissal, and scroll locking. Account links do not grant permissions; the existing backend authorization still applies.
+
+Validation: production build and frontend tests; browser fixtures at 320, 768, 1024, and 1440px for listings, profile, provider roles, home, and Explore; avatar fallback, guest navbar, and keyboard dismissal. External map tiles were blocked in the fixture checks. `ProfileTest` checks avatar serialization without password or remember-token exposure.
 ### Seeded administrator login
 
 Run `php artisan db:seed` to create or update `admin@aadi.test` with password `password` and `is_admin=true`. Sign in at `/admin/login`, then open `/admin/dashboard`. The basic `test@example.com` account also uses `password`. Passwords are stored as hashes. These predictable credentials are for development/demo databases.

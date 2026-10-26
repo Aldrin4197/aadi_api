@@ -1,0 +1,52 @@
+.account-layout { background: #f5f7f5; }
+.account-sidebar, .account-drawer { background: var(--color-aadi-teal-800, #0b3a38); color: #e4f2ee; }
+.account-sidebar { position: fixed; inset: 0 auto 0 0; width: 256px; display: flex; flex-direction: column; overflow-y: auto; z-index: 900; }
+.account-brand { display: flex; align-items: center; gap: 12px; padding: 28px 24px; border-bottom: 1px solid #ffffff20; }
+.account-brand img { width: 44px; height: 44px; object-fit: contain; }
+.account-brand>span { font-size: 27px; font-weight: 650; line-height: 1.1; }
+.account-brand small { display: block; font-size: 10px; font-weight: 400; margin-top: 6px; color: #b9d6d0; }
+.account-navigation { flex: 1; padding: 12px; }
+.account-nav-label { margin: 24px 12px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #b9d6d0; font-weight: 600; }
+.account-nav-link { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 12px; margin-bottom: 4px; border-radius: 8px; font-size: 13px; }
+.account-nav-link:hover { background: #ffffff10; }
+.account-nav-link[aria-current=page] { background: var(--teal); color: #fff; font-weight: 650; box-shadow: inset 3px 0 #a7ded1; }
+.account-nav-link svg, .account-mobile-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.account-nav-arrow { margin-left: auto; }
+.account-sidebar-footer { border-top: 1px solid #ffffff20; display: flex; align-items: center; gap: 12px; padding: 20px; }
+.account-sidebar-footer>div { min-width: 0; }
+.account-sidebar-footer strong { display: block; font-size: 12px; overflow-wrap: anywhere; }
+.account-sidebar-footer button { display: block; min-height: 44px; font-size: 12px; color: #c1dcd6; cursor: pointer; }
+.account-body { margin-left: 256px; min-width: 0; }
+.account-header { min-height: 88px; display: flex; align-items: center; gap: 24px; padding: 16px 32px; border-bottom: 1px solid var(--line); background: #fff; }
+.account-header-title { display: flex; flex-direction: column; gap: 4px; margin-right: auto; }
+.account-header-title>span { color: var(--muted); font-size: 11px; }
+.account-header-title strong { font-size: 16px; font-weight: 600; }
+.account-explore-link { font-size: 13px; font-weight: 600; color: var(--teal)!important; }
+.account-content { min-width: 0; }
+.account-layout .workspace-services { flex-wrap: wrap; }
+.account-content:focus { outline: none; }
+.account-content>.content { width: 100%; }
+.account-mobile-toggle { display: none; }
+.account-drawer { padding: 0; border: 0; margin: 0; height: 100dvh; max-height: 100dvh; width: min(300px, 88vw); max-width: 100%; }
+.account-drawer::backdrop { background: #06282780; }
+.account-drawer-inner { display: flex; flex-direction: column; min-height: 100%; }
+.account-drawer-close { position: absolute; right: 8px; top: 8px; width: 44px; height: 44px; cursor: pointer; }
+.account-skip { position: fixed; top: -100px; left: 16px; padding: 12px; background: #fff; z-index: 2000; }
+.account-skip:focus { top: 12px; }
+.account-profile { max-width: 960px; padding: 32px; margin: auto; }
+.account-profile>p { color: var(--muted); margin-bottom: 24px; }
+.account-profile .profile-section { padding: 28px; background: #fff; border: 1px solid var(--line); border-radius: 12px; margin: 20px 0; }
+@media (max-width: 1279px) { .account-layout .workspace-results { grid-template-columns: 1fr; } .account-layout .provider-map-panel { position: relative; top: 0; } }
+@media (max-width: 1023px) {
+  .account-sidebar { display: none; }
+  .account-body { margin-left: 0; }
+  .account-mobile-toggle { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border: 1px solid var(--line); border-radius: 8px; }
+  .account-header { gap: 12px; padding: 16px 20px; }
+}
+@media (max-width: 600px) {
+  .account-header { padding: 12px 16px; }
+  .account-explore-link { display: none; }
+  .account-header-title strong { font-size: 14px; }
+  .account-profile { padding: 24px 16px; }
+  .account-profile .profile-section { padding: 20px; }
+}
