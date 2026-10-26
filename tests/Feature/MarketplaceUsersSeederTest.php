@@ -16,7 +16,6 @@ class MarketplaceUsersSeederTest extends TestCase
 
     private function samples(): void
     {
-        config(['aadi_demo.password'=>'FixturePassword2026!']);
         $this->seed(MarketplaceUsersSeeder::class);
     }
 
@@ -28,7 +27,7 @@ class MarketplaceUsersSeederTest extends TestCase
         foreach (User::all() as $user) {
             $this->assertFalse($user->is_admin);
             $this->assertNotNull($user->email_verified_at);
-            $this->assertTrue(Hash::check('FixturePassword2026!', $user->password));
+            $this->assertTrue(Hash::check('password', $user->password));
             $this->assertSame(3, $user->listings()->count() + $user->vehicleListings()->count() + $user->serviceListings()->count());
             $this->assertMatchesRegularExpression('/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/', $user->id);
         }
@@ -48,12 +47,11 @@ class MarketplaceUsersSeederTest extends TestCase
         $this->assertSame(1, $alex->serviceListings()->count());
     }
 
-    public function test_reseeding_keeps_passwords_edits_roles_and_soft_deletions(): void
+    public function test_reseeding_resets_passwords_but_keeps_edits_roles_and_soft_deletions(): void
     {
         $this->samples();
         $maria = User::where('email', 'maria@users.aadi.example')->sole();
         $maria->update(['name'=>'Edited demo owner', 'password'=>'ChangedPassword2026!', 'landlord_status'=>'rejected']);
-        $hash = $maria->fresh()->password;
         $space = $maria->listings()->firstOrFail();
         $space->update(['title'=>'Edited property', 'price'=>1234]);
         $vehicle = VehicleListing::firstOrFail(); $vehicle->delete();
@@ -61,7 +59,7 @@ class MarketplaceUsersSeederTest extends TestCase
         $this->samples();
         $this->assertDatabaseCount('users', 7);
         foreach (['listings', 'vehicle_listings', 'service_listings'] as $table) $this->assertDatabaseCount($table, 7);
-        $this->assertSame($hash, $maria->fresh()->password);
+        $this->assertTrue(Hash::check('password', $maria->fresh()->password));
         $this->assertSame('Edited demo owner', $maria->fresh()->name);
         $this->assertSame('rejected', $maria->fresh()->landlord_status->value);
         $this->assertSame('Edited property', $space->fresh()->title);
@@ -74,7 +72,7 @@ class MarketplaceUsersSeederTest extends TestCase
     {
         $this->samples();
         $maria = User::where('email', 'maria@users.aadi.example')->sole();
-        $this->post('/login', ['email'=>$maria->email, 'password'=>'FixturePassword2026!'])->assertRedirect();
+        $this->post('/login', ['email'=>$maria->email, 'password'=>'password'])->assertRedirect();
         $this->assertAuthenticatedAs($maria);
         $this->withoutVite()->get('/my-listings')->assertInertia(fn (Assert $page) => $page
             ->has('listings', 3)->where('listings', fn ($items) => collect($items)->every(fn ($item) => $item['ownerId'] === $maria->id)));
