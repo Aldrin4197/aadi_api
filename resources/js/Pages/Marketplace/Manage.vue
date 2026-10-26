@@ -2,12 +2,13 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import Layout from '@/Layouts/ProviderLayout.vue';
+import QuestionModal from '@/Components/Aadi/Dialogs/QuestionModal.vue';
 import DiscoveryMap from '@/Components/Marketplace/DiscoveryMap.vue';
 const props = defineProps({ listings: Array, statuses: Object });
 const services = { spaces: { label: 'Properties', role: 'Landlord', singular: 'property' }, haul: { label: 'Vehicles', role: 'Vehicle owner', singular: 'vehicle' }, raketeer: { label: 'Services & rakets', role: 'Freelance service provider', singular: 'service' } };
 const active = ref(Object.keys(services).find(key => props.statuses[key] === 'approved') || props.listings[0]?.service || 'spaces');
 const query = ref(''), status = ref('all'), sort = ref('newest'), mapVisible = ref(true), mobileView = ref('list'), selected = ref(null);
-const deleting = ref(null), busy = ref(false), dialog = ref(null), deleteError = ref('');
+const deleting = ref(null), busy = ref(false), deleteError = ref('');
 const serviceListings = computed(() => props.listings.filter(item => item.service === active.value));
 const filtered = computed(() => serviceListings.value.filter(item => (status.value === 'all' || item.status === status.value) && `${item.title} ${item.location.address || ''} ${item.location.city || ''}`.toLowerCase().includes(query.value.trim().toLowerCase())).sort((a,b) => sort.value === 'price' ? a.price-b.price : sort.value === 'title' ? a.title.localeCompare(b.title) : new Date(b.createdAt)-new Date(a.createdAt)));
 const mappable = computed(() => filtered.value.filter(item => item.location.lat != null && item.location.lng != null));
@@ -18,8 +19,8 @@ const money = value => new Intl.NumberFormat('en-PH',{style:'currency',currency:
 function changeService(key) { active.value=key; status.value='all'; selected.value=null; query.value=''; }
 function select(id) { selected.value=id; nextTick(() => document.getElementById('offer-'+id)?.scrollIntoView({block:'nearest',behavior:'instant'})); }
 watch(filtered, items => { if (!items.some(item => item.id===selected.value)) selected.value=null; });
-watch(deleting, async item => { await nextTick(); if(item) dialog.value?.showModal(); else dialog.value?.close(); });
-function remove() { busy.value=true; deleteError.value=''; router.delete(`/my-listings/${deleting.value.service}/${deleting.value.id}`, {preserveScroll:true,onSuccess:()=>deleting.value=null,onError:()=>deleteError.value='The listing could not be deleted. Please try again.',onFinish:()=>busy.value=false}); }
+watch(deleting, () => { deleteError.value = ''; });
+function remove() { if (busy.value || !deleting.value) return; busy.value=true; deleteError.value=''; router.delete(`/my-listings/${deleting.value.service}/${deleting.value.id}`, {preserveScroll:true,onSuccess:()=>deleting.value=null,onError:()=>deleteError.value='The listing could not be deleted. Please try again.',onFinish:()=>busy.value=false}); }
 </script>
 
 <template>
@@ -41,6 +42,9 @@ function remove() { busy.value=true; deleteError.value=''; router.delete(`/my-li
         <aside v-if="mapVisible || mobileView==='map'" class="provider-map-panel" aria-label="Your listing locations"><div class="provider-map-title"><strong>Your listings on the map</strong><span>{{ mappable.length }} located</span></div><DiscoveryMap :listings="mappable" :center="center" :selected="selected" :searchable="false" fit-listings @select="select"/><p class="provider-map-note">Select a price marker to find its listing. Private drafts are visible here only to you.</p></aside>
       </div>
     </main>
-    <dialog ref="dialog" class="confirm-dialog" @cancel.prevent="!busy && (deleting=null)"><h2>Delete this listing?</h2><p>{{ deleting?.title }} will be removed. This cannot be undone here.</p><p v-if="deleteError" role="alert" class="error">{{ deleteError }}</p><div class="actions"><button class="button" :disabled="busy" @click="deleting=null">Keep listing</button><button class="button danger" :disabled="busy" @click="remove">{{ busy?'Deleting…':'Delete listing' }}</button></div></dialog>
+    <QuestionModal :open="!!deleting" title="Delete this listing?"
+      :description="`${deleting?.title || 'This listing'} will be removed. This cannot be undone here.`"
+      confirm-label="Delete listing" cancel-label="Keep listing" busy-label="Deleting…" danger
+      :busy="busy" :error="deleteError" @cancel="deleting=null" @confirm="remove" />
   </Layout>
 </template>
