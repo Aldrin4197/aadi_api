@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Services\Marketplace;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 /** Fictional accounts and offers for testing each provider's own workspace. */
@@ -14,10 +13,7 @@ class MarketplaceUsersSeeder extends Seeder
 {
     public function run(): void
     {
-        $password = config('aadi_demo.password') ?: Str::random(24);
-        if (!is_string($password) || strlen($password) < 12) {
-            throw new RuntimeException('AADI_DEMO_PASSWORD must contain at least 12 characters, or be left empty to generate one.');
-        }
+        $password = 'password';
         $market = app(Marketplace::class);
         $accounts = DB::transaction(function () use ($market, $password): array {
             $accounts = [];
@@ -38,7 +34,9 @@ class MarketplaceUsersSeeder extends Seeder
                     ])->save();
                 }
 
-                $accounts[] = [$user->email, implode(', ', $roles), $created ? 'Created' : 'Preserved'];
+                $user->forceFill(['password'=>$password])->save();
+
+                $accounts[] = [$user->email, implode(', ', $roles), $created ? 'Created' : 'Password reset'];
                 foreach ($roles as $roleIndex => $service) {
                     // Respect a role revoked after the initial seed; never approve it again.
                     if (!$market->approved($user, $service)) continue;
@@ -66,11 +64,9 @@ class MarketplaceUsersSeeder extends Seeder
             return $accounts;
         });
 
-        $this->command?->info('Demo users and their listings are ready. Existing records and passwords were preserved.');
+        $this->command?->info('Demo users and their listings are ready. Listing edits were preserved; demo passwords are now password.');
         $this->command?->table(['Email', 'Provider roles', 'Account'], $accounts);
-        if (collect($accounts)->contains(fn ($account) => $account[2] === 'Created')) {
-            $this->command?->info('Password for newly created demo accounts: '.$password);
-        }
+        $this->command?->info('Password for all listed demo accounts: password');
     }
 
     private function people(): array

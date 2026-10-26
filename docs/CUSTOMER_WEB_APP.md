@@ -139,9 +139,9 @@ php artisan db:seed --class=MarketplaceDemoSeeder
 
 This explicit seeder adds five spaces, five vehicles and five rakets around Catbalogan, Samar, with different prices and types for filters and comparison. Titles and descriptions identify fictional samples. Empty photo arrays intentionally display the category illustrations added with the restored homepage, labelled as illustrations. No external image downloads are needed.
 
-It creates one non-admin sample provider with all three roles approved and a random, undisclosed password; it does not create a usable shared login. Sign in with your own account to view details. Stable ULIDs make repeated runs skip existing records, preserving edits, passwords and soft-deleted vehicles/services. No existing tables or records are cleared. A hard-deleted sample can be recreated by running the seeder again. The complete operation runs in a transaction.
+It creates one non-admin sample provider (`marketplace-demo@aadi.example`) with all three roles approved. Its password is `password`, and rerunning resets that account to this password. Stable ULIDs preserve listing edits and soft-deleted vehicles/services. A hard-deleted sample can be recreated. The operation runs in a transaction.
 
-Use this named seeder rather than the older `AadiSeeder`, which uses the legacy mixed-category table. `DatabaseSeeder` is unchanged: samples are opt-in and are not installed automatically by ordinary migrations. The samples are publicly visible once seeded, so use a development/demo database when testing.
+Use this named seeder rather than the older `AadiSeeder`, which uses the legacy mixed-category table. `DatabaseSeeder` creates the admin and basic test account: samples are opt-in and are not installed automatically by ordinary migrations. The samples are publicly visible once seeded, so use a development/demo database when testing.
 
 Regression coverage: `php artisan test --filter=MarketplaceDemoSeederTest` checks public API visibility, billing units, stable identifiers and repeat-run behavior.
 
@@ -166,7 +166,7 @@ It adds seven fictional non-admin accounts with three listings each (21 total: s
 | leah@users.aadi.example | Service provider | Tacloban | 3 rakets |
 | alex@users.aadi.example | All three roles | Cebu City | 1 property, 1 vehicle, 1 raket |
 
-The seeder prints a generated password for newly created accounts after the transaction succeeds. Save it and sign in at `/login`; `/my-listings` shows that account's own listings. Alternatively, set `AADI_DEMO_PASSWORD` to a password of at least 12 characters before seeding (run `php artisan config:clear` if configuration is cached). This value applies only to new demo accounts. Rerunning does not reset existing passwords, change roles, overwrite edited listings or restore soft-deleted vehicles/services. Hard-deleted samples are recreated if the account still has the relevant approved role.
+All seven demo accounts use `password`. Sign in at `/login`; `/my-listings` shows each account's own listings. Rerunning explicitly resets these demo passwords to `password` while preserving names, roles, listing edits and soft deletions. The former `AADI_DEMO_PASSWORD` setting is no longer used. Hard-deleted samples are recreated if the account still has the relevant approved role.
 
 Users have verified demo email timestamps and approved provider roles for testing; no verification emails are sent, no admin privileges or trust badges are granted, and no fake reviews are added. Names use `[Demo]`, titles use `[Sample]`, and descriptions identify fictional offers. Coordinates and rates are illustrative. Existing category illustrations appear when photos are empty.
 
@@ -202,3 +202,14 @@ Home, Explore, and offer details keep `MarketplaceLayout` and the existing brows
 `AccountLayout` provides the teal sidebar for profile settings and provider pages. `ProviderLayout` wraps it for listing management, listing forms, provider applications, and application review. The sidebar links back to Explore. Below 1024px, navigation opens in a modal drawer with keyboard focus containment, Escape dismissal, and scroll locking. Account links do not grant permissions; the existing backend authorization still applies.
 
 Validation: production build and frontend tests; browser fixtures at 320, 768, 1024, and 1440px for listings, profile, provider roles, home, and Explore; avatar fallback, guest navbar, and keyboard dismissal. External map tiles were blocked in the fixture checks. `ProfileTest` checks avatar serialization without password or remember-token exposure.
+### Seeded administrator login
+
+Run `php artisan db:seed` to create or update `admin@aadi.test` with password `password` and `is_admin=true`. Sign in at `/admin/login`, then open `/admin/dashboard`. The basic `test@example.com` account also uses `password`. Passwords are stored as hashes. These predictable credentials are for development/demo databases.
+
+To reset all current demo logins without deleting listings:
+
+```bash
+php artisan db:seed
+php artisan db:seed --class=MarketplaceUsersSeeder
+php artisan db:seed --class=MarketplaceDemoSeeder
+```
