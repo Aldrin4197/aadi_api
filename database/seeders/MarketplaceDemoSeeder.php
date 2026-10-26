@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\VehicleListing;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 /** Explicit opt-in fixtures for the current marketplace, not real offers. */
 class MarketplaceDemoSeeder extends Seeder
@@ -19,6 +21,7 @@ class MarketplaceDemoSeeder extends Seeder
                 'name' => 'Aadi Sample Provider',
                 'email' => 'marketplace-demo@aadi.example',
                 'password' => 'password',
+                'password' => Hash::make('password'),
                 'landlord_status' => 'approved',
                 'vehicle_owner_status' => 'approved',
                 'service_provider_status' => 'approved',
