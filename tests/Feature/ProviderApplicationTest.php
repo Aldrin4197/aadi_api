@@ -17,6 +17,22 @@ class ProviderApplicationTest extends TestCase {
     private function administrator(): User {
         $user=User::factory()->create(); $user->forceFill(['is_admin'=>true])->save(); return $user;
     }
+    public function test_mobile_applications_use_the_same_records_and_private_documents(): void {
+        $owner=User::factory()->create();
+        $this->withToken($owner->createToken('mobile')->plainTextToken);
+        $this->getJson('/api/v1/me/provider-roles')->assertOk()->assertJsonPath('data.statuses.spaces','none');
+        foreach (['spaces','haul','raketeer'] as $role) {
+            $response=$this->post('/api/v1/me/provider-applications/'.$role,$this->details(),['Accept'=>'application/json'])
+                ->assertCreated()->assertJsonPath('data.status','pending');
+            $url=$response->json('data.documents.0.url');
+            $this->assertStringStartsWith('/api/v1/provider-documents/', $url);
+            $this->getJson('/api/v1/me/provider-applications/'.$role)->assertOk()->assertJsonPath('data.status','pending');
+            $this->get($url)->assertOk();
+        }
+        $this->assertDatabaseCount('provider_applications',3);
+        \Illuminate\Support\Facades\Auth::forgetGuards();
+        $this->withToken(User::factory()->create()->createToken('other')->plainTextToken)->get($url)->assertForbidden();
+    }
     public function test_user_can_browse_and_submit_independent_role_applications(): void {
         $user=User::factory()->create();
         $this->actingAs($user)->get('/dashboard')->assertRedirect('/');

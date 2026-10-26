@@ -15,16 +15,17 @@ class ProviderApplicationController extends Controller {
         foreach (array_keys(Marketplace::TYPES) as $service) {
             $statuses[$service] = $request->user()->{$this->market->statusField($service)}?->value ?? 'none';
         }
-        return Inertia::render('Marketplace/ProviderStart', ['statuses' => $statuses]);
+        return $request->is('api/*') ? response()->json(['data'=>['statuses'=>$statuses]]) : Inertia::render('Marketplace/ProviderStart', ['statuses' => $statuses]);
     }
     public function show(Request $request, string $service) {
         $field = $this->market->statusField($service);
         $application = ProviderApplication::where('user_id', $request->user()->id)->where('service', $service)->first();
-        return Inertia::render('Marketplace/ProviderApply', [
+        $data = [
             'service' => $service,
             'status' => $request->user()->$field?->value ?? 'none',
-            'application' => $application?->toReviewData(),
-        ]);
+            'application' => $application?->toReviewData($request->is('api/*')),
+        ];
+        return $request->is('api/*') ? response()->json(['data'=>$data]) : Inertia::render('Marketplace/ProviderApply', $data);
     }
     public function store(Request $request, string $service) {
         $field = $this->market->statusField($service);
@@ -60,6 +61,7 @@ class ProviderApplicationController extends Controller {
             throw $error;
         }
         foreach ($previous as $document) Storage::disk('local')->delete($document['path']);
+        if ($request->is('api/*')) return response()->json(['data'=>ProviderApplication::where('user_id', $request->user()->id)->where('service', $service)->firstOrFail()->toReviewData(true)], 201);
         return redirect('/provider-applications/'.$service)->with('success', 'Application submitted for review. You can keep browsing with your User account.');
     }
     public function document(Request $request, string $id, string $index) {

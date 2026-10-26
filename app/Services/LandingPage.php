@@ -15,7 +15,7 @@ class LandingPage
                 ->where('status', $service === 'spaces' ? 'active' : 'available');
             if ($service === 'spaces') $query->where('category', 'space_rental');
             foreach ($query->latest()->orderByDesc('id')->limit(2)->get() as $record) {
-                $featured[] = $this->market->dto($record, $service);
+                $featured[] = $this->market->present($record, $service);
             }
         }
 

@@ -23,15 +23,15 @@ class MarketplaceTest extends TestCase {
         $this->getJson('/api/v1/offers?service=spaces')->assertOk()->assertJsonPath('meta.total',0);
         $this->postJson('/api/v1/offers/spaces',$this->payload('spaces'))->assertUnauthorized();
     }
-    public function test_guests_can_search_but_listing_details_require_login_for_every_category(): void {
+    public function test_guests_can_search_and_open_previews_for_every_category(): void {
         $this->withoutVite();
         $owner = $this->provider();
         foreach (array_keys(Marketplace::TYPES) as $service) {
             $record = app(Marketplace::class)->save($owner, $service, $this->payload($service));
             $this->get('/?service='.$service.'&q=Nearby')->assertOk();
             $url = '/offers/'.$service.'/'.$record->id;
-            $this->get($url)->assertRedirect('/login');
-            $this->assertSame(url($url), session('url.intended'));
+            $this->get($url)->assertOk()->assertInertia(fn ($page) => $page
+                ->where('listing.access.level', 'preview')->missing('listing.description')->missing('listing.ownerId'));
         }
     }
     public function test_login_returns_to_selected_listing_and_regular_user_can_read_it(): void {
@@ -39,7 +39,7 @@ class MarketplaceTest extends TestCase {
         $record = app(Marketplace::class)->save($this->provider(), 'spaces', $this->payload('spaces'));
         $url = '/offers/spaces/'.$record->id;
         $user = User::factory()->create();
-        $this->get($url)->assertRedirect('/login');
+        $this->get($url.'/unlock')->assertRedirect('/login');
         $this->post('/login', ['email'=>$user->email, 'password'=>'password'])->assertRedirect($url);
         $this->get($url)->assertOk();
         $this->get('/admin/dashboard')->assertForbidden();
@@ -48,7 +48,7 @@ class MarketplaceTest extends TestCase {
         $this->withoutVite();
         $record = app(Marketplace::class)->save($this->provider(), 'haul', $this->payload('haul'));
         $url = '/offers/haul/'.$record->id;
-        $this->get($url)->assertRedirect('/login');
+        $this->get($url.'/unlock')->assertRedirect('/login');
         $this->get('/login')->assertOk();
         $this->get('/register')->assertOk();
         $this->post('/register', ['name'=>'New customer', 'email'=>'customer@example.com',

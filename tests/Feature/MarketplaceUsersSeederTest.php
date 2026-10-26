@@ -35,7 +35,8 @@ class MarketplaceUsersSeederTest extends TestCase
             $response = $this->getJson('/api/v1/offers?service='.$service)->assertOk()->assertJsonPath('meta.total', 7);
             foreach ($response->json('data') as $item) {
                 $this->assertStringStartsWith('[Sample]', $item['title']);
-                $this->assertStringStartsWith('[Demo]', $item['ownerName']);
+                $this->assertSame('preview', $item['access']['level']);
+                $this->assertArrayNotHasKey('ownerName', $item);
                 $this->assertNotNull($item['location']['lat']);
                 $this->assertNotNull($item['location']['lng']);
             }

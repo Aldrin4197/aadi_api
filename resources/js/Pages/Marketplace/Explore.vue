@@ -30,6 +30,7 @@ const isCompared=item=>comparisons.value.some(l=>compareKey(l)===compareKey(item
 function toggleCompare(item){const key=compareKey(item);compareError.value='';if(comparisons.value.some(l=>compareKey(l)===key)) comparisons.value=comparisons.value.filter(l=>compareKey(l)!==key);else if(comparisons.value.length<3) comparisons.value.push(item);else compareError.value='Choose up to three listings. Remove one to add another.';}
 const distanceLabel=item=>{const km=distanceKm(props.filters.lat,props.filters.lng,item.location.lat,item.location.lng);return km===null?'':`${km.toFixed(1)} km away`;};
 const missingCoordinates=computed(()=>props.results.data.filter(l=>l.location.lat==null||l.location.lng==null).length);
+watch(()=>page.props.auth?.user?.id,()=>{ comparisons.value=[]; selected.value=null; compareError.value=''; });
 watch(()=>props.results,()=>{selected.value=null;});
 watch(()=>props.filters,filters=>{form.value={service:filters.service||'spaces',locationName:filters.locationName||'',q:filters.q||'',type:filters.type||'',minPrice:filters.minPrice??'',maxPrice:filters.maxPrice??'',radiusKm:filters.radiusKm||10,lat:filters.lat??'',lng:filters.lng??''};});
 function service(value){form.value.service=value;form.value.type='';search();}
@@ -52,7 +53,7 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <div class="explorer-tools"><button class="text-button" :disabled="locating||loading" @click="locate">{{ locating?'Finding you…':'Use my location' }}</button><button class="text-button" @click="clear">Clear search</button><button class="text-button" :aria-expanded="cardsOpen" aria-controls="map-results" @click="cardsOpen=!cardsOpen">{{ cardsOpen?'Hide listings':'Show listings' }}</button></div>
 <p v-if="filters.lat!=null" class="explorer-area" role="status">Within {{ filters.radiusKm || 10 }} km of {{ filters.locationName || 'map search center' }}</p>
 <p v-if="locationError" role="alert" class="explorer-message">{{ locationError }}</p>
-<p v-if="!page.props.auth?.user" class="explorer-hint">Browse and compare freely. Log in or register to open listing details.</p>
+<p v-if="!page.props.auth?.user" class="explorer-hint">Browse previews and compare freely. Log in for full details and inquiries. Map locations are approximate.</p>
 </section>
 <section v-show="cardsOpen" id="map-results" class="map-results" :aria-busy="loading" aria-label="Matching listings">
 <div class="map-results-heading"><span role="status"><strong>{{ results.meta.total }}</strong> matches · showing {{ results.data.length }} on this page<span v-if="form.lat!==''"> · nearest first</span><span v-if="missingCoordinates"> · {{ missingCoordinates }} without a map location</span></span><div v-if="results.meta.lastPage>1" class="map-pages"><button :disabled="loading||results.meta.currentPage<=1" @click="search(results.meta.currentPage-1)">← Previous</button><span>{{ results.meta.currentPage }}/{{ results.meta.lastPage }}</span><button :disabled="loading||results.meta.currentPage>=results.meta.lastPage" @click="search(results.meta.currentPage+1)">Next →</button></div></div>

@@ -32,7 +32,7 @@ defineExpose({ open: () => dialog.value?.showModal() });
           <tr><th scope="row">Listed features / skills</th><td v-for="item in items" :key="compareKey(item)">{{ item.comparison?.features?.join(', ') || 'Not specified — ask the provider' }}</td></tr>
           <tr><th scope="row">Not included</th><td v-for="item in items" :key="compareKey(item)">Confirm exclusions and extra charges with the provider.</td></tr>
           <tr><th scope="row">Listed status</th><td v-for="item in items" :key="compareKey(item)">{{ item.status === 'active' ? 'Available' : readable(item.status) }}</td></tr>
-          <tr><th scope="row">Provider</th><td v-for="item in items" :key="compareKey(item)">{{ item.ownerName || 'Not provided' }}</td></tr>
+          <tr><th scope="row">Provider</th><td v-for="item in items" :key="compareKey(item)">{{ item.ownerName || (item.access?.requiresLogin ? 'Log in to view provider' : 'Not provided') }}</td></tr>
           <tr><th scope="row">Next step</th><td v-for="item in items" :key="compareKey(item)"><Link class="button primary" :href="`/offers/${item.service}/${item.id}`">View listing →</Link></td></tr>
         </tbody>
       </table>
