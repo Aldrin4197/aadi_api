@@ -15,11 +15,13 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request, \App\Services\AdminDashboardMetrics $metrics)
     {
+        $validated = $request->validate(['days' => ['sometimes', 'integer', 'in:7,30,90']]);
+        $days = (int) ($validated['days'] ?? 30);
         $stats = [
             'totalUsers' => User::count(),
-            'totalSpaces' => Listing::count(),
+            'totalSpaces' => Listing::where('category', 'space_rental')->count(),
             'totalVehicles' => VehicleListing::count(),
             'totalServices' => ServiceListing::count(),
             'totalViewings' => ViewingRequest::count(),
@@ -44,6 +46,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
+            'metrics' => $metrics->summarize($days),
             'recentListings' => $recentListings,
             'recentUsers' => $recentUsers,
             'recentViewings' => $recentViewings,
