@@ -16,7 +16,7 @@ const platforms = [{ key: 'android', name: 'Google Play', device: 'Android' }, {
                 </div>
                 <Link href="/explore" class="landing-text-link">Use Aadi on the web <span aria-hidden="true">↗</span></Link><p class="download-note">No installation needed to browse the map.</p>
             </div>
-            <div class="download-art" aria-hidden="true"><div class="download-orbit"></div><div class="aadi-phone"><div class="phone-camera"></div><img class="phone-logo" src="/images/logos/Aadi_Color.png" alt="" width="92" height="42" loading="lazy" /><span class="phone-heading">Good things.<br />Nearby.</span><div class="phone-categories"><span>Spaces</span><span>Vehicles</span><span>Rakets</span></div><img class="phone-scene" src="/images/illustrations/space-studio.svg" alt="" width="480" height="300" loading="lazy" /><div class="phone-caption"><strong>A place for your plans.</strong><span>Start with what’s around you.</span></div><div class="phone-home"></div></div><span class="download-art-label">Spaces. Wheels. Skills.</span></div>
+            <div class="download-art" aria-hidden="true"><div class="aadi-phone"><div class="phone-camera"></div><img class="phone-logo" src="/images/logos/Aadi_Color.png" alt="" width="92" height="42" loading="lazy" /><span class="phone-heading">Good things.<br />Nearby.</span><div class="phone-categories"><span>Spaces</span><span>Vehicles</span><span>Rakets</span></div><img class="phone-scene" src="/images/illustrations/space-studio.svg" alt="" width="480" height="300" loading="lazy" /><div class="phone-caption"><strong>A place for your plans.</strong><span>Start with what’s around you.</span></div><div class="phone-home"></div></div></div>
         </div>
     </section>
 </template>

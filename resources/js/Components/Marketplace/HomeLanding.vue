@@ -11,9 +11,9 @@ const emit = defineEmits(['explore']);
 const page = usePage();
 const hasProviderRole = computed(() => Object.values(page.props.auth?.providerRoles || {}).includes('approved'));
 const categories = [
-    { key: 'spaces', title: 'Space rentals', label: 'Explore spaces', image: 'space-studio', alt: 'Illustration of a furnished rental space', description: 'From a first room to a new business address, find spaces that fit your plans. Compare locations and rental rates in one place.', tags: 'Rooms · Homes · Commercial spaces' },
-    { key: 'haul', title: 'Utility vehicles', label: 'Explore vehicles', image: 'vehicle-van', alt: 'Illustration of a utility van', description: 'Moving day, a delivery, or your next trip. Explore nearby vehicles and check their capacity, features, and listed rental rates.', tags: 'Vans · Trucks · More ways to move' },
-    { key: 'raketeer', title: 'Raket Finder', label: 'Explore rakets', image: 'raket-repair', alt: 'Illustration of tools for local repair services', description: 'Find local skills for work that needs doing. Discover providers for home repairs, tutoring, IT support, and other everyday tasks.', tags: 'Repairs · Support · Local expertise' },
+    { key: 'spaces', title: 'Space rentals', label: 'Explore spaces', image: 'space-studio', alt: 'Illustration of a furnished rental space', description: 'Rooms, homes, and workspaces for your next chapter.', tags: 'Rooms · Homes · Commercial spaces' },
+    { key: 'haul', title: 'Utility vehicles', label: 'Explore vehicles', image: 'vehicle-van', alt: 'Illustration of a utility van', description: 'Vans and utility vehicles for moving day and everyday plans.', tags: 'Vans · Trucks · More ways to move' },
+    { key: 'raketeer', title: 'Raket Finder', label: 'Explore rakets', image: 'raket-repair', alt: 'Illustration of tools for local repair services', description: 'Local help with repairs, tutoring, creative work, and more.', tags: 'Repairs · Support · Local expertise' },
 ];
 const steps = [
     { title: 'Find your fit', text: 'Search a city, use your location, or move the map and choose “Search near map center.”' },
@@ -30,22 +30,10 @@ const questions = [
 
 <template>
     <div class="home-landing">
-        <nav class="landing-section-links" aria-label="Discover more about Aadi"><a href="#featured-listings">Featured finds</a><a href="#community-reviews">Community reviews</a><a href="#download-aadi">Get the app</a><a href="#for-providers">For providers</a></nav>
         <HomeFeatured :items="content.featured || []" />
-        <section id="about-aadi" class="landing-section landing-intro" aria-labelledby="about-title" tabindex="-1">
-            <div>
-                <p class="landing-kicker">Good things. Nearby.</p>
-                <h2 id="about-title">Everyday plans.<br />Local possibilities.</h2>
-            </div>
-            <div class="landing-intro-copy">
-                <p>Start with your location, explore what’s available, and compare the details that matter. Aadi brings space rentals, useful vehicles, and local services together so your next step is easier to find.</p>
-                <a href="#discover-aadi" class="landing-text-link">Explore what Aadi brings together <span aria-hidden="true">↓</span></a>
-            </div>
-        </section>
-
         <section id="discover-aadi" class="landing-section landing-categories" aria-labelledby="discover-title">
             <div class="landing-section-heading">
-                <div><p class="landing-kicker">The Aadi neighborhood</p><h2 id="discover-title">A good find is closer than you think.</h2></div>
+                <div><p class="landing-kicker">The Aadi neighborhood</p><h2 id="discover-title">What are you looking for?</h2></div>
                 <p>One place for spaces, wheels, and skills.</p>
             </div>
             <div class="landing-category-grid">
@@ -63,7 +51,7 @@ const questions = [
 
         <section id="how-it-works" class="landing-how" aria-labelledby="how-title" tabindex="-1">
             <div class="landing-section">
-                <div class="landing-section-heading"><div><p class="landing-kicker">Less searching. More doing.</p><h2 id="how-title">From “what if” to “let’s go.”</h2></div><a href="#explore-map" class="landing-text-link">Back to the map <span aria-hidden="true">↑</span></a></div>
+                <div class="landing-section-heading"><div><p class="landing-kicker">Less searching. More doing.</p><h2 id="how-title">Find it. Compare it. Take the next step.</h2></div><a href="#explore-map" class="landing-text-link">Back to the map <span aria-hidden="true">↑</span></a></div>
                 <ol class="landing-steps">
                     <li v-for="(step, index) in steps" :key="step.title"><span class="landing-step-number">0{{ index + 1 }}</span><h3>{{ step.title }}</h3><p>{{ step.text }}</p></li>
                 </ol>
@@ -77,7 +65,7 @@ const questions = [
             <div class="landing-provider">
                 <div class="landing-provider-copy">
                     <p class="landing-kicker">For landlords, vehicle owners, and service providers</p>
-                    <h2 id="provider-title">Bring what you offer<br /><span>closer to the people who need it.</span></h2>
+                    <h2 id="provider-title">Make your offering<br /><span>a local discovery.</span></h2>
                     <p>Put your rental space, vehicle, or service on the map. Apply for the provider role that fits your offering, then manage your approved listings, photos, and rates from one workspace.</p>
                     <Link :href="hasProviderRole ? '/my-listings' : '/become-provider'" class="button primary">{{ hasProviderRole ? 'Open provider workspace' : 'Become a provider' }} <span aria-hidden="true">↗</span></Link>
                     <p class="landing-provider-note">{{ page.props.auth?.user ? 'Each provider role is reviewed separately.' : 'Log in or register to start your application.' }}</p>
@@ -92,7 +80,7 @@ const questions = [
 
         <section id="aadi-questions" class="landing-section landing-faq" aria-labelledby="questions-title">
             <div class="landing-section-heading"><div><p class="landing-kicker">Before you get started</p><h2 id="questions-title">A few things to know.</h2></div></div>
-            <dl class="landing-questions"><div v-for="question in questions" :key="question.title"><dt>{{ question.title }}</dt><dd>{{ question.text }}</dd></div></dl>
+            <div class="landing-questions"><details v-for="question in questions" :key="question.title"><summary>{{ question.title }}</summary><p>{{ question.text }}</p></details></div>
         </section>
     </div>
 </template>

@@ -4,7 +4,7 @@ defineProps({ reviews: { type: Array, default: () => [] } });
 </script>
 
 <template>
-    <section id="community-reviews" class="landing-community" aria-labelledby="community-title">
+    <section id="community-reviews" class="landing-community" :class="{ 'community-empty': !reviews.length }" aria-labelledby="community-title">
         <div class="landing-section">
             <div class="landing-section-heading"><div><p class="landing-kicker">From the Aadi community</p><h2 id="community-title">Good finds. Shared experiences.</h2></div><p>Stories about the spaces, wheels, and skills that help everyday plans happen.</p></div>
             <div v-if="reviews.length" class="community-reviews">
@@ -16,8 +16,8 @@ defineProps({ reviews: { type: Array, default: () => [] } });
                 </figure>
             </div>
             <div v-else class="community-invitation">
-                <div class="community-art"><img src="/images/illustrations/raket-design.svg" alt="Illustration of a local creative workspace" width="480" height="300" loading="lazy" /><span>Every connection starts somewhere.</span></div>
-                <div><span class="community-status">Community stories coming soon</span><h3>A new neighborhood of possibilities.</h3><p>We’re making space for real experiences from people who use Aadi. Customer reviews will appear here as they’re shared and approved for publication.</p><Link href="/explore" class="landing-text-link">Find your first Aadi connection <span aria-hidden="true">↗</span></Link></div>
+                <p>Real stories belong here. Community reviews will appear as they’re shared and approved.</p>
+                <Link href="/explore" class="landing-text-link">Explore Aadi <span aria-hidden="true">↗</span></Link>
             </div>
         </div>
     </section>
