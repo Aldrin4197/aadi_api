@@ -23,6 +23,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside));
     <div class="account-menu-panel">
       <div class="account-menu-identity"><strong>{{ user.name }}</strong><span>{{ user.email }}</span></div>
       <nav aria-label="Account navigation" @click="close">
+        <Link href="/dashboard">My dashboard</Link>
         <Link href="/profile">Profile & settings</Link>
         <Link href="/my-listings">My listings</Link>
         <Link href="/become-provider">Provider roles</Link>

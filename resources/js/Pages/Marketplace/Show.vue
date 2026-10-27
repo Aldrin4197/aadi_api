@@ -2,18 +2,8 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import Layout from '@/Layouts/MarketplaceLayout.vue';
 import DiscoveryMap from '@/Components/Marketplace/DiscoveryMap.vue';
-import ListingImage from '@/Components/Marketplace/ListingImage.vue';
+import ListingGallery from '@/Components/Marketplace/ListingGallery.vue';
 defineProps({listing:Object});const page=usePage();
 const money=n=>new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(n);
 </script>
-<template><Layout><Head :title="listing.title"/><main class="content detail"><Link :href="`/explore?service=${listing.service}`" class="text-button">← Back to explore</Link><p class="eyebrow">{{ listing.service==='haul'?'AADI VEHICLES':listing.service==='raketeer'?'AADI RAKETS':'AADI SPACES' }}</p><h1>{{ listing.title }}</h1><p>{{ listing.location.address }}</p><div class="detail-grid"><section><div class="gallery"><ListingImage v-for="(photo,i) in listing.photos" :key="photo" :src="photo" :alt="`${listing.title}, photo ${i+1}`" :service="listing.service" :type="listing.type" /><ListingImage v-if="!listing.photos.length" :service="listing.service" :type="listing.type" /></div><h2>About this listing</h2><p class="description">{{ listing.description }}</p><h2>Location</h2><DiscoveryMap v-if="listing.location.lat!=null && listing.location.lng!=null" :listings="[listing]" :center="[listing.location.lat,listing.location.lng]"/><p v-else>Map location has not been provided.</p></section><aside class="detail-aside"><p class="large-price">{{ money(listing.price) }} <small>/ {{ listing.priceUnit }}</small></p><hr/><p class="eyebrow">LISTED BY</p><h2>{{ listing.ownerName }}</h2><p>Status: {{ listing.status }}</p><Link v-if="page.props.auth?.user?.id===listing.ownerId || page.props.auth?.user?.is_admin" :href="`/my-listings/${listing.service}/${listing.id}/edit`" class="button primary">Edit listing</Link><p v-else class="muted">Browse the details and location. Booking and messaging are not available yet.</p></aside></div></main></Layout></template>
-
-<style scoped>
-.gallery > :deep(.listing-image) { height: 240px; border-radius: 12px; }
-.gallery > :deep(.listing-image:first-child) { grid-column: 1 / -1; height: 360px; }
-.gallery :deep(.listing-image img) { height: 100%; }
-@media (max-width: 700px) {
-    .gallery > :deep(.listing-image) { height: 150px; }
-    .gallery > :deep(.listing-image:first-child) { height: 260px; }
-}
-</style>
+<template><Layout><Head :title="listing.title"/><main class="content detail"><Link :href="`/explore?service=${listing.service}`" class="text-button">← Back to explore</Link><p class="eyebrow">{{ listing.service==='haul'?'AADI VEHICLES':listing.service==='raketeer'?'AADI RAKETS':'AADI SPACES' }}</p><h1>{{ listing.title }}</h1><p>{{ listing.location.address }}</p><div class="detail-grid"><section><ListingGallery :photos="listing.photos" :title="listing.title" :service="listing.service" :type="listing.type"/><h2>About this listing</h2><p class="description">{{ listing.description }}</p><h2>Location</h2><DiscoveryMap v-if="listing.location.lat!=null && listing.location.lng!=null" :listings="[listing]" :center="[listing.location.lat,listing.location.lng]"/><p v-else>Map location has not been provided.</p></section><aside class="detail-aside"><p class="large-price">{{ money(listing.price) }} <small>/ {{ listing.priceUnit }}</small></p><hr/><p class="eyebrow">LISTED BY</p><h2>{{ listing.ownerName }}</h2><p>Status: {{ listing.status }}</p><Link v-if="page.props.auth?.user?.id===listing.ownerId || page.props.auth?.user?.is_admin" :href="`/my-listings/${listing.service}/${listing.id}/edit`" class="button primary">Edit listing</Link><p v-else class="muted">Browse the details and location. Booking and messaging are not available yet.</p></aside></div></main></Layout></template>

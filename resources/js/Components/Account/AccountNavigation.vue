@@ -6,6 +6,7 @@ const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const path = computed(() => page.url.split(/[?#]/)[0]);
 const items = [
+  { label: 'Dashboard', href: '/dashboard', icon: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z' },
   { label: 'My listings', href: '/my-listings', icon: 'M3 10l9-7 9 7M5 9v12h14V9M9 21v-8h6v8' },
   { label: 'Provider roles', href: '/become-provider', icon: 'M9 6V3h6v3M3 6h18v14H3zM3 11l9 4 9-4M12 12v4' },
   { label: 'Profile & settings', href: '/profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0M4 21v-2a8 8 0 0116 0v2' },
