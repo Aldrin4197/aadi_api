@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Aadi — Good things. Nearby.",
+  "short_name": "Aadi",
+  "description": "Discover nearby rental spaces, vehicles, and local services.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#0b3a38",
+  "icons": [
+    {"src": "/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/pwa/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
