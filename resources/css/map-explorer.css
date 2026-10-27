@@ -67,3 +67,34 @@
 @media(max-width:380px){.compare-thumbnails{display:none}.map-compare-bar{gap:8px}}
 
 .map-explorer .price-pin{line-height:20px}
+
+/* Center the first search; keep applied searches out of the map's way. */
+.map-explorer .explorer-controls{left:50%;top:16px;transform:translateX(-50%);width:min(760px,calc(100% - 144px));padding:16px;border-radius:16px;transition:top .25s ease,transform .25s ease,width .25s ease}
+.map-explorer .explorer-controls.is-initial{top:32%;transform:translate(-50%,-50%)}
+.map-explorer .explorer-controls.is-compact{width:min(560px,calc(100% - 144px));padding:6px;border-radius:14px}
+.explorer-controls svg{flex-shrink:0}
+.explorer-controls button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px}
+.explorer-controls .explorer-heading{padding-right:24px;align-items:center}
+.explorer-controls .explorer-search{flex-wrap:wrap}
+.explorer-controls .explorer-search>.city-picker{flex:1 1 200px}
+.explorer-controls .explorer-search>label{flex:1 1 260px}
+.explorer-controls .explorer-tools{margin-top:6px;gap:12px}
+.compact-search-bar{display:flex;align-items:center;gap:4px}
+.explorer-controls .compact-search-summary{flex:1;min-width:0;text-align:left;justify-content:flex-start;padding:4px 8px;color:var(--aadi-dark);border-radius:8px}
+.compact-search-summary>span:first-of-type{flex:1;min-width:0}
+.compact-search-summary strong,.compact-search-summary small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compact-search-summary strong{font-size:13px}.compact-search-summary small{font-size:11px;color:var(--muted);font-weight:500}.compact-edit-label{font-size:12px;font-weight:700}
+.compact-icon-button{width:44px;flex:none;border-left:1px solid var(--line);color:var(--aadi-dark);border-radius:8px}
+.compact-icon-button:hover,.compact-search-summary:hover{background:var(--aadi-tint)}
+.explorer-controls .search-collapse{position:absolute;right:6px;top:4px;width:44px;color:var(--aadi-dark)}
+@media(max-width:700px){
+ .map-explorer .explorer-controls,.map-explorer .explorer-controls.is-compact{width:calc(100% - 24px);left:50%;top:12px;padding:12px}
+ .map-explorer .explorer-controls.is-initial{top:30%}
+ .map-explorer .explorer-controls.is-compact{padding:4px}
+ .compact-edit-label{display:none}
+ .map-explorer:has(.is-compact) .map-search{top:86px}
+ .map-explorer:has(.is-compact) .leaflet-top.leaflet-right{top:140px}
+ .explorer-controls .explorer-search{display:grid}
+ .explorer-controls .service-tabs button{padding:6px;gap:5px}
+}
+@media(prefers-reduced-motion:reduce){.map-explorer .explorer-controls{transition:none}}
