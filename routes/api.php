@@ -135,3 +135,5 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::put('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'review'])->middleware('throttle:30,1');
     Route::delete('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'deleteReview'])->middleware('throttle:30,1');
 });
+
+Route::get('/v1/providers/{user}', \App\Http\Controllers\Marketplace\ProviderProfileController::class);

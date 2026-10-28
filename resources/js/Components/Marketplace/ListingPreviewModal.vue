@@ -37,6 +37,7 @@ function backdrop(event) {
                 <p v-if="item.type" class="preview-type">{{ item.type.replace(/([A-Z])/g, ' $1') }}</p>
                 <p class="preview-rate"><strong>{{ formatPrice(item.price) }}</strong> / {{ item.priceUnit }}</p>
                 <p class="preview-note">Listed rates may exclude additional charges. Confirm availability and terms with the provider.</p>
+                <p v-if="item.ownerId && item.ownerName"><Link :href="`/providers/${item.ownerId}`">Listed by {{ item.ownerName }} · View profile →</Link></p>
                 <footer>
                     <p v-if="!page.props.auth?.user">Preview freely. Log in or register to access full listing details.</p>
                     <Link :href="`/offers/${item.service}/${item.id}`" class="preview-primary">{{ page.props.auth?.user ? 'View full details' : 'Log in to view full details' }} <span aria-hidden="true">→</span></Link>

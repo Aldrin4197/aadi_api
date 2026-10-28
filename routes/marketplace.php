@@ -29,3 +29,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'review'])->middleware('throttle:30,1');
     Route::delete('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'deleteReview'])->middleware('throttle:30,1');
 });
+
+Route::get('/providers/{user}', \App\Http\Controllers\Marketplace\ProviderProfileController::class);
+Route::get('/avatars/{user}/{filename}', [\App\Http\Controllers\AvatarController::class, 'show'])->name('avatars.show');
