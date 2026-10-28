@@ -21,7 +21,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', \App\Http\Middleware\EnsureAdmin::class])->group(function () {
         Route::post('/logout', [App\Http\Controllers\Admin\LoginController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/users', [App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users.index');
+        Route::get('/users', [App\Http\Controllers\Admin\UserListingsController::class, 'users'])->name('users.index');
         Route::get('/listings', [App\Http\Controllers\Admin\DashboardController::class, 'listings'])->name('listings.index');
         Route::get('/vehicles', [App\Http\Controllers\Admin\DashboardController::class, 'vehicleListings'])->name('vehicles.index');
         Route::get('/services', [App\Http\Controllers\Admin\DashboardController::class, 'serviceListings'])->name('services.index');
