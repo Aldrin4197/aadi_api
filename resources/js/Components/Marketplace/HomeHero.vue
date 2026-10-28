@@ -1,15 +1,10 @@
-<template>
-    <section class="aadi-hero" aria-labelledby="home-title">
-        <div class="aadi-hero-copy">
-            <p class="landing-kicker"><span aria-hidden="true"></span>Spaces · Vehicles · Local services</p>
-            <h1 id="home-title">Find your next<br /><em>good thing nearby.</em></h1>
-            <p class="aadi-hero-description">A place to stay, a vehicle for your plans, or a skilled pair of hands. Explore your neighborhood with Aadi.</p>
-            <div class="aadi-hero-actions"><a href="#explore-map" class="button primary">Explore nearby <span aria-hidden="true">↗</span></a><a href="#how-it-works" class="landing-text-link">How it works</a></div>
-            <p class="aadi-hero-foot">Start with a location. Find what fits.</p>
-        </div>
-        <figure class="hero-scene">
-            <img src="/images/illustrations/space-studio.svg" alt="A sunlit room with a sofa and an arched window" width="480" height="300" fetchpriority="high" />
-            <figcaption><span>A little closer to what you need.</span><span aria-hidden="true">01 / Spaces</span></figcaption>
-        </figure>
-    </section>
-</template>
+<script setup>
+import { ref,computed } from 'vue';
+const active=ref('spaces');
+const scenes={spaces:{label:'Spaces',image:'space-studio',title:'Room for your next chapter.',text:'From a first apartment to a space for your business.'},haul:{label:'Vehicles',image:'vehicle-van',title:'A little help with the big moves.',text:'Find a vehicle for moving day and everyday plans.'},raketeer:{label:'Rakets',image:'raket-repair',title:'The right skills, closer to home.',text:'Discover local help for repairs, projects and more.'}};
+const scene=computed(()=>scenes[active.value]);
+</script>
+<template><section class="aadi-hero" aria-labelledby="home-title"><div class="aadi-hero-copy"><p class="landing-kicker">YOUR NEIGHBORHOOD, IN ONE PLACE</p><h1 id="home-title">Big plans.<br/><em>Good finds nearby.</em></h1><p class="aadi-hero-description">Find a place, rent a vehicle, or discover a local raketeer. See what’s nearby, compare your options, and keep the ones you love.</p><div class="aadi-hero-actions"><a href="#explore-map" class="button primary">Find something nearby <span aria-hidden="true">↗</span></a><a href="#how-it-works" class="landing-text-link">See how Aadi works</a></div><p class="aadi-hero-foot">Browse freely. Create an account when you’re ready to save.</p></div><figure class="hero-scene hero-switcher"><div class="hero-tabs" role="group" aria-label="Discover Aadi categories"><button v-for="(item,key) in scenes" :key="key" type="button" :aria-pressed="active===key" @click="active=key">{{ item.label }}</button></div><img :src="`/images/illustrations/${scene.image}.svg`" :alt="`${scene.label} illustration`" width="480" height="300" fetchpriority="high"/><figcaption aria-live="polite"><strong>{{ scene.title }}</strong><p>{{ scene.text }}</p><span class="hero-illustration-note">Illustration · explore live listings below</span></figcaption></figure></section></template>
+<style scoped>
+.hero-tabs{display:flex;padding:14px;gap:6px;background:#edf6f2}.hero-tabs button{flex:1;padding:10px 8px;min-height:44px;font-size:12px;font-weight:700;border-radius:7px;color:#42665e}.hero-tabs button[aria-pressed=true]{background:#fff;color:#12675f;box-shadow:0 2px 6px #123e3810}.hero-tabs button:focus-visible{outline:2px solid #137671;outline-offset:2px}.hero-switcher figcaption{display:block}.hero-switcher figcaption strong{display:block;font-size:17px}.hero-switcher figcaption p{font-size:13px;line-height:1.6;margin-top:6px;color:#586e6c}.hero-switcher .hero-illustration-note{display:block!important;margin-top:10px;font-size:10px;color:#637b76}
+</style>

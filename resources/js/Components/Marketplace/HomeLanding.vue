@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import '../../../css/home-landing.css';
+import HomeBenefits from './HomeBenefits.vue';
 import HomeFeatured from './HomeFeatured.vue';
 import HomeCommunity from './HomeCommunity.vue';
 import HomeDownload from './HomeDownload.vue';
@@ -18,10 +19,10 @@ const categories = [
 const steps = [
     { title: 'Find your fit', text: 'Search a city, use your location, or move the map and choose “Search near map center.”' },
     { title: 'Weigh your options', text: 'Filter by type and price. Compare up to three listings, keeping an eye on whether rates are per month, day, hour, or job.' },
-    { title: 'Know the details', text: 'Log in or create an account to open a listing. See its photos, description, location, and provider details.' },
+    { title: 'Know the details', text: 'Preview a listing first. Sign in for full details, save your favorites, and read or share a review.' },
 ];
 const questions = [
-    { title: 'Can I browse without an account?', text: 'Yes. Search the map, filter listings, and compare prices freely. You’ll be asked to log in or register when you open listing details.' },
+    { title: 'Can I browse without an account?', text: 'Yes. Search the map, filter listings, and compare prices freely. Open a preview without signing in. Log in or register for full listing details and saved favorites.' },
     { title: 'How do nearby results work?', text: 'Use your location or choose a center on the map, then set a search radius. Results are ordered by distance from that point. Distances are straight-line estimates.' },
     { title: 'Can I list more than one kind of offering?', text: 'Yes. One account can apply separately as a landlord, vehicle owner, and service provider. Each role needs approval before you can publish listings for it.' },
     { title: 'Can I book or pay through Aadi?', text: 'The current web app helps you discover and compare listings. Online booking and payments are not available yet.' },
@@ -30,7 +31,7 @@ const questions = [
 
 <template>
     <div class="home-landing">
-        <HomeFeatured :items="content.featured || []" />
+        <HomeBenefits />
         <section id="discover-aadi" class="landing-section landing-categories" aria-labelledby="discover-title">
             <div class="landing-section-heading">
                 <div><p class="landing-kicker">The Aadi neighborhood</p><h2 id="discover-title">What are you looking for?</h2></div>
@@ -58,14 +59,15 @@ const questions = [
             </div>
         </section>
 
+        <HomeFeatured :items="content.featured || []" />
         <HomeCommunity :reviews="content.reviews || []" />
         <HomeDownload :downloads="content.downloads || {}" />
 
         <section id="for-providers" class="landing-section" aria-labelledby="provider-title" tabindex="-1">
             <div class="landing-provider">
                 <div class="landing-provider-copy">
-                    <p class="landing-kicker">For landlords, vehicle owners, and service providers</p>
-                    <h2 id="provider-title">Make your offering<br /><span>a local discovery.</span></h2>
+                    <p class="landing-kicker">SHARE WHAT YOU OFFER</p>
+                    <h2 id="provider-title">Your next customer<br /><span>could be nearby.</span></h2>
                     <p>Put your rental space, vehicle, or service on the map. Apply for the provider role that fits your offering, then manage your approved listings, photos, and rates from one workspace.</p>
                     <Link :href="hasProviderRole ? '/my-listings' : '/become-provider'" class="button primary">{{ hasProviderRole ? 'Open provider workspace' : 'Become a provider' }} <span aria-hidden="true">↗</span></Link>
                     <p class="landing-provider-note">{{ page.props.auth?.user ? 'Each provider role is reviewed separately.' : 'Log in or register to start your application.' }}</p>
