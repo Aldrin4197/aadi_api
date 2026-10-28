@@ -1,0 +1,11 @@
+<script setup>
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import AccountLayout from '@/Layouts/AccountLayout.vue';
+import ListingImage from '@/Components/Marketplace/ListingImage.vue';
+defineProps({results:Object});
+const form=useForm({});
+</script>
+<template><AccountLayout><Head title="Saved listings"/><main><p class="eyebrow">YOUR SHORTLIST</p><h1>Saved listings</h1><p>Keep places, vehicles and services together for your next plan.</p><p v-if="!results.data.length">Nothing saved yet. <Link href="/explore">Explore nearby listings →</Link></p><div class="saved-grid"><article v-for="item in results.data" :key="`${item.service}-${item.id}`"><template v-if="!item.unavailable"><div class="saved-image"><ListingImage :src="item.photos?.[0]" :alt="item.title" :service="item.service" :type="item.type"/></div><h2><Link :href="`/offers/${item.service}/${item.id}`">{{ item.title }}</Link></h2><p>{{ item.location.city || item.location.address }}</p><strong>{{ new Intl.NumberFormat('en-PH',{style:'currency',currency:item.currency}).format(item.price) }} / {{ item.priceUnit }}</strong></template><template v-else><h2>Listing unavailable</h2><p>This listing is no longer publicly available.</p></template><button type="button" class="text-button" :disabled="form.processing" @click="form.delete(`/offers/${item.service}/${item.id}/save`,{preserveScroll:true})">Remove from saved</button></article></div><nav aria-label="Saved listing pages"><Link v-if="results.prev_page_url" :href="results.prev_page_url">Previous</Link><span>Page {{ results.current_page }} of {{ results.last_page }}</span><Link v-if="results.next_page_url" :href="results.next_page_url">Next</Link></nav></main></AccountLayout></template>
+<style scoped>
+h1{font-size:32px;font-weight:700}.saved-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:24px;margin:28px 0}.saved-grid article{border:1px solid #dcece9;border-radius:16px;padding:16px;min-width:0;background:white}.saved-image{aspect-ratio:1.7;overflow:hidden;border-radius:10px}.saved-grid h2{font-size:20px;margin:16px 0 8px;font-weight:700;overflow-wrap:anywhere}.saved-grid p{overflow-wrap:anywhere}.saved-grid button{display:block;margin-top:16px;min-height:44px}nav{display:flex;gap:16px}
+</style>

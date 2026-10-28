@@ -47,7 +47,7 @@ class Marketplace
                 'address' => $space ? $r->address : ($vehicle ? $r->location : $r->service_area), 'city' => $space ? $r->city : null],
             'photos' => ($space ? $r->photos : $r->images) ?? [],
             'status' => $space ? $status : match($status) { 'available' => 'active', 'inactive' => 'draft', 'rented' => 'rented', default => 'reserved' },
-            'details' => $vehicle ? ['brand' => $r->brand, 'model' => $r->model, 'year' => $r->year] : [],
+            'details' => $vehicle ? array_filter(['brand' => $r->brand, 'model' => $r->model, 'year' => $r->year, 'transmission' => $r->transmission, 'fuel' => $r->fuel_type, 'seats' => $r->seating_capacity], fn ($value) => $value !== null && $value !== '') : (!$space ? array_filter(['category' => $r->service_category, 'response minutes' => $r->response_time_minutes, 'estimated minutes' => $r->estimated_duration_minutes], fn ($value) => $value !== null && $value !== '') : []),
             'comparison' => [
                 'features' => array_values(array_filter(($space ? $r->amenities : ($vehicle ? $r->features : $r->skills_required)) ?? [], 'is_string')),
                 'scope' => $vehicle && $r->seating_capacity ? $r->seating_capacity.' seats' :

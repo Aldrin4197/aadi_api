@@ -8,7 +8,7 @@ import '../../css/account.css';
 const page = usePage();
 const drawer = ref(null);
 const drawerOpen = ref(false);
-const title = computed(() => page.url.startsWith('/dashboard') ? 'Dashboard' : page.url.startsWith('/profile') ? 'Profile & settings' : page.url.startsWith('/my-listings') ? 'My listings' : page.url.startsWith('/admin/approvals') ? 'Review applications' : 'Provider roles');
+const title = computed(() => page.url.startsWith('/saved-listings') ? 'Saved listings' : page.url.startsWith('/dashboard') ? 'Dashboard' : page.url.startsWith('/profile') ? 'Profile & settings' : page.url.startsWith('/my-listings') ? 'My listings' : page.url.startsWith('/admin/approvals') ? 'Review applications' : 'Provider roles');
 function closeDrawer() { drawer.value?.close(); drawerOpen.value = false; }
 function openDrawer() { drawer.value?.showModal(); drawerOpen.value = true; }
 let desktop;
