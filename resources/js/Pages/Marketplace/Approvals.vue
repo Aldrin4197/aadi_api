@@ -4,7 +4,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import Layout from '@/Layouts/AdminLayout.vue';
 defineProps({applications:Array,requirements:{type:Object,default:()=>({})}});
 const detailLabels={applicantType:'Applicant type',businessName:'Registered business',relationship:'Ownership / authority',serviceCategory:'Service category',skills:'Skills and qualifications',experienceYears:'Years of experience'};
-const titles={spaces:'Landlord / property merchant',haul:'Vehicle owner',raketeer:'Freelance service provider'};
+const titles={spaces:'Landlord',haul:'Vehicle Owner',raketeer:'Raketeer'};
 const active=ref(null); const form=useForm({version:null,status:'approved',reviewNote:''});
 function review(item,status){active.value=item;form.version=item.application?.version||null;form.clearErrors();form.status=status;form.reviewNote='';}
 function submit(){form.post(`/admin/approvals/${active.value.userId}/${active.value.service}`,{preserveScroll:true,onSuccess:()=>active.value=null});}

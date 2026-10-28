@@ -20,3 +20,7 @@ const platforms = [{ key: 'android', name: 'Google Play', device: 'Android' }, {
         </div>
     </section>
 </template>
+
+<style scoped>
+.landing-download{background:#0b3a38;color:#fff}.download-copy h2,.download-copy .landing-kicker,.download-copy .landing-text-link{color:#fff}.download-copy>p{color:#d0e6e3}.download-store{color:#0b3a38}.download-store.unavailable{color:#d0e6e3}.download-availability{color:#d0e6e3}
+</style>

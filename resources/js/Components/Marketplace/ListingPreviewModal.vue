@@ -1,4 +1,5 @@
 <script setup>
+import ProviderBadge from '@/Components/Account/ProviderBadge.vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import ListingImage from './ListingImage.vue';
@@ -31,7 +32,7 @@ function backdrop(event) {
             <header><span>Listing preview</span><button type="button" aria-label="Close listing preview" autofocus @click="close">×</button></header>
             <div class="preview-image"><ListingImage :src="item.photos?.[0]" :alt="item.title" :service="item.service" :type="item.type" /></div>
             <div class="preview-body">
-                <p class="preview-category">{{ categories[item.service] || 'Listing' }}</p>
+                <ProviderBadge :role="item.service" :approved="item.providerApproved"/><p class="preview-category">{{ categories[item.service] || 'Listing' }}</p>
                 <h2>{{ item.title }}</h2>
                 <p>{{ item.location?.city || 'Location details available after login' }}</p>
                 <p v-if="item.type" class="preview-type">{{ item.type.replace(/([A-Z])/g, ' $1') }}</p>
