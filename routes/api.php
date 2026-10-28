@@ -115,6 +115,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/offers/{service}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'store']);
         Route::put('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'update']);
         Route::delete('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'destroy']);
+        Route::get('/profile', [\App\Http\Controllers\Api\ProfileController::class,'show']);
+        Route::patch('/profile', [\App\Http\Controllers\Api\ProfileController::class,'update']);
+        Route::post('/profile/avatar', [\App\Http\Controllers\AvatarController::class,'store'])->middleware('throttle:10,1');
+        Route::delete('/profile/avatar', [\App\Http\Controllers\AvatarController::class,'destroy']);
+        Route::get('/provider-applications/{service}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'show']);
+        Route::post('/provider-applications/{service}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'store'])->middleware('throttle:6,1');
+        Route::get('/provider-documents/{id}/{index}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'document']);
         Route::post('/photos', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'upload'])->middleware('throttle:30,1');
     });
 });

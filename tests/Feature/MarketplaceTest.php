@@ -84,7 +84,7 @@ class MarketplaceTest extends TestCase {
         $user=User::factory()->create();
         $this->actingAs($user)->postJson('/api/v1/offers/spaces',$this->payload('spaces','draft'))->assertForbidden();
         $this->postJson('/api/v1/offers/spaces',$this->payload('spaces'))->assertForbidden();
-        $this->get('/my-listings')->assertRedirect('/become-provider');
+        $this->withoutVite()->get('/my-listings')->assertOk();
         $this->get('/my-listings/spaces/new')->assertRedirect('/provider-applications/spaces');
         $this->postJson('/api/me/landlord-application/approve')->assertForbidden();
         $this->get('/admin/dashboard')->assertForbidden();
@@ -96,10 +96,12 @@ class MarketplaceTest extends TestCase {
         $this->actingAs($owner)->post('/provider-applications/spaces', [
             'displayName'=>'Local property host','phone'=>'09171234567','area'=>'Catbalogan',
             'description'=>'I manage a property for long-term rental.',
-            'documents'=>[UploadedFile::fake()->image('id.jpg')],'confirmed'=>true,
+            'details'=>['applicantType'=>'individual'],
+            'documents'=>[UploadedFile::fake()->image('id.jpg'),UploadedFile::fake()->image('authority.jpg')],
+            'documentMeta'=>[['type'=>'identity'],['type'=>'property_authority']], 'confirmed'=>true,
         ])->assertRedirect('/provider-applications/spaces');
         $admin=User::factory()->create();$admin->forceFill(['is_admin'=>true])->save();
-        $this->actingAs($admin)->post('/admin/approvals/'.$owner->id.'/spaces',['status'=>'approved'])->assertRedirect();
+        $this->actingAs($admin)->post('/admin/approvals/'.$owner->id.'/spaces',['status'=>'approved','version'=>\App\Models\ProviderApplication::firstOrFail()->revision()])->assertRedirect();
         $this->actingAs($owner->fresh())->postJson('/api/v1/offers/spaces',$this->payload('spaces'))->assertCreated();
     }
     public function test_invalid_coordinates_types_and_price_are_rejected(): void {

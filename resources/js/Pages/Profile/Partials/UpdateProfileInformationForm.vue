@@ -5,16 +5,18 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
-defineProps<{
+const props = defineProps<{
+    profile?: Record<string, any>;
     mustVerifyEmail?: Boolean;
     status?: String;
 }>();
 
-const user = usePage().props.auth.user;
+const user = { ...usePage().props.auth.user, ...props.profile };
 
 const form = useForm({
     name: user.name,
     email: user.email,
+    phone: props.profile?.phone || '', bio: props.profile?.bio || '', city: props.profile?.city || '', address: props.profile?.address || '',
 });
 </script>
 
@@ -63,6 +65,11 @@ const form = useForm({
 
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
+
+            <div><InputLabel for="phone" value="Phone number"/><TextInput id="phone" v-model="form.phone" type="tel" autocomplete="tel" maxlength="40" class="mt-1 block w-full"/><InputError :message="form.errors.phone"/></div>
+            <div><InputLabel for="city" value="City / municipality"/><TextInput id="city" v-model="form.city" autocomplete="address-level2" maxlength="255" class="mt-1 block w-full"/><InputError :message="form.errors.city"/></div>
+            <div><InputLabel for="address" value="Address (private)"/><TextInput id="address" v-model="form.address" autocomplete="street-address" maxlength="255" class="mt-1 block w-full"/><InputError :message="form.errors.address"/></div>
+            <div><InputLabel for="bio" value="About you"/><textarea id="bio" v-model="form.bio" rows="4" maxlength="1000"/><InputError :message="form.errors.bio"/></div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
                 <p class="mt-2 text-sm text-gray-800">
