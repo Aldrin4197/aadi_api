@@ -125,3 +125,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/photos', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'upload'])->middleware('throttle:30,1');
     });
 });
+
+// Saved listings and reviews share the web/mobile contract.
+Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+    Route::get('/saved-listings', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'saved']);
+    Route::get('/offers/{service}/{id}/engagement', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'show']);
+    Route::put('/offers/{service}/{id}/save', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'save'])->middleware('throttle:30,1');
+    Route::delete('/offers/{service}/{id}/save', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'unsave'])->middleware('throttle:30,1');
+    Route::put('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'review'])->middleware('throttle:30,1');
+    Route::delete('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'deleteReview'])->middleware('throttle:30,1');
+});

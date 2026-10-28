@@ -24,9 +24,10 @@ class MarketplaceController extends Controller {
     }
     public function search(Request $r) { return response()->json($this->market->search($this->filters($r))); }
     public function show(Request $r, string $service, string $id) {
+        $r->validate(['reviewPage'=>'sometimes|integer|min:1']);
         $record = $this->market->find($service,$id); $item = $this->market->dto($record,$service);
         if ($item['status'] !== 'active') { abort_unless($r->user(),404); $this->market->authorize($r->user(),$record,$service); }
-        return $r->is('api/*') ? response()->json(['data'=>$item]) : Inertia::render('Marketplace/Show',['listing'=>$item]);
+        return $r->is('api/*') ? response()->json(['data'=>$item]) : Inertia::render('Marketplace/Show', ['listing'=>$item, 'engagement'=>app(\App\Services\ListingEngagement::class)->summary($service, $id, $r->user()?->id)]);
     }
     public function manage(Request $r) {
         $listings = collect(); $statuses = [];

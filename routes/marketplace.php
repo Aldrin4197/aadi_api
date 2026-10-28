@@ -20,3 +20,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/approvals', [Application::class,'queue'])->middleware(EnsureAdmin::class);
     Route::post('/admin/approvals/{id}/{service}', [Application::class,'decide'])->middleware(EnsureAdmin::class);
 });
+
+// Saved listings and reviews share the web/mobile contract.
+Route::middleware('auth')->group(function () {
+    Route::get('/saved-listings', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'saved']);
+    Route::put('/offers/{service}/{id}/save', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'save'])->middleware('throttle:30,1');
+    Route::delete('/offers/{service}/{id}/save', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'unsave'])->middleware('throttle:30,1');
+    Route::put('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'review'])->middleware('throttle:30,1');
+    Route::delete('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'deleteReview'])->middleware('throttle:30,1');
+});
