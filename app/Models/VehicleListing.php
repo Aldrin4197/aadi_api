@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VehicleListing extends Model
 {
+    public function getImagesAttribute($value): array
+    {
+        return \App\Services\ListingPhotos::resolve($value);
+    }
+
     use HasUlids, SoftDeletes;
 
     protected $fillable = [

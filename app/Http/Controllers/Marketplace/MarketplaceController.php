@@ -61,6 +61,7 @@ class MarketplaceController extends Controller {
     public function upload(Request $r) {
         $r->validate(['photo'=>'required|image|mimes:jpg,jpeg,png,webp|max:5120']);
         $path=$r->file('photo')->store('listing-photos/'.$r->user()->id,'public');
-        return response()->json(['url'=>\Illuminate\Support\Facades\Storage::disk('public')->url($path)],201);
+        if (!$path) throw \Illuminate\Validation\ValidationException::withMessages(['photo'=>'Could not save the photo. Please try again or contact support.']);
+        return response()->json(['url'=>\App\Services\ListingPhotos::url($path)],201);
     }
 }
