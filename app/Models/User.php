@@ -38,6 +38,12 @@ use Laravel\Sanctum\HasApiTokens;
 #[Hidden(['password', 'remember_token', 'address', 'avatar_path'])]
 class User extends Authenticatable
 {
+    public function getAvatarUrlAttribute($value): ?string
+    {
+        $path = $this->attributes['avatar_path'] ?? null;
+        return $path ? route('avatars.show', ['user'=>$this->id, 'filename'=>basename($path)]) : $value;
+    }
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasUlids;
 
