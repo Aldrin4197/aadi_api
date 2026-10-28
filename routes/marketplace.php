@@ -36,3 +36,5 @@ Route::get('/avatars/{user}/{filename}', [\App\Http\Controllers\AvatarController
 Route::middleware(['auth', \App\Http\Middleware\EnsureAdmin::class])->group(function () {
     Route::get('/admin/users/{user}/listings', [\App\Http\Controllers\Admin\UserListingsController::class, 'show']);
 });
+
+Route::get('/media/listing-photos/{owner}/{filename}', [\App\Http\Controllers\ListingPhotoController::class, 'show'])->where('owner', '[A-Za-z0-9]{26}')->where('filename', '[A-Za-z0-9_-]+\.(?i:jpg|jpeg|png|webp)')->name('listing-photos.show');

@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Listing extends Model
 {
+    public function getPhotosAttribute($value): array
+    {
+        return \App\Services\ListingPhotos::resolve($value);
+    }
+
     use HasFactory, HasUlids;
 
     protected $fillable = [
