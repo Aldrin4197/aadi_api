@@ -32,3 +32,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/providers/{user}', \App\Http\Controllers\Marketplace\ProviderProfileController::class);
 Route::get('/avatars/{user}/{filename}', [\App\Http\Controllers\AvatarController::class, 'show'])->name('avatars.show');
+
+Route::middleware(['auth', \App\Http\Middleware\EnsureAdmin::class])->group(function () {
+    Route::get('/admin/users/{user}/listings', [\App\Http\Controllers\Admin\UserListingsController::class, 'show']);
+});
