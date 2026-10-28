@@ -1,6 +1,6 @@
 <script setup>
+import ListingPreviewLink from '@/Components/Marketplace/ListingPreviewLink.vue';
 import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
 import ListingImage from './ListingImage.vue';
 import { compareKey, formatPrice } from './comparison.mjs';
 defineProps({ items: { type: Array, default: () => [] }, distanceLabel: { type: Function, required: true } });
@@ -33,7 +33,7 @@ defineExpose({ open: () => dialog.value?.showModal() });
           <tr><th scope="row">Not included</th><td v-for="item in items" :key="compareKey(item)">Confirm exclusions and extra charges with the provider.</td></tr>
           <tr><th scope="row">Listed status</th><td v-for="item in items" :key="compareKey(item)">{{ item.status === 'active' ? 'Available' : readable(item.status) }}</td></tr>
           <tr><th scope="row">Provider</th><td v-for="item in items" :key="compareKey(item)">{{ item.ownerName || 'Not provided' }}</td></tr>
-          <tr><th scope="row">Next step</th><td v-for="item in items" :key="compareKey(item)"><Link class="button primary" :href="`/offers/${item.service}/${item.id}`">View listing →</Link></td></tr>
+          <tr><th scope="row">Next step</th><td v-for="item in items" :key="compareKey(item)"><ListingPreviewLink class="button primary" :item="item">View listing →</ListingPreviewLink></td></tr>
         </tbody>
       </table>
     </div>
