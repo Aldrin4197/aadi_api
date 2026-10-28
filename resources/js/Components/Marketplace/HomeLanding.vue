@@ -60,7 +60,7 @@ const questions = [
         </section>
 
         <HomeFeatured :items="content.featured || []" />
-        <HomeCommunity :reviews="content.reviews || []" />
+        <HomeCommunity v-if="content.reviews?.length" :reviews="content.reviews" />
         <HomeDownload :downloads="content.downloads || {}" />
 
         <section id="for-providers" class="landing-section" aria-labelledby="provider-title" tabindex="-1">

@@ -94,7 +94,7 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <template v-if="isHome" #footer>
   <footer class="landing-footer">
     <div><Link href="/" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" width="92" height="42" loading="lazy" /></Link><p>Good things. Nearby.</p></div>
-    <nav aria-label="Footer navigation"><a href="#explore-map">Explore the map</a><a href="#featured-listings">Featured finds</a><a href="#community-reviews">Reviews</a><a href="#download-aadi">Get the app</a><Link href="/become-provider">Become a provider</Link><Link v-if="!page.props.auth?.user" href="/register">Create an account</Link><Link v-else href="/profile">Your account</Link></nav>
+    <nav aria-label="Footer navigation"><a href="#explore-map">Explore the map</a><a href="#featured-listings">Featured finds</a><a v-if="landing?.reviews?.length" href="#community-reviews">Reviews</a><a href="#download-aadi">Get the app</a><Link href="/become-provider">Become a provider</Link><Link v-if="!page.props.auth?.user" href="/register">Create an account</Link><Link v-else href="/profile">Your account</Link></nav>
   </footer>
 </template>
 </Layout></template>

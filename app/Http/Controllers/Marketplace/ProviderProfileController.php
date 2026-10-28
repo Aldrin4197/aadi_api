@@ -24,7 +24,7 @@ class ProviderProfileController extends Controller {
         $results = $query->latest()->paginate(12)->withQueryString()->through(function ($record) use ($market, $service) {
             $item = $market->dto($record, $service);
             // Public profile cards expose only preview fields, never exact coordinates or full description.
-            return array_intersect_key($item, array_flip(['id','service','title','type','price','priceUnit','currency','photos','ownerId','ownerName','providerApproved']))
+            return array_intersect_key($item, array_flip(['id','service','title','type','price','priceUnit','currency','photos','ownerId','ownerName','ownerAvatarUrl','providerApproved']))
                 + ['location'=>['city'=>$service === 'spaces' ? $record->city : null]];
         });
         $data = ['provider'=>[
