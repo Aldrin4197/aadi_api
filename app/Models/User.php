@@ -22,6 +22,7 @@ use Laravel\Sanctum\HasApiTokens;
     'landlord_status', 
     'phone', 
     'avatar_url',
+    'bio', 'city', 'address',
     'vehicle_owner_status',
     'vehicle_owner_business_name',
     'vehicle_owner_licenses',
@@ -34,7 +35,7 @@ use Laravel\Sanctum\HasApiTokens;
     'service_provider_service_area',
     'service_provider_years_experience',
 ])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'address', 'avatar_path'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */

@@ -41,6 +41,8 @@ Route::prefix('admin-demo')->name('admin.demo.')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::post('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'store'])->middleware('throttle:10,1');
+    Route::delete('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'destroy']);
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
