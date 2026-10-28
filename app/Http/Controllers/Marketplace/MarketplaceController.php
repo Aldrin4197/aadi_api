@@ -35,7 +35,6 @@ class MarketplaceController extends Controller {
             $records = $this->market->model($service)::where($service === 'raketeer' ? 'provider_id' : 'owner_id',$r->user()->id)->latest()->get();
             foreach ($records as $record) $listings->push($this->market->dto($record,$service));
         }
-        if (!$listings->count() && !in_array('approved', $statuses, true)) return redirect('/become-provider');
         return Inertia::render('Marketplace/Manage',['listings'=>$listings,'statuses'=>$statuses]);
     }
     public function form(Request $r, string $service, ?string $id = null) {

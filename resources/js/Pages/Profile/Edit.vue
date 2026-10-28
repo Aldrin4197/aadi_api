@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AccountPageHeader from '@/Components/Account/AccountPageHeader.vue';
 import AccountLayout from '@/Layouts/AccountLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
@@ -15,9 +16,8 @@ defineProps<{
     <Head title="Profile" />
 
     <AccountLayout>
-        <main class="account-profile">
-            <h1>Profile & settings</h1>
-            <p>Manage your personal details, password, and account.</p>
+        <main class="account-page account-profile">
+            <AccountPageHeader title="Profile & settings" description="Manage your personal details, password, and account."/>
             <section class="profile-section" aria-label="Personal information">
                 <UpdateProfileInformationForm
                     :must-verify-email="mustVerifyEmail"
