@@ -1,5 +1,5 @@
 <script setup>
-import ProviderBadge from '@/Components/Account/ProviderBadge.vue';
+import ListingOwner from './ListingOwner.vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import ListingImage from './ListingImage.vue';
@@ -32,13 +32,13 @@ function backdrop(event) {
             <header><span>Listing preview</span><button type="button" aria-label="Close listing preview" autofocus @click="close">×</button></header>
             <div class="preview-image"><ListingImage :src="item.photos?.[0]" :alt="item.title" :service="item.service" :type="item.type" /></div>
             <div class="preview-body">
-                <ProviderBadge :role="item.service" :approved="item.providerApproved"/><p class="preview-category">{{ categories[item.service] || 'Listing' }}</p>
+                <p class="preview-category">{{ categories[item.service] || 'Listing' }}</p>
                 <h2>{{ item.title }}</h2>
                 <p>{{ item.location?.city || 'Location details available after login' }}</p>
                 <p v-if="item.type" class="preview-type">{{ item.type.replace(/([A-Z])/g, ' $1') }}</p>
                 <p class="preview-rate"><strong>{{ formatPrice(item.price) }}</strong> / {{ item.priceUnit }}</p>
                 <p class="preview-note">Listed rates may exclude additional charges. Confirm availability and terms with the provider.</p>
-                <p v-if="item.ownerId && item.ownerName"><Link :href="`/providers/${item.ownerId}`">Listed by {{ item.ownerName }} · View profile →</Link></p>
+                <ListingOwner :listing="item"/>
                 <footer>
                     <p v-if="!page.props.auth?.user">Preview freely. Log in or register to access full listing details.</p>
                     <Link :href="`/offers/${item.service}/${item.id}`" class="preview-primary">{{ page.props.auth?.user ? 'View full details' : 'Log in to view full details' }} <span aria-hidden="true">→</span></Link>
