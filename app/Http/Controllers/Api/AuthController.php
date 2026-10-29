@@ -32,10 +32,14 @@ class AuthController extends Controller
             'service_provider_status' => ServiceProviderStatus::NONE,
         ]);
 
+        $verificationSent = true;
+        try { event(new \Illuminate\Auth\Events\Registered($user)); }
+        catch (\Throwable $exception) { $verificationSent = false; }
         $token = $user->createToken('mobile')->plainTextToken;
 
         return response()->json([
             'accessToken' => $token,
+            'verificationEmailSent' => $verificationSent,
             'refreshToken' => $token, // Same token for simplicity
             'user' => new UserResource($user->load('badges')),
         ], 201);

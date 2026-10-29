@@ -1,0 +1,7 @@
+<script setup lang="ts">
+withDefaults(defineProps<{providers?:string[]}>(), {providers:()=>[]});
+</script>
+<template><div v-if="providers.length" class="social-login"><a v-for="provider in providers" :key="provider" :href="`/auth/${provider}/redirect`"><svg v-if="provider === 'google'" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2.1H12v4h5.4a4.6 4.6 0 0 1-2 3c-1 .7-2.1 1-3.4 1a6.1 6.1 0 1 1 0-12.2c1.5 0 2.8.5 3.8 1.5l2.9-2.8A10 10 0 1 0 12 22c5.8 0 9.6-4.1 9.6-9.8Z"/></svg><svg v-else viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 22v-9h3l.5-4H14V6.5c0-1.2.3-2 2-2h2V1.1A25 25 0 0 0 15 1c-3 0-5 1.8-5 5v3H7v4h3v9Z"/></svg>Continue with {{ provider === 'google' ? 'Google' : 'Facebook' }}</a><p>or use your email</p></div></template>
+<style scoped>
+.social-login { display:grid; gap:10px; margin-block:20px; }.social-login a { display:flex; justify-content:center; align-items:center; gap:12px; min-height:48px; border:1px solid #cbdedb; border-radius:12px; padding:10px 16px; font-size:14px; font-weight:600; background:white; color:#193e3b; text-decoration:none; }.social-login a:hover { background:#edf7f5; }.social-login a:focus-visible { outline:3px solid #e6bb51; outline-offset:3px; }.social-login svg { width:20px; height:20px; }.social-login p { text-align:center; font-size:12px; color:#586e6c; margin-top:8px; }
+</style>

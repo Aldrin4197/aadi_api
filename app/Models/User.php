@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\LandlordStatus;
 use App\Enums\ServiceProviderStatus;
 use App\Enums\VehicleOwnerStatus;
@@ -36,7 +36,7 @@ use Laravel\Sanctum\HasApiTokens;
     'service_provider_years_experience',
 ])]
 #[Hidden(['password', 'remember_token', 'address', 'avatar_path'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     public function getAvatarUrlAttribute($value): ?string
     {
