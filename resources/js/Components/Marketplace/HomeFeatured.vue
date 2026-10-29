@@ -1,4 +1,5 @@
 <script setup>
+import ListingViewButton from '@/Components/Marketplace/ListingViewButton.vue';
 import ListingPreviewLink from '@/Components/Marketplace/ListingPreviewLink.vue';
 import { computed, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
@@ -29,7 +30,7 @@ const visible = computed(() => props.items.filter(item => active.value === 'all'
                     <span class="featured-category">{{ categories[item.service] }}</span>
                     <h3><ListingPreviewLink :item="item">{{ item.title }}</ListingPreviewLink></h3>
                     <p>{{ item.location.city || item.location.address || 'Ask the provider for the location' }}</p>
-                    <div class="featured-listing-bottom"><strong>{{ formatPrice(item.price) }} <small>/ {{ item.priceUnit }}</small></strong><ListingPreviewLink :item="item" :aria-label="`Details for ${item.title}`">Details <span aria-hidden="true">↗</span></ListingPreviewLink></div>
+                    <div class="featured-listing-bottom"><strong>{{ formatPrice(item.price) }} <small>/ {{ item.priceUnit }}</small></strong><ListingViewButton :item="item"/></div>
                 </div>
             </article>
         </div>
