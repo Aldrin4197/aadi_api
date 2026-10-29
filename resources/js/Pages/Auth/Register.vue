@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import SocialLoginButtons from '@/Components/Auth/SocialLoginButtons.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+
+defineProps<{ socialProviders?: string[] }>();
 
 const form = useForm({
     name: '',
@@ -26,7 +29,8 @@ const submit = () => {
     <GuestLayout>
         <Head title="Register" />
 
-        <h1 class="text-2xl font-semibold text-[#193e3b] mb-2">Your neighborhood awaits.</h1><p class="text-sm text-gray-500 mb-6">Create your User account to view properties, vehicles, and rakets. If you selected a listing, you’ll return to it after registration.</p>
+        <h1 class="text-2xl font-semibold text-[#193e3b] mb-2">Your neighborhood awaits.</h1><p class="text-sm text-gray-500 mb-6">Create your User account to view properties, vehicles, and rakets. Verify your email to finish setting up your account.</p>
+        <SocialLoginButtons :providers="socialProviders"/>
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="name" value="Name" />

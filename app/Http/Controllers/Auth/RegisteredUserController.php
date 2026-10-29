@@ -21,7 +21,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', ['socialProviders'=>app(\App\Services\SocialLogin::class)->providers()]);
     }
 
     /**
@@ -43,12 +43,12 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
-
         Auth::login($user);
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        try { event(new Registered($user)); }
+        catch (\Throwable $exception) { return redirect()->route('verification.notice')->with('status', 'delivery-failed'); }
+        return redirect()->route('verification.notice');
     }
 }

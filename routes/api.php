@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Authentication routes (public)
-Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
 Route::post('auth/login', [AuthController::class, 'login']);
 
 // Protected routes (require authentication)
@@ -137,3 +137,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/v1/providers/{user}', \App\Http\Controllers\Marketplace\ProviderProfileController::class);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('v1/email-verification', [\App\Http\Controllers\Api\EmailVerificationController::class, 'show']);
+    Route::post('v1/email-verification/resend', [\App\Http\Controllers\Api\EmailVerificationController::class, 'resend'])->middleware('throttle:6,1');
+});

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SocialLoginButtons from '@/Components/Auth/SocialLoginButtons.vue';
 import Checkbox from '@/Components/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
@@ -8,6 +9,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps<{
+    socialProviders?: string[];
     canResetPassword?: boolean;
     status?: string;
 }>();
@@ -36,6 +38,7 @@ const submit = () => {
         </div>
 
         <h1 class="text-2xl font-semibold text-[#193e3b] mb-2">Welcome back.</h1><p class="text-sm text-gray-500 mb-6">Log in to view listing details and continue exploring Aadi.</p>
+        <SocialLoginButtons :providers="socialProviders"/>
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="email" value="Email" />
