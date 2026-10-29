@@ -24,12 +24,12 @@ class ProviderProfileController extends Controller {
         $results = $query->latest()->paginate(12)->withQueryString()->through(function ($record) use ($market, $service) {
             $item = $market->dto($record, $service);
             // Public profile cards expose only preview fields, never exact coordinates or full description.
-            return array_intersect_key($item, array_flip(['id','service','title','type','price','priceUnit','currency','photos','ownerId','ownerName','ownerAvatarUrl','providerApproved']))
+            return array_intersect_key($item, array_flip(['id','service','title','type','price','priceUnit','currency','photos','ownerId','ownerName','ownerAvatarUrl','ownerEmailVerified','providerApproved']))
                 + ['location'=>['city'=>$service === 'spaces' ? $record->city : null]];
         });
         $data = ['provider'=>[
             'id'=>(string)$user->id, 'name'=>$user->name, 'avatar_url'=>$user->avatar_url,
-            'bio'=>$user->bio, 'city'=>$user->city, 'memberSince'=>$user->created_at?->format('Y'),
+            'emailVerified'=>$user->email_verified_at !== null, 'bio'=>$user->bio, 'city'=>$user->city, 'memberSince'=>$user->created_at?->format('Y'),
             'approvedRoles'=>$approved,
         ], 'counts'=>$counts, 'service'=>$service, 'results'=>$results];
         return $request->is('api/*') ? response()->json($data) : Inertia::render('Marketplace/ProviderProfile', $data);

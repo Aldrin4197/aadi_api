@@ -34,6 +34,7 @@ class Marketplace
             'id' => (string) $r->id, 'service' => $service,
             'ownerId' => (string) ($service === 'raketeer' ? $r->provider_id : $r->owner_id),
             'ownerName' => $service === 'raketeer' ? $r->provider?->name : $r->owner?->name,
+            'ownerEmailVerified' => ($service === 'raketeer' ? $r->provider : $r->owner)?->email_verified_at !== null,
             'ownerAvatarUrl' => ($service === 'raketeer' ? $r->provider : $r->owner)?->avatar_url,
             'ownerBio' => ($service === 'raketeer' ? $r->provider : $r->owner)?->bio,
             'providerApproved' => ($service === 'raketeer' ? $r->provider : $r->owner)?->{$this->statusField($service)}?->value === 'approved',
