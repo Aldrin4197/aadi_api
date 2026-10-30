@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import L from 'leaflet';
+import { markerPath } from './mapMarkers.mjs';
 import 'leaflet/dist/leaflet.css';
 const props = defineProps({ listings: { type: Array, default: () => [] }, center: { type: Array, default: () => [12.0, 124.75] }, selected: String, pick: Boolean, searchable: { type: Boolean, default: true }, fitListings: Boolean, immersive: Boolean, preview: { type: Boolean, default: true }, scrollWheelZoom: { type: Boolean, default: true } });
 const selectedListing = computed(() => props.listings.find(item => item.id === props.selected));
@@ -22,15 +23,39 @@ function resetView() {
   else map.setView(props.center,12);
 }
 const money = n => new Intl.NumberFormat('en-PH', {maximumFractionDigits:0}).format(n);
+const listingMarkers = new Map();
+function selectStyles() {
+  listingMarkers.forEach((marker,id)=>{
+    const active=props.selected===id;
+    marker.setZIndexOffset(active?1000:0);
+    const node=marker.getElement();
+    node?.classList.toggle('selected',active);
+    node?.setAttribute('aria-pressed',String(active));
+  });
+}
 function draw() {
   if (!map) return;
-  markers.clearLayers();
+  markers.clearLayers(); listingMarkers.clear();
   props.listings.forEach(item => {
     if (item.location.lat == null || item.location.lng == null) return;
-    const label = document.createElement('span'); label.textContent = '₱' + money(item.price) + ' / ' + item.priceUnit;
-    const icon = L.divIcon({html:label, className:'price-pin' + (props.selected === item.id ? ' selected' : ''), iconSize:[128,32],iconAnchor:[64,16]});
-    L.marker([item.location.lat,item.location.lng],{icon, title:`${item.title}, ₱${money(item.price)} per ${item.priceUnit}`, keyboard:true}).on('click',()=>emit('select',item.id)).addTo(markers);
+    const glyph=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    glyph.setAttribute('viewBox','0 0 24 24');glyph.setAttribute('aria-hidden','true');
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',markerPath(item));glyph.append(path);
+    const icon=L.divIcon({html:glyph,className:'aadi-category-pin',iconSize:[44,44],iconAnchor:[22,22]});
+    const title=`${item.title}, ₱${money(item.price)} per ${item.priceUnit}`;
+    const marker=L.marker([item.location.lat,item.location.lng],{icon,title,alt:title,keyboard:true}).on('click',()=>emit('select',item.id)).addTo(markers);
+    marker.getElement()?.setAttribute('aria-label',title);
+    marker.getElement()?.addEventListener('keydown',event=>{if(event.key===' '){event.preventDefault();emit('select',item.id);}});
+    listingMarkers.set(item.id,marker);
   });
+  selectStyles();
+}
+function mapPadding() {
+  const bounds=el.value.getBoundingClientRect(), parent=el.value.closest('.map-explorer');
+  const controls=parent?.querySelector('.explorer-controls')?.getBoundingClientRect();
+  const results=parent?.querySelector('.map-results');
+  const bottom=results && getComputedStyle(results).display!=='none'?results.getBoundingClientRect():null;
+  return {top:Math.min(bounds.height*.35,Math.max(24,(controls?.bottom||bounds.top)-bounds.top+16)),bottom:Math.min(bounds.height*.45,Math.max(24,bottom?bounds.bottom-bottom.top+16:40))};
 }
 onMounted(() => {
   map=L.map(el.value,{scrollWheelZoom:props.scrollWheelZoom,zoomControl:false}).setView(props.center,12);
@@ -47,15 +72,17 @@ onMounted(() => {
   resize = new ResizeObserver(()=>map.invalidateSize()); resize.observe(el.value);
 });
 watch(()=>props.scrollWheelZoom,enabled=>{if(map) { if(enabled) map.scrollWheelZoom.enable(); else map.scrollWheelZoom.disable(); }});
-watch(()=>[props.listings,props.selected],draw,{deep:true});
+watch(()=>props.listings,draw,{deep:true});
+watch(()=>props.selected,selectStyles);
 function fit() {
   if (!map || !props.fitListings) return;
   const points=props.listings.filter(item=>item.location.lat!=null && item.location.lng!=null).map(item=>[item.location.lat,item.location.lng]);
-  if(points.length) map.fitBounds(L.latLngBounds(points),props.immersive ? {paddingTopLeft:[35,230],paddingBottomRight:[35,250],maxZoom:14} : {padding:[45,45],maxZoom:14});
+  const padding=mapPadding();
+  if(points.length) map.fitBounds(L.latLngBounds(points),props.immersive ? {paddingTopLeft:[54,padding.top],paddingBottomRight:[54,padding.bottom],maxZoom:14} : {padding:[45,45],maxZoom:14});
 }
 watch(()=>props.listings,fit,{deep:true});
 watch(()=>props.center,center=>{if(map) { drawCenter(); if(props.fitListings && !props.selected) fit(); else map.setView(center,map.getZoom()); }},{deep:true});
-watch(()=>props.selected,id=>{if(!props.immersive||!map)return;const item=props.listings.find(l=>l.id===id);if(item?.location.lat!=null&&item?.location.lng!=null)map.panTo([item.location.lat,item.location.lng]);});
+watch(()=>props.selected,id=>{if(!props.immersive||!map)return;const item=props.listings.find(l=>l.id===id);if(item?.location.lat!=null&&item?.location.lng!=null){const padding=mapPadding();const point=map.project([item.location.lat,item.location.lng],map.getZoom());point.y-=(padding.top-padding.bottom)/2;map.panTo(map.unproject(point,map.getZoom()),{animate:!matchMedia('(prefers-reduced-motion: reduce)').matches});}});
 onBeforeUnmount(()=>{resize?.disconnect();map?.remove();});
 function search(){const c=map.getCenter();emit('search',[c.lat,c.lng]);}
 </script>
@@ -80,5 +107,13 @@ function search(){const c=map.getCenter();emit('search',[c.lat,c.lng]);}
 .map-explorer .aadi-map .map-reset { left:auto; right:10px; top:154px; }
 .aadi-map .map-search { border-radius:999px; border-color:var(--line); box-shadow:0 3px 12px #0b3a3814; }
 .aadi-map .leaflet-control-attribution { background:#fffffff0; color:#536661; font-size:10px; }
-@media(max-width:700px) { .map-explorer .aadi-map .map-reset { top:406px; right:12px; } }
+@media(max-width:700px), (max-width:950px) and (max-height:550px) { .map-explorer .aadi-map .map-reset { top:180px; right:12px; } }
+</style>
+
+<style>
+.aadi-map .aadi-category-pin{display:grid;place-items:center;background:#fff;color:#137671;border:2px solid #137671;border-radius:50%;box-shadow:0 2px 6px #0003;cursor:pointer;transition:background .15s ease,color .15s ease;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.aadi-category-pin svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:width .15s ease,height .15s ease}
+.aadi-map .aadi-category-pin.selected{background:#137671;color:white;box-shadow:0 0 0 4px #f6ca52,0 3px 9px #0004}
+.aadi-category-pin.selected svg{width:24px;height:24px}.aadi-category-pin:focus-visible{outline:3px solid #f59e42;outline-offset:5px}
+@media(prefers-reduced-motion:reduce){.aadi-map .aadi-category-pin,.aadi-category-pin svg{transition:none}}
 </style>
