@@ -8,10 +8,11 @@ import PersonalOnboarding from '@/Components/Onboarding/PersonalOnboarding.vue';
 import PwaNotice from '@/Components/Pwa/PwaNotice.vue';
 import { ZiggyVue } from 'ziggy-js';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Aadi';
+// Keep browser branding independent of legacy Laravel environment defaults.
+const appName = 'Aadi';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => title && title !== appName ? `${title} — ${appName}` : appName,
     // Keep provider URLs and server props stable while presenting the guided modal.
     resolve: (name) =>
         resolvePageComponent(
