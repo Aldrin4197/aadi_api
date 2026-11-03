@@ -63,4 +63,6 @@ Route::prefix('admin-demo')->name('admin.demo.')->group(function () {
     })->name('users');
 });
 
+Route::put('/account/onboarding', [\App\Http\Controllers\OnboardingController::class, 'update'])->middleware(['auth','throttle:20,1']);
+
 require __DIR__.'/auth.php';

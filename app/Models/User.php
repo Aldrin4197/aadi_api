@@ -35,7 +35,7 @@ use Laravel\Sanctum\HasApiTokens;
     'service_provider_service_area',
     'service_provider_years_experience',
 ])]
-#[Hidden(['password', 'remember_token', 'address', 'avatar_path'])]
+#[Hidden(['password', 'remember_token', 'address', 'avatar_path', 'onboarding_data', 'onboarding_status'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     public function getAvatarUrlAttribute($value): ?string
@@ -56,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'onboarding_data' => 'array',
             'is_admin' => 'boolean',
             'password' => 'hashed',
             'landlord_status' => LandlordStatus::class,
