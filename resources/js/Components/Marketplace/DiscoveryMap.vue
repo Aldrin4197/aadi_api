@@ -52,6 +52,7 @@ function draw() {
 }
 function mapPadding() {
   const bounds=el.value.getBoundingClientRect(), parent=el.value.closest('.map-explorer');
+  if (parent?.classList.contains('has-searched') && matchMedia('(min-width: 951px)').matches) return {top:24,bottom:24};
   const controls=parent?.querySelector('.explorer-controls')?.getBoundingClientRect();
   const results=parent?.querySelector('.map-results');
   const bottom=results && getComputedStyle(results).display!=='none'?results.getBoundingClientRect():null;
@@ -69,7 +70,7 @@ onMounted(() => {
   drawCenter();
   markers=L.layerGroup().addTo(map); draw(); fit();
   map.on('click', e=>{ if(props.pick) emit('pick',[e.latlng.lat,e.latlng.lng]); });
-  resize = new ResizeObserver(()=>map.invalidateSize()); resize.observe(el.value);
+  resize = new ResizeObserver(()=>{ map.invalidateSize(); if (!props.selected) fit(); }); resize.observe(el.value);
 });
 watch(()=>props.scrollWheelZoom,enabled=>{if(map) { if(enabled) map.scrollWheelZoom.enable(); else map.scrollWheelZoom.disable(); }});
 watch(()=>props.listings,draw,{deep:true});
