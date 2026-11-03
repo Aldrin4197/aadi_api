@@ -3,7 +3,11 @@ import { nextTick, onBeforeUnmount, onMounted, ref, computed, useId, watch } fro
 
 const props = defineProps<{ resetKey: string; visible?: boolean; selectedId?: string | null }>();
 const id = useId();
-const mode = ref('carousel');
+const preferredMode = ref('carousel');
+const mobile = ref(false);
+const mode = computed(() => mobile.value ? preferredMode.value : 'carousel');
+let viewport: MediaQueryList | undefined;
+function updateViewport() { mobile.value = viewport?.matches ?? false; }
 const position = ref(1), total = ref(0);
 const modes = [{key:'carousel', label:'Carousel', icon:'M3 5h5v14H3zM11 5h10v14H11z'}, {key:'list', label:'List', icon:'M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1'}, {key:'single', label:'Swipe', icon:'M7 4h10v16H7zM3 9l-2 3 2 3M21 9l2 3-2 3'}];
 const description = computed(() => mode.value === 'list' ? 'Matching listings' : 'Listing cards. Use left and right arrow keys to browse.');
@@ -60,19 +64,26 @@ async function refresh(reset = false) {
     measure();
 }
 onMounted(() => {
-    try { const saved = localStorage.getItem('aadi-listing-view'); if (modes.some(item => item.key === saved)) mode.value = saved!; } catch {}
+    viewport = matchMedia('(max-width: 700px)');
+    updateViewport();
+    viewport.addEventListener('change', updateViewport);
+    try { const saved = localStorage.getItem('aadi-listing-view'); if (modes.some(item => item.key === saved)) preferredMode.value = saved!; } catch {}
     observer = new ResizeObserver(measure); refresh();
 });
-watch(mode, async () => { try { localStorage.setItem('aadi-listing-view', mode.value); } catch {} await refresh(true); revealSelected(); });
+watch(preferredMode, () => { try { localStorage.setItem('aadi-listing-view', preferredMode.value); } catch {} });
+watch(mode, async () => { await refresh(true); revealSelected(); });
 watch(() => props.selectedId, async () => { await nextTick(); revealSelected(); });
 watch(() => props.resetKey, () => refresh(true));
 watch(() => props.visible, () => refresh());
-onBeforeUnmount(() => observer?.disconnect());
+onBeforeUnmount(() => {
+    observer?.disconnect();
+    viewport?.removeEventListener('change', updateViewport);
+});
 </script>
 
 <template>
     <div class="listing-carousel" :class="'view-' + mode" role="region" aria-label="Matching listing cards">
-        <div class="view-toolbar"><div class="view-modes" role="group" aria-label="Listing view"><button v-for="view in modes" :key="view.key" type="button" :aria-pressed="mode === view.key" :aria-controls="id" @click="mode = view.key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path :d="view.icon"/></svg>{{ view.label }}</button></div><span v-if="mode === 'single'" class="view-position" aria-live="polite">{{ position }} / {{ total }}</span></div>
+        <div v-if="mobile" class="view-toolbar"><div class="view-modes" role="group" aria-label="Listing view"><button v-for="view in modes" :key="view.key" type="button" :aria-pressed="mode === view.key" :aria-controls="id" @click="preferredMode = view.key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path :d="view.icon"/></svg>{{ view.label }}</button></div><span v-if="mode === 'single'" class="view-position" aria-live="polite">{{ position }} / {{ total }}</span></div>
         <div :id="id" ref="rail" class="map-card-rail carousel-rail" tabindex="0"
             :aria-label="description" @scroll.passive="measure" @keydown="keydown">
             <slot />
