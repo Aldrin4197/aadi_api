@@ -1,4 +1,5 @@
 <script setup>
+import ListingViewButton from '@/Components/Marketplace/ListingViewButton.vue';
 import ListingPreviewLink from '@/Components/Marketplace/ListingPreviewLink.vue';
 import { ref } from 'vue';
 import ListingImage from './ListingImage.vue';
@@ -33,7 +34,7 @@ defineExpose({ open: () => dialog.value?.showModal() });
           <tr><th scope="row">Not included</th><td v-for="item in items" :key="compareKey(item)">Confirm exclusions and extra charges with the provider.</td></tr>
           <tr><th scope="row">Listed status</th><td v-for="item in items" :key="compareKey(item)">{{ item.status === 'active' ? 'Available' : readable(item.status) }}</td></tr>
           <tr><th scope="row">Provider</th><td v-for="item in items" :key="compareKey(item)">{{ item.ownerName || 'Not provided' }}</td></tr>
-          <tr><th scope="row">Next step</th><td v-for="item in items" :key="compareKey(item)"><ListingPreviewLink class="button primary" :item="item">View listing →</ListingPreviewLink></td></tr>
+          <tr><th scope="row">Next step</th><td v-for="item in items" :key="compareKey(item)"><ListingViewButton :item="item"/></td></tr>
         </tbody>
       </table>
     </div>
