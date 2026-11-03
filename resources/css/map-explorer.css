@@ -98,3 +98,47 @@
  .explorer-controls .service-tabs button{padding:6px;gap:5px}
 }
 @media(prefers-reduced-motion:reduce){.map-explorer .explorer-controls{transition:none}}
+
+/* Mobile browser and standalone PWA: preserve usable map space. */
+@media(max-width:700px), (max-width:950px) and (max-height:550px){
+ .marketplace .market-header{padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px));min-height:64px;flex-wrap:nowrap}
+ .marketplace .market-header .brand span,.marketplace .market-header .landing-nav-link{display:none}
+ .marketplace .market-header .brand img{width:64px;height:36px;object-fit:contain}
+ .marketplace .market-header nav{gap:10px;font-size:12px;min-width:0}
+ .marketplace .market-header nav>a,.marketplace .market-header nav>button{min-height:44px;display:inline-flex;align-items:center}
+ .marketplace .market-header .button{padding:8px 10px}
+ .marketplace .map-explorer{height:calc(100dvh - 64px - env(safe-area-inset-top,0px));min-height:480px;scroll-margin-top:0}
+ .map-explorer .explorer-controls,.map-explorer .explorer-controls.is-initial{top:12px;transform:translateX(-50%);max-height:calc(100% - 24px);overflow-y:auto;overscroll-behavior:contain}
+ .map-explorer .explorer-controls.is-initial.is-compact{top:12px;transform:translateX(-50%)}
+ .map-explorer .city-search-panel{position:relative;top:auto;margin-top:8px;width:100%;max-width:100%}
+ .map-explorer .explorer-controls:not(.is-compact){z-index:700;box-shadow:0 12px 36px #0b3a3833}
+ .map-explorer:has(.explorer-controls:not(.is-compact)) .map-results{visibility:hidden;pointer-events:none}
+ .map-explorer .explorer-search input,.map-explorer .explorer-search select,.map-explorer .explorer-filters input,.map-explorer .explorer-filters select{font-size:16px}
+ .map-explorer .map-search,.map-explorer:has(.is-compact) .map-search{top:84px;left:12px;right:auto;min-height:44px;font-size:12px;max-width:calc(100% - 80px);padding:8px 12px}
+ .map-explorer .leaflet-top.leaflet-right,.map-explorer:has(.is-compact) .leaflet-top.leaflet-right{top:78px;right:2px}
+ .map-explorer .aadi-map .map-reset{top:180px;right:12px;width:44px;height:44px}
+ .map-explorer .aadi-map .leaflet-bar a{width:44px;height:44px;line-height:44px}
+ .map-explorer .map-results{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+ .map-explorer.has-comparison .map-results{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+ .map-explorer .map-results-heading{padding:7px 10px;margin:0 12px 6px;max-width:calc(100% - 24px);gap:4px;font-size:11px}
+ .map-results-heading>span{display:block;max-width:100%;line-height:1.4}
+ .map-pages{gap:12px;align-items:center}.map-pages button{min-height:44px}
+ .map-explorer .map-listing{flex-basis:calc(100vw - 44px);grid-template-columns:76px minmax(0,1fr);max-width:380px}
+ .map-explorer .map-listing-photo{min-height:132px}.map-explorer .map-listing-body{padding:10px}.map-explorer .map-listing h2{font-size:14px}
+ .map-explorer .map-card-actions{gap:6px;flex-wrap:wrap}.map-explorer .map-card-actions>button{min-height:44px}
+ .map-explorer .map-rate{font-size:18px}.map-explorer .map-card-rail{scroll-snap-type:x mandatory;overscroll-behavior-x:contain}
+ .map-explorer .map-compare-bar{bottom:calc(24px + env(safe-area-inset-bottom,0px));padding:6px 10px;gap:8px;max-width:calc(100% - 24px)}
+ .map-compare-bar .compare-thumbnails{display:none}.map-compare-bar .compare-clear,.map-compare-bar .button{min-height:44px}
+ .map-explorer :is(button,a){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+ .map-explorer button{user-select:none;-webkit-user-select:none}.map-explorer button:active{filter:brightness(.94)}
+ .aadi-map .leaflet-control-attribution{padding-bottom:env(safe-area-inset-bottom,0px);max-width:calc(100vw - 12px)}
+ .compact-icon-button:hover,.compact-search-summary:hover{background:transparent}
+}
+@media(max-width:950px) and (max-height:550px){
+ .marketplace .map-explorer{min-height:320px}
+ .map-explorer .map-results{left:0;right:76px}
+ .map-explorer .map-results-heading>span{display:none}
+ .map-explorer .map-results-heading:not(:has(.map-pages)){display:none}
+ .map-explorer .map-listing{flex-basis:310px;max-width:calc(100vw - 100px)}
+}
+@media(hover:hover) and (pointer:fine){.compact-icon-button:hover,.compact-search-summary:hover{background:var(--aadi-tint)}}
