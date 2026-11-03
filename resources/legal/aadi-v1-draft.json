@@ -1,0 +1,94 @@
+{
+  "version": "aadi-v1-draft",
+  "status": "draft",
+  "effectiveDate": "",
+  "operator": {
+    "name": "",
+    "address": "",
+    "email": ""
+  },
+  "terms": [
+    {
+      "title": "Operator and eligibility",
+      "body": "[CONFIRM operator legal name, business address, support email, effective date, and minimum age before publishing.] Proposed eligibility: registered users and providers must be at least 18 and capable of entering the relevant agreement. Visitors may browse public previews without an account."
+    },
+    {
+      "title": "What Aadi provides",
+      "body": "Aadi connects people with independent property providers, vehicle owners, and local service providers. Unless expressly stated, Aadi does not own or directly supply the offerings. Nothing in these Terms excludes duties or rights imposed by applicable law. [CONFIRM whether launch includes only inquiries or also bookings, payments, deposits, commissions, refunds, or mediation.]"
+    },
+    {
+      "title": "Your account and listings",
+      "body": "Provide accurate information, protect your credentials, and report suspected misuse. Do not impersonate another person or submit documents without lawful authority. Listings must accurately describe prices, availability, location, photos, extra charges, restrictions, and material conditions. Do not advertise unlawful offerings or use photographs without permission."
+    },
+    {
+      "title": "Provider responsibilities",
+      "body": "Providers must have authority to offer their property, vehicle, or service and hold applicable permissions and qualifications. Approval is separate for Landlord, UV Owner, and Raketeer. Providers must keep supporting information current and disclose material restrictions before an agreement is made."
+    },
+    {
+      "title": "Verification and trust indicators",
+      "body": "Each badge represents only the check explained in its description. Email verification confirms control of an email address; reviewed identity and provider documents are distinct checks. A badge is not a guarantee of ownership, safety, availability, service quality, payment, or performance. Users should examine the offering and agree on transaction terms. Planned trust scores must not be presented as active until their evidence and principal criteria are explained. Missing activity alone is not misconduct."
+    },
+    {
+      "title": "Reviews and reports",
+      "body": "Reviews must reflect genuine eligible experiences. Self-reviews, fabricated feedback, coordinated rating manipulation, and coercion to alter a review are prohibited. Negative feedback is not removed merely because a provider disagrees. A report alone is not a finding of wrongdoing. Aadi may investigate evidence and correct inaccurate trust information."
+    },
+    {
+      "title": "Agreements between users",
+      "body": "Before proceeding, confirm the offering, total price, deposits, additional fees, payment arrangements, cancellation terms, and responsibilities for damage or incomplete work. An inquiry alone does not confirm a booking. Any platform payment or booking service needs its own clearly disclosed terms. Mandatory consumer rights remain unaffected."
+    },
+    {
+      "title": "Acceptable use and content",
+      "body": "Do not use Aadi for fraud, harassment, unlawful discrimination, identity theft, security interference, or sharing another person’s private information without lawful authority. You retain your content rights and permit Aadi to host and display your listing content to operate the service. This permission does not authorize public display or advertising use of private verification documents."
+    },
+    {
+      "title": "Moderation and appeals",
+      "body": "Aadi may request information, remove prohibited content, or restrict accounts when reasonably necessary to enforce rules, protect users, or meet legal obligations. Where appropriate and legally permitted, affected users receive a reason and a review channel. Urgent protective action may precede notice. [CONFIRM support contact, report channel, appeal handling, and whether transaction mediation is offered.]"
+    },
+    {
+      "title": "Changes, privacy, and rights",
+      "body": "Material revisions will be notified with their effective date. Acceptance of these Terms does not grant blanket permission for unrelated processing or marketing. The Privacy Notice explains personal-data handling. No provision removes liability or remedies that cannot lawfully be excluded. Philippine law applies, subject to mandatory protections and jurisdiction rules."
+    }
+  ],
+  "privacy": [
+    {
+      "title": "Draft privacy notice — not publication-ready",
+      "body": "[CONFIRM the personal information controller, privacy contact, actual processors/hosting locations, purposes and legal bases, disclosures, retention periods, security procedures, data-subject request process, and international transfers before publishing.] This notice must describe actual operations; accepting the Terms is not a substitute for identifying an appropriate lawful basis."
+    },
+    {
+      "title": "Information and intended purposes",
+      "body": "Aadi uses account/contact information for sign-in and communications; optional onboarding preferences for stored user preferences; listings and public profile information for marketplace display; and inquiries/reviews for marketplace interactions. Provider documents may contain sensitive information and require a specific, reviewed basis and clear notice before collection. Location permissions and optional profile preferences are separate from Terms acceptance."
+    },
+    {
+      "title": "Verification documents",
+      "body": "Provider verification may involve identity documents, property authority, vehicle OR/CR, and relevant certifications or business records. These documents are intended for private verification by the applicant and authorized reviewers, not public listing galleries or marketing. [CONFIRM required fields, permitted redactions, access controls, disclosure rules, and deletion/retention schedules.]"
+    },
+    {
+      "title": "Acceptance records",
+      "body": "Aadi records your account identifier, agreement context/role, version, acceptance time, content hash, and a snapshot of the document. This feature does not additionally collect IP addresses or device fingerprints. The implementation deletes these records when the account is deleted. [CONFIRM that this retention behavior matches the approved retention policy before release.]"
+    },
+    {
+      "title": "Your choices and requests",
+      "body": "Optional onboarding may be skipped. Marketing permission is not collected by this agreement. Reading acknowledgment of this notice is not blanket consent to unrelated processing. [CONFIRM privacy contact and procedures for access, correction, deletion, objection, and complaints, subject to applicable obligations and lawful retention exceptions.]"
+    }
+  ],
+  "providers": {
+    "spaces": [
+      {
+        "title": "Landlord responsibilities",
+        "body": "I confirm I own the property or have authority to offer it, will describe it and its charges accurately, and will provide authentic, current documents relevant to the application. I understand review is specific to this provider role and does not guarantee an individual listing."
+      }
+    ],
+    "haul": [
+      {
+        "title": "UV Owner responsibilities",
+        "body": "I confirm I have authority to offer the vehicle, will accurately describe its condition, permitted use, rental requirements, and charges, and will provide authentic, current OR/CR and other applicable documents. Approval does not guarantee the safety or suitability of an individual vehicle."
+      }
+    ],
+    "raketeer": [
+      {
+        "title": "Raketeer responsibilities",
+        "body": "I will accurately describe my skills, experience, qualifications, service scope, and charges, hold any credentials required for the work, and submit authentic supporting records. Role approval is not a guarantee of service quality or a substitute for a legally required professional licence."
+      }
+    ]
+  }
+}
