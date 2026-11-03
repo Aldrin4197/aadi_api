@@ -15,7 +15,8 @@ class ProviderApplicationController extends Controller {
         foreach (array_keys(Marketplace::TYPES) as $service) {
             $statuses[$service] = $request->user()->{$this->market->statusField($service)}?->value ?? 'none';
         }
-        return Inertia::render('Marketplace/ProviderStart', ['statuses' => $statuses]);
+        $applications = ProviderApplication::where('user_id', $request->user()->id)->get()->mapWithKeys(fn ($application) => [$application->service => ['status'=>$application->status, 'reviewNote'=>$application->review_note]]);
+        return Inertia::render('Marketplace/ProviderStart', ['statuses' => $statuses, 'applications' => (object) $applications->all()]);
     }
     public function show(Request $request, string $service) {
         $field = $this->market->statusField($service);
@@ -110,7 +111,15 @@ class ProviderApplicationController extends Controller {
         abort_unless(ctype_digit($index), 404);
         $document = $application->documents[(int) $index] ?? null;
         abort_unless($document && Storage::disk('local')->exists($document['path']), 404);
-        return Storage::disk('local')->download($document['path'], $document['name'], ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        $headers = ['Cache-Control'=>'private, no-store', 'X-Content-Type-Options'=>'nosniff'];
+        if ($request->boolean('preview')) {
+            $mime = Storage::disk('local')->mimeType($document['path']);
+            abort_unless(in_array($mime, ['image/jpeg','image/png','image/webp','application/pdf'], true), 415);
+            return Storage::disk('local')->response($document['path'], $document['name'], $headers + [
+                'Content-Type'=>$mime, 'Content-Security-Policy'=>"sandbox; frame-ancestors 'self'", 'X-Frame-Options'=>'SAMEORIGIN',
+            ], 'inline');
+        }
+        return Storage::disk('local')->download($document['path'], $document['name'], $headers);
     }
     public function queue() {
         $users = User::where(fn($q) => $q->where('landlord_status','pending')->orWhere('vehicle_owner_status','pending')->orWhere('service_provider_status','pending'))->get();
