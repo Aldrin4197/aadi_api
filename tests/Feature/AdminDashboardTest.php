@@ -33,7 +33,7 @@ class AdminDashboardTest extends TestCase
         $this->actingAs($this->admin())->get('/admin/dashboard')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Dashboard')
             ->where('overview.range.days', 30)
-            ->has('overview.kpis', 6)
+            ->has('overview.kpis', 7)
             ->has('overview.trend.dates', 30)
             ->has('overview.supply', 3)
             ->where('overview.insights', fn ($insights) => collect($insights)->contains(fn ($i) => str_contains($i['title'], 'No live Spaces'))));

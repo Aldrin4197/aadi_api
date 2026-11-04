@@ -121,22 +121,59 @@ class ProviderApplicationController extends Controller {
         }
         return Storage::disk('local')->download($document['path'], $document['name'], $headers);
     }
-    public function queue() {
-        $users = User::where(fn($q) => $q->where('landlord_status','pending')->orWhere('vehicle_owner_status','pending')->orWhere('service_provider_status','pending'))->get();
-        $applications = ProviderApplication::whereIn('user_id', $users->pluck('id'))->get()->keyBy(fn($a) => $a->user_id.':'.$a->service);
-        $rows = [];
-        foreach ($users as $user) foreach (array_keys(Marketplace::TYPES) as $service) {
-            if ($user->{$this->market->statusField($service)}?->value !== 'pending') continue;
-            $application = $applications[$user->id.':'.$service] ?? null;
-            if ($application && $application->status !== 'pending') continue;
-            $rows[] = ['userId'=>$user->id, 'name'=>$user->name, 'email'=>$user->email, 'service'=>$service,
-                'application'=>($applications[$user->id.':'.$service] ?? null)?->toReviewData()];
-        }
-        return Inertia::render('Marketplace/Approvals', ['applications'=>$rows,'requirements'=>config('provider_verification')]);
+    public function queue(Request $request) {
+        $services = array_keys(Marketplace::TYPES);
+        $filters = $request->validate([
+            'status' => ['nullable', Rule::in(['pending','approved','rejected','all'])],
+            'service' => ['nullable', Rule::in($services)],
+            'q' => 'nullable|string|max:150',
+            'page' => 'nullable|integer|min:1',
+        ]);
+        $status = $filters['status'] ?? 'pending';
+        $applications = ProviderApplication::with('user')->whereIn('status', ['pending','approved','rejected'])->get();
+        $reviewers = User::whereIn('id', $applications->pluck('reviewer_id')->filter())->pluck('name', 'id');
+        $rows = $applications->filter(fn ($a) => $a->user && in_array($a->service, $services, true))->map(fn ($a) => [
+            'userId'=>$a->user_id, 'name'=>$a->user->name, 'email'=>$a->user->email, 'service'=>$a->service, 'status'=>$a->status,
+            'reviewer'=>$reviewers[$a->reviewer_id] ?? null, 'application'=>$a->toReviewData(),
+            'submittedAt'=>$a->submitted_at?->toIso8601String(), 'decidedAt'=>$a->decided_at?->toIso8601String(),
+        ]);
+        // Older requests were made before applications stored documents; they can still be pending on the user.
+        $known = $applications->map(fn ($a) => $a->user_id.':'.$a->service)->flip();
+        $legacy = User::where(fn ($q) => $q->where('landlord_status','pending')->orWhere('vehicle_owner_status','pending')->orWhere('service_provider_status','pending'))->get()
+            ->flatMap(fn ($user) => collect($services)->filter(fn ($service) => $user->{$this->market->statusField($service)}?->value === 'pending' && !isset($known[$user->id.':'.$service]))
+                ->map(fn ($service) => ['userId'=>$user->id, 'name'=>$user->name, 'email'=>$user->email, 'service'=>$service, 'status'=>'pending', 'reviewer'=>null, 'application'=>null, 'submittedAt'=>null, 'decidedAt'=>null]));
+        $all = $rows->concat($legacy)->values();
+        $counts = ['pending'=>$all->where('status','pending')->count(), 'approved'=>$all->where('status','approved')->count(), 'rejected'=>$all->where('status','rejected')->count(), 'all'=>$all->count()];
+        $term = mb_strtolower(trim($filters['q'] ?? ''));
+        $filtered = $all
+            ->when($status !== 'all', fn ($c) => $c->where('status', $status))
+            ->when(!empty($filters['service']), fn ($c) => $c->where('service', $filters['service']))
+            ->when($term !== '', fn ($c) => $c->filter(fn ($row) => str_contains(mb_strtolower(implode(' ', [$row['name'], $row['email'], $row['application']['displayName'] ?? ''])), $term)));
+        $sorts = [
+            'submitted' => fn ($row) => $row['submittedAt'] ?? '',
+            'decided' => fn ($row) => $row['decidedAt'] ?? '',
+            'name' => fn ($row) => mb_strtolower($row['application']['displayName'] ?? $row['name']),
+            'service' => fn ($row) => $row['service'],
+            'status' => fn ($row) => $row['status'],
+            'documents' => fn ($row) => count($row['application']['documents'] ?? []),
+        ];
+        $sort = array_key_exists((string) $request->query('sort'), $sorts) ? $request->query('sort') : ($status === 'pending' ? 'submitted' : 'decided');
+        $dir = $request->query('dir') ? (strtolower($request->query('dir')) === 'asc' ? 'asc' : 'desc') : (in_array($sort, ['name','service'], true) || ($sort === 'submitted' && $status === 'pending') ? 'asc' : 'desc');
+        $sorted = $filtered->sortBy($sorts[$sort], SORT_REGULAR, $dir === 'desc')->values();
+        $perPage = 12;
+        $page = max(1, (int) ($filters['page'] ?? 1));
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($sorted->forPage($page, $perPage)->values(), $sorted->count(), $perPage, $page, ['path'=>$request->url(), 'query'=>$request->query()]);
+        return Inertia::render('Marketplace/Approvals', [
+            'applications'=>$paginator, 'counts'=>$counts, 'filters'=>['status'=>$status, 'service'=>$filters['service'] ?? '', 'q'=>$filters['q'] ?? ''],
+            'sort'=>$sort, 'dir'=>$dir, 'requirements'=>config('provider_verification'),
+        ]);
     }
     public function decide(Request $request, string $id, string $service) {
         $field = $this->market->statusField($service);
-        $data = $request->validate(['version'=>'nullable|string|size:64','status'=>['required',Rule::in(['approved','rejected'])], 'reviewNote'=>'required_if:status,rejected|nullable|string|max:2000']);
+        $data = $request->validate([
+            'version'=>'nullable|string|size:64', 'status'=>['required',Rule::in(['approved','rejected'])],
+            'reviewNote'=>['nullable','string','max:2000', Rule::requiredIf($request->input('status') === 'rejected'), Rule::when($request->input('status') === 'rejected', ['min:10'])],
+        ]);
         DB::transaction(function () use ($request, $id, $service, $field, $data) {
             $user = User::whereKey($id)->lockForUpdate()->firstOrFail();
             $application = ProviderApplication::where('user_id',$id)->where('service',$service)->first();

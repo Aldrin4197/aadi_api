@@ -2,7 +2,13 @@
 import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import AdminListingsTable from '@/Components/Admin/AdminListingsTable.vue';
-defineProps({listings:Object});
+defineProps({ listings: Object, filters: Object, sort: String, dir: String, options: Object, totals: Object, service: String });
 </script>
-<template><Head title="Properties — Admin"/><AdminLayout><template #header><div class="listing-page-heading"><h1>Properties</h1><span>{{ listings.total }} total</span></div></template><AdminListingsTable :listings="listings"/></AdminLayout></template>
+<template>
+    <Head title="Properties — Admin" />
+    <AdminLayout>
+        <template #header><div class="listing-page-heading"><h1>Properties</h1><span>{{ listings.total }} shown</span></div></template>
+        <AdminListingsTable :listings="listings" :service="service" :filters="filters" :sort="sort" :dir="dir" :options="options" :totals="totals" />
+    </AdminLayout>
+</template>
 <style scoped>.listing-page-heading{display:flex;align-items:center;flex-wrap:wrap;gap:12px;justify-content:space-between}.listing-page-heading h1{font-size:24px;font-weight:700}.listing-page-heading span{font-size:12px;color:#637b76;background:#eff5f2;padding:6px 10px;border-radius:6px}</style>

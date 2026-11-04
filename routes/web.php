@@ -8,6 +8,8 @@ Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class,
 Route::get('/dashboard', \App\Http\Controllers\Marketplace\AccountDashboardController::class)->middleware('auth')->name('dashboard');
 require __DIR__.'/marketplace.php';
 
+Route::post('/support/tickets', [\App\Http\Controllers\SupportTicketController::class, 'store'])->middleware('throttle:5,1')->name('support.store');
+
 // Admin Panel (Inertia.js)
 Route::prefix('admin')->name('admin.')->group(function () {
     // Guest routes
@@ -24,7 +26,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/listings', [App\Http\Controllers\Admin\ListingInspectionController::class, 'spaces'])->name('listings.index');
         Route::get('/vehicles', [App\Http\Controllers\Admin\ListingInspectionController::class, 'vehicles'])->name('vehicles.index');
         Route::get('/services', [App\Http\Controllers\Admin\ListingInspectionController::class, 'services'])->name('services.index');
-        Route::get('/tickets', [App\Http\Controllers\Admin\DashboardController::class, 'tickets'])->name('tickets.index');
+        Route::get('/tickets', [App\Http\Controllers\Admin\TicketController::class, 'index'])->name('tickets.index');
+        Route::get('/tickets/{ticket}', [App\Http\Controllers\Admin\TicketController::class, 'show'])->name('tickets.show');
+        Route::patch('/tickets/{ticket}', [App\Http\Controllers\Admin\TicketController::class, 'update'])->name('tickets.update');
+        Route::post('/tickets/{ticket}/messages', [App\Http\Controllers\Admin\TicketController::class, 'message'])->middleware('throttle:60,1')->name('tickets.message');
         Route::get('/analytics', [App\Http\Controllers\Admin\DashboardController::class, 'analytics'])->name('analytics');
         
         // Redirect /admin to dashboard

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import KpiCard from '@/Components/Admin/KpiCard.vue';
+import InsightList from '@/Components/Admin/InsightList.vue';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Filler } from 'chart.js';
 import { Line, Doughnut } from 'vue-chartjs';
 
@@ -73,7 +74,6 @@ function ago(iso) {
     if (minutes < 43200) return `${Math.round(minutes / 1440)}d ago`;
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
-const toneIcon = { warning: 'M12 9v4m0 4h.01M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z', good: 'M5 13l4 4L19 7', info: 'M12 8h.01M11 12h1v5h1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' };
 </script>
 
 <template>
@@ -112,16 +112,7 @@ const toneIcon = { warning: 'M12 9v4m0 4h.01M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a
 
                 <section class="panel insights" aria-labelledby="insights-title">
                     <header class="panel-head"><div><h2 id="insights-title">What to know</h2><p>Plain-language read of the numbers.</p></div></header>
-                    <ul>
-                        <li v-for="insight in overview.insights" :key="insight.title" :class="`tone-${insight.tone}`">
-                            <span class="insight-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="toneIcon[insight.tone]" /></svg></span>
-                            <div>
-                                <strong>{{ insight.title }}</strong>
-                                <p>{{ insight.text }}</p>
-                                <Link v-if="insight.href" :href="insight.href">{{ insight.cta }} →</Link>
-                            </div>
-                        </li>
-                    </ul>
+                    <InsightList :insights="overview.insights" />
                 </section>
             </div>
 
@@ -191,15 +182,6 @@ const toneIcon = { warning: 'M12 9v4m0 4h.01M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a
 .panel-link { font-size:12px; font-weight:700; color:#137671; white-space:nowrap; }
 .dot { display:inline-block; width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 .chart { position:relative; height:290px; }
-.insights ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; overflow-y:auto; max-height:380px; }
-.insights li { display:flex; gap:12px; padding:12px; border-radius:11px; background:#f6faf9; --tone:#137671; --tone-bg:#e3f6f4; }
-.insights li.tone-warning { --tone:#b45f12; --tone-bg:#fdeadb; background:#fff8f0; }
-.insights li.tone-good { --tone:#12744a; --tone-bg:#e1f5ec; }
-.insight-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--tone-bg); color:var(--tone); flex-shrink:0; }
-.insight-icon svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-.insights strong { display:block; font-size:13px; line-height:1.4; }
-.insights p { font-size:12px; line-height:1.55; color:#586e6c; margin:3px 0 0; }
-.insights a { display:inline-block; margin-top:6px; font-size:12px; font-weight:700; color:var(--tone); }
 .supply { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
 .donut { position:relative; width:150px; height:150px; flex-shrink:0; }
 .donut-center { position:absolute; inset:0; display:grid; place-content:center; text-align:center; pointer-events:none; }

@@ -9,7 +9,7 @@ class EnsureLegalAcceptance
     public function handle(Request $request, Closure $next) {
         $legal=app(LegalDocuments::class);
         // Public browsing, verification, logout and account deletion remain accessible.
-        if (!$legal->enabled() || !$request->user() || $request->is('legal/*','logout','admin/*','auth/*','verify-email*','email/*','forgot-password','reset-password*')
+        if (!$legal->enabled() || !$request->user() || $request->is('legal/*','logout','admin/*','support/*','auth/*','verify-email*','email/*','forgot-password','reset-password*')
             || ($request->isMethod('get') && $request->is('/','explore','profile','providers/*','media/*','avatars/*'))
             || ($request->isMethod('delete') && $request->is('profile'))) return $next($request);
         abort_unless($legal->published(),503,'Account agreements are being prepared. Please try again later.');

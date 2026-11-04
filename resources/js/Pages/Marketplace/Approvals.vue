@@ -1,17 +1,125 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import Layout from '@/Layouts/AdminLayout.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Review from '@/Components/Admin/ProviderApplicationReview.vue';
-const props=defineProps({applications:{type:Array,default:()=>[]},requirements:{type:Object,default:()=>({})}});
-const active=ref(null),service=ref('all'),query=ref(''),page=ref(1);
-const titles={spaces:'Aadi Properties',haul:'Aadi UV',raketeer:'Aadi Raket'};
-const filtered=computed(()=>props.applications.filter(item=>(service.value==='all'||item.service===service.value)&&[item.name,item.email,item.application?.displayName].join(' ').toLowerCase().includes(query.value.trim().toLowerCase())));
-const pages=computed(()=>Math.max(1,Math.ceil(filtered.value.length/12)));
-const visible=computed(()=>filtered.value.slice((page.value-1)*12,page.value*12));
-watch([service,query],()=>page.value=1);watch(()=>props.applications,()=>page.value=Math.min(page.value,pages.value));
+import RoleStatusBadge from '@/Components/Admin/RoleStatusBadge.vue';
+import SortableTh from '@/Components/Admin/SortableTh.vue';
+import AdminFilters from '@/Components/Admin/AdminFilters.vue';
+import AdminPagination from '@/Components/Admin/AdminPagination.vue';
+import { useAdminTable } from '@/composables/useAdminTable';
+
+const props = defineProps({
+    applications: { type: Object, required: true },
+    counts: { type: Object, default: () => ({}) },
+    filters: { type: Object, default: () => ({}) },
+    sort: String,
+    dir: String,
+    requirements: { type: Object, default: () => ({}) },
+});
+
+const { state, visit, search, sortBy, reset } = useAdminTable('/admin/approvals', {
+    status: props.filters.status || 'pending', service: props.filters.service || '', q: props.filters.q || '', sort: props.sort, dir: props.dir,
+}, { defaults: { status: 'pending' } });
+const active = ref(null);
+const titles = { spaces: 'Aadi Properties', haul: 'Aadi UV', raketeer: 'Aadi Raket' };
+const tabs = [['pending', 'Pending'], ['approved', 'Approved'], ['rejected', 'Rejected'], ['all', 'All']];
+const filtering = computed(() => state.service !== '' || state.q !== '');
+function setStatus(status) {
+    if (state.status === status) return;
+    state.status = status;
+    state.sort = status === 'pending' ? 'submitted' : 'decided';
+    state.dir = status === 'pending' ? 'asc' : 'desc';
+    visit();
+}
+function clear() { state.service = ''; state.q = ''; visit(); }
+const date = value => (value ? new Date(value).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : '—');
+const waiting = value => {
+    if (!value) return '';
+    const days = Math.floor((Date.now() - new Date(value).getTime()) / 86400000);
+    return days < 1 ? 'today' : `${days}d ago`;
+};
+const reviewLabel = item => (item.status === 'pending' ? 'Review' : 'View');
+const emptyText = computed(() => (filtering.value || state.status !== 'pending'
+    ? 'No applications match these filters.'
+    : 'All caught up. New provider applications will appear here for review.'));
 </script>
-<template><Layout><template #header><h1>Provider verification</h1></template><Head title="Provider verification"/><section class="approvals"><header><p class="eyebrow">ADMINISTRATION</p><h1>Provider verification</h1><p>Review applications and private supporting documents before approving a provider role.</p></header><div class="filters"><label>Provider role<select v-model="service"><option value="all">All roles ({{ applications.length }})</option><option v-for="(title,key) in titles" :key="key" :value="key">{{ title }} ({{ applications.filter(item=>item.service===key).length }})</option></select></label><label>Find an applicant<input v-model="query" type="search" placeholder="Search name or email"/></label></div><p class="result-count" role="status">{{ filtered.length }} pending {{ filtered.length===1?'application':'applications' }}</p><div v-if="!filtered.length" class="empty"><h2>{{ applications.length?'No matching applications':'All caught up' }}</h2><p>{{ applications.length?'Try a different name or role.':'New provider applications will appear here for review.' }}</p></div><div v-else class="table-wrap"><table><thead><tr><th>Applicant</th><th>Provider role</th><th>Documents</th><th>Submitted</th><th><span class="sr-only">Review</span></th></tr></thead><tbody><tr v-for="item in visible" :key="item.userId+item.service"><td><strong>{{ item.application?.displayName||item.name }}</strong><small>{{ item.name }} · {{ item.email }}</small></td><td>{{ titles[item.service] }}</td><td><span class="tag">{{ item.application?`${item.application.documents.length} uploaded`:'Needs application' }}</span></td><td>{{ item.application?.submittedAt?new Date(item.application.submittedAt).toLocaleDateString('en-PH'):'Not provided' }}</td><td><button type="button" :aria-label="`Review ${titles[item.service]} application from ${item.name}`" aria-haspopup="dialog" @click="active=item">Review application →</button></td></tr></tbody></table></div><nav v-if="pages>1" aria-label="Application pages"><button :disabled="page<=1" @click="page--">Previous</button><span>{{ page }} / {{ pages }}</span><button :disabled="page>=pages" @click="page++">Next</button></nav></section><Review v-if="active" :key="active.userId+active.service" :item="active" :requirements="requirements[active.service]" @close="active=null"/></Layout></template>
+
+<template>
+    <Head title="Role approvals — Admin" />
+    <AdminLayout>
+        <template #header><div><h1 class="page-title">Role approvals</h1><p class="page-sub">Review provider applications and their private documents.</p></div></template>
+
+        <div class="tabs" role="tablist" aria-label="Application status">
+            <button v-for="[key, label] in tabs" :key="key" type="button" role="tab" :aria-selected="state.status === key" :class="{ attention: key === 'pending' && counts.pending }" @click="setStatus(key)">
+                {{ label }}<span>{{ counts[key] ?? 0 }}</span>
+            </button>
+        </div>
+
+        <AdminFilters :active="filtering" :summary="`${applications.total} ${applications.total === 1 ? 'application' : 'applications'}`" @reset="clear">
+            <label class="grow">Search<input v-model="state.q" type="search" placeholder="Applicant name or email" maxlength="150" @input="search" /></label>
+            <label>Provider role
+                <select v-model="state.service" @change="visit()"><option value="">All roles</option><option v-for="(title, key) in titles" :key="key" :value="key">{{ title }}</option></select>
+            </label>
+        </AdminFilters>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <SortableTh column="name" :sort="state.sort" :dir="state.dir" @sort="sortBy($event)">Applicant</SortableTh>
+                        <SortableTh column="service" :sort="state.sort" :dir="state.dir" @sort="sortBy($event)">Role &amp; status</SortableTh>
+                        <SortableTh column="documents" :sort="state.sort" :dir="state.dir" @sort="sortBy($event, 'desc')">Documents</SortableTh>
+                        <SortableTh column="submitted" :sort="state.sort" :dir="state.dir" @sort="sortBy($event, 'desc')">Submitted</SortableTh>
+                        <SortableTh v-if="state.status !== 'pending'" column="decided" :sort="state.sort" :dir="state.dir" @sort="sortBy($event, 'desc')">Decided</SortableTh>
+                        <th scope="col"><span class="sr-only">Review</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in applications.data" :key="item.userId + item.service">
+                        <td><strong>{{ item.application?.displayName || item.name }}</strong><small>{{ item.name }} · {{ item.email }}</small></td>
+                        <td><RoleStatusBadge :service="item.service" :status="item.status" /></td>
+                        <td><span class="tag" :class="{ warn: !item.application }">{{ item.application ? `${item.application.documents.length} uploaded` : 'Needs application' }}</span></td>
+                        <td class="nowrap">{{ date(item.submittedAt) }}<small v-if="item.status === 'pending' && item.submittedAt">{{ waiting(item.submittedAt) }}</small></td>
+                        <td v-if="state.status !== 'pending'" class="nowrap">{{ date(item.decidedAt) }}<small v-if="item.reviewer">{{ item.reviewer }}</small></td>
+                        <td><button type="button" class="open" :class="{ primary: item.status === 'pending' }" :aria-label="`${reviewLabel(item)} ${titles[item.service]} application from ${item.name}`" aria-haspopup="dialog" @click="active = item">{{ reviewLabel(item) }} application →</button></td>
+                    </tr>
+                    <tr v-if="!applications.data.length"><td :colspan="state.status === 'pending' ? 5 : 6" class="empty">{{ emptyText }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <AdminPagination :paginator="applications" label="Application pages" />
+
+        <Review v-if="active" :key="active.userId + active.service" :item="active" :requirements="requirements[active.service]" @close="active = null" />
+    </AdminLayout>
+</template>
+
 <style scoped>
-.approvals{max-width:1200px;margin:auto;color:#183e3b}.approvals h1{font-size:28px;font-weight:700;margin:6px 0 10px}.eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;color:#137671}.approvals header>p:last-child{font-size:14px;color:#637b76}.filters{display:flex;gap:16px;flex-wrap:wrap;margin:28px 0 16px}.filters label{display:grid;gap:8px;font-size:13px;flex:1;min-width:220px}.filters :is(input,select){min-height:44px;width:100%;padding:10px 12px;border:1px solid #cbded8;border-radius:10px;background:white}.result-count{font-size:13px;color:#637b76;margin-bottom:12px}.table-wrap{overflow:auto;border:1px solid #dce7e4;border-radius:14px;background:white}.approvals table{width:100%;border-collapse:collapse;min-width:700px;text-align:left;font-size:13px}.approvals th{font-size:11px;color:#637b76;background:#f4f8f6}.approvals :is(td,th){padding:16px;border-bottom:1px solid #e7efec}.approvals td strong,.approvals td small{display:block;overflow-wrap:anywhere;max-width:280px}.approvals td small{margin-top:6px;color:#637b76}.approvals td button{white-space:nowrap;background:#137671;color:white}.approvals button{min-height:44px;border:1px solid #cbded8;border-radius:10px;padding:10px 14px;font-weight:700}.tag{background:#fff3bf;color:#79540a;padding:6px 9px;border-radius:6px;white-space:nowrap;font-size:12px}.empty{padding:48px 20px;text-align:center;border:1px dashed #cbded8;border-radius:12px}.empty h2{font-size:20px;font-weight:700}.approvals nav{display:flex;gap:16px;align-items:center;justify-content:flex-end;margin-top:20px}.approvals button:disabled{opacity:.5}.approvals :is(button,input,select):focus-visible{outline:3px solid #e6bb51;outline-offset:3px}
+.page-title { font-size:24px; font-weight:700; margin:0; }
+.page-sub { font-size:13px; color:#637b76; margin:2px 0 0; }
+.tabs { display:flex; gap:6px; margin-bottom:16px; padding:4px; background:#fff; border:1px solid #dce7e4; border-radius:12px; width:fit-content; max-width:100%; overflow-x:auto; }
+.tabs button { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; border-radius:9px; font-size:13px; font-weight:700; color:#42665e; cursor:pointer; white-space:nowrap; }
+.tabs button span { min-width:22px; padding:2px 7px; border-radius:20px; background:#eef2f1; font-size:11px; text-align:center; }
+.tabs button[aria-selected=true] { background:#103f3b; color:#fff; }
+.tabs button[aria-selected=true] span { background:#ffffff26; }
+.tabs button.attention:not([aria-selected=true]) span { background:#f5b56f; color:#4a2c00; }
+.tabs button:focus-visible { outline:2px solid #137671; outline-offset:2px; }
+.table-wrap { overflow:auto; border:1px solid #dce7e4; border-radius:14px; background:#fff; }
+table { width:100%; border-collapse:collapse; min-width:760px; text-align:left; font-size:13px; }
+th { background:#f7faf8; padding:10px 16px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#42665e; white-space:nowrap; }
+td { padding:15px 16px; border-top:1px solid #e7efec; vertical-align:middle; }
+tbody tr:hover { background:#f8fbfa; }
+td strong, td small { display:block; overflow-wrap:anywhere; max-width:300px; }
+td small { margin-top:4px; color:#637b76; font-size:11px; }
+.nowrap { white-space:nowrap; color:#586e6c; }
+.tag { display:inline-block; background:#eef2f1; color:#42665e; padding:5px 9px; border-radius:6px; font-size:12px; white-space:nowrap; }
+.tag.warn { background:#fff3d6; color:#8a5a00; }
+.status { display:inline-block; padding:4px 9px; border-radius:20px; font-size:11px; font-weight:700; text-transform:capitalize; }
+.status.is-pending { background:#fff3d6; color:#8a5a00; }
+.status.is-approved { background:#e1f5ec; color:#12744a; }
+.status.is-rejected { background:#fdeaea; color:#b42318; }
+.open { min-height:40px; padding:0 14px; border:1px solid #b7d8d0; border-radius:9px; font-weight:700; color:#12675f; white-space:nowrap; cursor:pointer; background:#fff; }
+.open.primary { background:#137671; border-color:#137671; color:#fff; }
+.open:focus-visible { outline:3px solid #e6bb51; outline-offset:2px; }
+.empty { text-align:center; padding:44px 16px !important; color:#637b76; }
 </style>

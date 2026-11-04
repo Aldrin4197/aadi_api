@@ -11,10 +11,15 @@ const icons = {
     engagement: 'M12 21s-8-4.8-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 6.2-8 11-8 11z',
     approvals: 'm5 12 4 4L19 6M12 3l9 4v6c0 4-9 8-9 8S3 17 3 13V7z',
     verified: 'M4 6h16v12H4zM4 7l8 6 8-6',
+    tickets: 'M3 4h18v13H8l-5 4z',
+    backlog: 'M4 6h16M4 12h16M4 18h10',
+    response: 'M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+    resolution: 'M5 12.5l4.2 4.2L19 7',
 };
 const windowed = computed(() => ['views', 'engagement'].includes(props.kpi.key));
-const scope = computed(() => windowed.value ? `Last ${props.days} days` : props.kpi.key === 'approvals' ? 'Right now' : 'All time');
-const value = computed(() => `${Number(props.kpi.value).toLocaleString()}${props.kpi.suffix || ''}`);
+const scope = computed(() => props.kpi.scope ?? (windowed.value ? `Last ${props.days} days` : props.kpi.key === 'approvals' ? 'Right now' : 'All time'));
+const value = computed(() => (props.kpi.value === null || props.kpi.value === undefined ? '—' : `${Number(props.kpi.value).toLocaleString()}${props.kpi.suffix || ''}`));
+const good = computed(() => (props.kpi.invert ? props.kpi.delta <= 0 : props.kpi.delta >= 0));
 const badge = computed(() => {
     if (props.kpi.delta !== null && props.kpi.delta !== undefined) return `${props.kpi.delta > 0 ? '+' : ''}${props.kpi.delta}%`;
     return props.kpi.newInRange > 0 && props.kpi.series?.length ? 'New' : null;
@@ -35,7 +40,7 @@ const component = computed(() => props.kpi.href ? Link : 'div');
         <div class="kpi-top">
             <span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="icons[kpi.icon]" /></svg></span>
             <span class="kpi-label">{{ kpi.label }}</span>
-            <span v-if="badge" class="kpi-badge" :class="`badge-${kpi.delta === null ? 'neutral' : kpi.delta >= 0 ? 'up' : 'down'}`">
+            <span v-if="badge" class="kpi-badge" :class="`badge-${kpi.delta === null ? 'neutral' : good ? 'up' : 'down'}`">
                 <svg v-if="kpi.delta !== null" viewBox="0 0 12 12" aria-hidden="true"><path :d="kpi.delta >= 0 ? 'M6 2l4 5H2z' : 'M6 10L2 5h8z'" /></svg>{{ badge }}
             </span>
         </div>

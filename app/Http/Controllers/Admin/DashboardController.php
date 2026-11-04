@@ -67,13 +67,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function tickets()
-    {
-        return Inertia::render('Admin/Tickets/Index', [
-            'tickets' => [],
-        ]);
-    }
-
     public function analytics()
     {
         // Overview stats

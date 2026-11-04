@@ -6,6 +6,7 @@ use App\Models\Listing;
 use App\Models\ListingView;
 use App\Models\ProviderApplication;
 use App\Models\ServiceListing;
+use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\VehicleListing;
 use App\Models\ViewingRequest;
@@ -57,6 +58,8 @@ class AdminOverview
         $totalUsers = User::count();
         $verified = User::whereNotNull('email_verified_at')->count();
         $liveListings = $supply->sum('live');
+        $ticketsActive = SupportTicket::whereIn('status', SupportTicket::ACTIVE)->count();
+        $ticketsUnanswered = SupportTicket::whereIn('status', SupportTicket::ACTIVE)->whereNull('first_response_at')->count();
 
         $topListing = Listing::query()
             ->select('listings.id', 'listings.title')
@@ -80,6 +83,10 @@ class AdminOverview
                     'href' => '/admin/approvals', 'icon' => 'approvals',
                 ],
                 [
+                    'key' => 'tickets', 'label' => 'Open tickets', 'value' => $ticketsActive, 'delta' => null, 'series' => [], 'tone' => $ticketsUnanswered > 0 ? 'warning' : 'good', 'icon' => 'tickets',
+                    'hint' => $ticketsActive === 0 ? 'No open requests' : ($ticketsUnanswered > 0 ? "{$ticketsUnanswered} without a reply" : 'All have a reply'), 'href' => '/admin/tickets',
+                ],
+                [
                     'key' => 'verified', 'label' => 'Email verified', 'value' => $totalUsers ? round($verified / $totalUsers * 100) : 0, 'suffix' => '%', 'delta' => null, 'series' => [], 'tone' => 'neutral',
                     'hint' => "{$verified} of {$totalUsers} users", 'icon' => 'verified',
                 ],
@@ -90,7 +97,7 @@ class AdminOverview
             ],
             'supply' => $supply,
             'pipeline' => $pipeline,
-            'insights' => $this->insights($days, $users, $supply, $pending, $oldestDays, $totalUsers, $verified, $topListing),
+            'insights' => $this->insights($days, $users, $supply, $pending, $oldestDays, $totalUsers, $verified, $topListing, $ticketsActive, $ticketsUnanswered),
             'activity' => $this->activity(),
         ];
     }
@@ -134,9 +141,13 @@ class AdminOverview
         ];
     }
 
-    private function insights(int $days, array $users, $supply, int $pending, ?int $oldestDays, int $totalUsers, int $verified, $topListing): array
+    private function insights(int $days, array $users, $supply, int $pending, ?int $oldestDays, int $totalUsers, int $verified, $topListing, int $ticketsActive = 0, int $ticketsUnanswered = 0): array
     {
         $items = [];
+
+        if ($ticketsUnanswered > 0) {
+            $items[] = ['tone' => 'warning', 'title' => "{$ticketsUnanswered} support ".($ticketsUnanswered === 1 ? 'ticket has' : 'tickets have').' no reply', 'text' => 'People who write in expect an answer within a day.', 'href' => '/admin/tickets', 'cta' => 'Open tickets'];
+        }
 
         if ($pending > 0) {
             $wait = $oldestDays ? " The oldest has waited {$oldestDays} ".($oldestDays === 1 ? 'day' : 'days').'.' : '';

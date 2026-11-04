@@ -47,9 +47,9 @@ class LegacyApiTest extends TestCase
         $response = $this->actingAs($owner)
             ->getJson('/api/listings?lat=11.7753&lng=124.8861&radiusKm=10')->assertOk();
 
-        $response->assertJsonCount(2, 'data');
-        $this->assertSame([(string) $near->id, (string) $nearer->id], $response->json('data.*.id'));
-        $this->assertNotNull($response->json('data.0.distance'));
+        $response->assertJsonCount(2);
+        $this->assertSame([(string) $near->id, (string) $nearer->id], $response->json('*.id'));
+        $this->assertNotNull($response->json('0.distance'));
     }
 
     public function test_vehicle_search_filters_by_distance_and_aliases_share_behavior(): void

@@ -6,6 +6,7 @@ import HomeBenefits from './HomeBenefits.vue';
 import HomeFeatured from './HomeFeatured.vue';
 import HomeCommunity from './HomeCommunity.vue';
 import HomeDownload from './HomeDownload.vue';
+import HomeSupport from './HomeSupport.vue';
 
 defineProps({ loading: Boolean, content: { type: Object, default: () => ({}) } });
 const emit = defineEmits(['explore']);
@@ -84,5 +85,6 @@ const questions = [
             <div class="landing-section-heading"><div><p class="landing-kicker">Before you get started</p><h2 id="questions-title">A few things to know.</h2></div></div>
             <div class="landing-questions"><details v-for="question in questions" :key="question.title"><summary>{{ question.title }}</summary><p>{{ question.text }}</p></details></div>
         </section>
+        <HomeSupport />
     </div>
 </template>
