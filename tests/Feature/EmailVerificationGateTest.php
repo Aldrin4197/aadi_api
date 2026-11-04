@@ -55,4 +55,28 @@ class EmailVerificationGateTest extends TestCase {
         $this->actingAs(User::factory()->unverified()->create())->post('/email/verification-notification')->assertRedirect();
         $this->get('/become-provider')->assertInertia(fn ($page) => $page->where('flash.verification', 'verification-link-sent'));
     }
+
+    private function verifyUrl(User $user): string {
+        return \Illuminate\Support\Facades\URL::temporarySignedRoute('verification.verify', now()->addHour(), ['id'=>$user->id, 'hash'=>sha1($user->email)]);
+    }
+
+    public function test_clicking_the_link_flashes_the_success_modal_once(): void {
+        $user = User::factory()->unverified()->create();
+        $this->actingAs($user)->get($this->verifyUrl($user))->assertRedirect();
+        $this->assertNotNull($user->fresh()->email_verified_at);
+        $this->get('/become-provider')->assertInertia(fn ($page) => $page->where('flash.emailVerified', 'verified')->where('auth.user.emailVerified', true));
+        $this->get('/become-provider')->assertInertia(fn ($page) => $page->where('flash.emailVerified', null));
+    }
+
+    public function test_an_already_verified_user_gets_the_already_verified_message(): void {
+        $user = User::factory()->create();
+        $this->actingAs($user)->get($this->verifyUrl($user))->assertRedirect();
+        $this->get('/become-provider')->assertInertia(fn ($page) => $page->where('flash.emailVerified', 'already'));
+    }
+
+    public function test_profile_page_exposes_the_verification_timestamp_for_the_badge(): void {
+        $user = User::factory()->create();
+        $this->actingAs($user)->get('/profile')->assertInertia(fn ($page) => $page->where('auth.user.emailVerified', true)->whereNot('profile.email_verified_at', null));
+        $this->actingAs(User::factory()->unverified()->create())->get('/profile')->assertInertia(fn ($page) => $page->where('auth.user.emailVerified', false)->where('profile.email_verified_at', null));
+    }
 }

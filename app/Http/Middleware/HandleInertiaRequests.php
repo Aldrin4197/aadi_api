@@ -35,6 +35,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'ticket' => fn () => $request->session()->get('ticket'),
                 'verification' => fn () => in_array($request->session()->get('status'), ['verification-link-sent', 'delivery-failed'], true) ? $request->session()->get('status') : null,
+                'emailVerified' => fn () => $request->session()->get('email_verified'),
             ],
             'notifications' => ['unread' => fn () => $request->user() ? $request->user()->unreadNotifications()->count() : 0],
             'auth' => [

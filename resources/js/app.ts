@@ -6,6 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, DefineComponent, Fragment, h } from 'vue';
 import PersonalOnboarding from '@/Components/Onboarding/PersonalOnboarding.vue';
 import PwaNotice from '@/Components/Pwa/PwaNotice.vue';
+import EmailFeedback from '@/Components/Account/EmailFeedback.vue';
 import { ZiggyVue } from 'ziggy-js';
 
 // Keep browser branding independent of legacy Laravel environment defaults.
@@ -20,7 +21,7 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./Pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(Fragment, null, [h(PwaNotice), h(App, props), h(PersonalOnboarding)]) })
+        createApp({ render: () => h(Fragment, null, [h(PwaNotice), h(App, props), h(PersonalOnboarding), h(EmailFeedback)]) })
             .use(plugin)
             .use(ZiggyVue)
             .mount(el);
