@@ -9,7 +9,8 @@ class ListingView extends Model
 {
     use HasFactory;
 
-    const UPDATED_AT = null; // No updated_at column
+    // The table only has viewed_at, so Eloquent must not write created_at/updated_at.
+    public $timestamps = false;
 
     protected $fillable = [
         'listing_id',

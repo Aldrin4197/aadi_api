@@ -88,8 +88,8 @@ class DashboardController extends Controller
             });
 
         // Recent 30 days activity
-        $dailyViews = ListingView::where('created_at', '>=', now()->subDays(30))
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+        $dailyViews = ListingView::where('viewed_at', '>=', now()->subDays(30))
+            ->select(DB::raw('DATE(viewed_at) as date'), DB::raw('count(*) as count'))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
