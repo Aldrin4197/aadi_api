@@ -35,7 +35,10 @@ class AdminOverview
         $listingParts = collect(self::SERVICES)->map(fn ($s) => $this->window($s['model']::query(), 'created_at', $since, $previousSince, $dates));
         $listings = $this->merge($listingParts->all(), $dates);
         $views = $this->window(ListingView::query(), 'viewed_at', $since, $previousSince, $dates);
-        $saves = $this->window(DB::table('marketplace_saves'), 'created_at', $since, $previousSince, $dates);
+        $saves = $this->merge([
+            $this->window(DB::table('favorites'), 'created_at', $since, $previousSince, $dates),
+            $this->window(DB::table('marketplace_saves'), 'created_at', $since, $previousSince, $dates),
+        ], $dates);
         $reviews = $this->window(DB::table('marketplace_reviews'), 'created_at', $since, $previousSince, $dates);
         $viewings = $this->window(ViewingRequest::query(), 'created_at', $since, $previousSince, $dates);
         $engagement = $this->merge([$saves, $reviews, $viewings], $dates);
@@ -102,7 +105,7 @@ class AdminOverview
         ];
     }
 
-    private function window($query, string $column, CarbonInterface $since, CarbonInterface $previousSince, array $dates): array
+    public function window($query, string $column, CarbonInterface $since, CarbonInterface $previousSince, array $dates): array
     {
         $current = (clone $query)->where($column, '>=', $since)->count();
         $previous = (clone $query)->where($column, '>=', $previousSince)->where($column, '<', $since)->count();
@@ -115,7 +118,7 @@ class AdminOverview
         ];
     }
 
-    private function merge(array $parts, array $dates): array
+    public function merge(array $parts, array $dates): array
     {
         return [
             'current' => array_sum(array_column($parts, 'current')),
@@ -124,12 +127,12 @@ class AdminOverview
         ];
     }
 
-    private function delta(int $current, int $previous): ?int
+    public function delta(int $current, int $previous): ?int
     {
         return $previous > 0 ? (int) round(($current - $previous) / $previous * 100) : null;
     }
 
-    private function kpi(string $key, string $label, int|float $value, array $window, ?string $sub, ?int $subValue, string $icon, ?string $hint = null): array
+    public function kpi(string $key, string $label, int|float $value, array $window, ?string $sub, ?int $subValue, string $icon, ?string $hint = null): array
     {
         $delta = $this->delta($window['current'], $window['previous']);
 

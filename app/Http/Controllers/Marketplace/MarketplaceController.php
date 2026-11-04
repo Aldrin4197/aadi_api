@@ -27,6 +27,10 @@ class MarketplaceController extends Controller {
         $r->validate(['reviewPage'=>'sometimes|integer|min:1']);
         $record = $this->market->find($service,$id); $item = $this->market->dto($record,$service);
         if ($item['status'] !== 'active') { abort_unless($r->user(),404); $this->market->authorize($r->user(),$record,$service); }
+        elseif ($service === 'spaces') {
+            try { app(\App\Services\ListingEngagement::class)->recordView((string) $record->id, $r->user(), $r->ip(), $item['ownerId']); }
+            catch (\Throwable $error) { report($error); }
+        }
         return $r->is('api/*') ? response()->json(['data'=>$item]) : Inertia::render('Marketplace/Show', ['listing'=>$item, 'engagement'=>app(\App\Services\ListingEngagement::class)->summary($service, $id, $r->user()?->id)]);
     }
     public function manage(Request $r) {

@@ -1,8 +1,18 @@
 <?php
 namespace App\Services;
+use App\Models\ListingView;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class ListingEngagement {
+    /** Counts one view per visitor per listing every 30 minutes, ignoring the owner and admins. */
+    public function recordView(string $listingId, ?User $viewer, ?string $ip, string $ownerId): void {
+        if ($viewer && ($viewer->is_admin || (string) $viewer->id === $ownerId)) return;
+        $recent = ListingView::where('listing_id', $listingId)->where('viewed_at', '>=', now()->subMinutes(30))
+            ->when($viewer, fn ($q) => $q->where('user_id', $viewer->id), fn ($q) => $q->whereNull('user_id')->where('ip_address', $ip));
+        if ($recent->exists()) return;
+        ListingView::create(['listing_id' => $listingId, 'user_id' => $viewer?->id, 'ip_address' => $ip, 'viewed_at' => now()]);
+    }
     public function saves(string $service, string $id) {
         return $service === 'spaces'
             ? DB::table('favorites')->where('listing_id', $id)

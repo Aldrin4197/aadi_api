@@ -9,6 +9,7 @@ use App\Models\ServiceListing;
 use App\Models\User;
 use App\Models\VehicleListing;
 use App\Models\ViewingRequest;
+use App\Services\AdminAnalytics;
 use App\Services\AdminOverview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -67,51 +68,10 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function analytics()
+    public function analytics(Request $request, AdminAnalytics $analytics)
     {
-        // Overview stats
-        $overview = [
-            'totalListings' => Listing::count(),
-            'activeListings' => Listing::where('status', 'active')->count(),
-            'totalUsers' => User::count(),
-            'totalViewings' => ViewingRequest::count(),
-            'totalViews' => ListingView::count(),
-            'totalFavorites' => DB::table('favorites')->count(),
-        ];
-
-        // Listings by type
-        $listingsByType = Listing::select('type', DB::raw('count(*) as count'))
-            ->groupBy('type')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->type->value => $item->count];
-            });
-
-        // Recent 30 days activity
-        $dailyViews = ListingView::where('viewed_at', '>=', now()->subDays(30))
-            ->select(DB::raw('DATE(viewed_at) as date'), DB::raw('count(*) as count'))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        $dailyUsers = User::where('created_at', '>=', now()->subDays(30))
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        // Top listings by views
-        $topListings = Listing::withCount('views')
-            ->orderBy('views_count', 'desc')
-            ->limit(10)
-            ->get();
-
         return Inertia::render('Admin/Analytics', [
-            'overview' => $overview,
-            'listingsByType' => $listingsByType,
-            'dailyViews' => $dailyViews,
-            'dailyUsers' => $dailyUsers,
-            'topListings' => $topListings,
+            'analytics' => $analytics->build((int) $request->query('range', 30)),
         ]);
     }
 }
