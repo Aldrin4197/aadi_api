@@ -14,10 +14,10 @@ const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
     <header class="market-header">
       <Link href="/" class="brand" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" /><span>Good things. Nearby.</span></Link>
       <nav aria-label="Main navigation">
-        <a v-if="isHome" href="#explore-map" class="current">Explore</a><Link v-else href="/explore" :class="{ current: page.url.startsWith('/explore') }">Explore</Link>
-        <a v-if="isHome" href="#how-it-works" class="landing-nav-link">How it works</a>
-        <a v-if="isHome" href="#for-providers" class="landing-nav-link">For providers</a>
-        <a v-if="isHome" href="#support" class="landing-nav-link">Support</a>
+        <a v-if="isHome" href="#explore-map" class="current" aria-current="location">Explore</a><Link v-else href="/explore" :class="{ current: page.url.startsWith('/explore') }" :aria-current="page.url.startsWith('/explore') ? 'page' : undefined">Explore</Link>
+        <a :href="isHome ? '#how-it-works' : '/#how-it-works'" class="landing-nav-link">How it works</a>
+        <a :href="isHome ? '#for-providers' : '/#for-providers'" class="landing-nav-link">For providers</a>
+        <a :href="isHome ? '#support' : '/#support'" class="landing-nav-link">Support</a>
         <template v-if="page.props.auth?.user">
           <NotificationBell />
           <AccountMenu />

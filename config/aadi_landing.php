@@ -1,6 +1,8 @@
 <?php
 
 return [
+    // The mobile apps are not published yet. Set AADI_APPS_LAUNCHED=true (and the two store URLs) at launch.
+    'apps_launched' => (bool) env('AADI_APPS_LAUNCHED', false),
     'google_play_url' => env('AADI_GOOGLE_PLAY_URL'),
     'app_store_url' => env('AADI_APP_STORE_URL'),
 

@@ -47,6 +47,7 @@ class LandingPageTest extends TestCase
         // Test-only text, never seeded or published to the homepage configuration.
         $review = ['published'=>true, 'quote'=>'Fixture quote', 'name'=>'Fixture author', 'source_url'=>'https://example.org/review'];
         config([
+            'aadi_landing.apps_launched'=>true,
             'aadi_landing.reviews'=>[$review, [...$review, 'published'=>false], [...$review, 'source_url'=>'javascript:alert(1)']],
             'aadi_landing.google_play_url'=>'https://play.google.com/store/apps/details?id=test.fixture',
             'aadi_landing.app_store_url'=>'https://apps.apple.com.untrusted.example/app/test',
@@ -55,5 +56,16 @@ class LandingPageTest extends TestCase
             ->has('landing.reviews', 1)->where('landing.reviews.0.name', 'Fixture author')
             ->where('landing.downloads.android', 'https://play.google.com/store/apps/details?id=test.fixture')
             ->where('landing.downloads.ios', null));
+    }
+
+    public function test_store_links_stay_hidden_until_the_apps_are_launched_even_when_configured(): void
+    {
+        config([
+            'aadi_landing.apps_launched'=>false,
+            'aadi_landing.google_play_url'=>'https://play.google.com/store/apps/details?id=test.fixture',
+            'aadi_landing.app_store_url'=>'https://apps.apple.com/app/test',
+        ]);
+        $this->withoutVite()->get('/')->assertInertia(fn (Assert $page) => $page
+            ->where('landing.downloads.android', null)->where('landing.downloads.ios', null));
     }
 }

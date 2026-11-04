@@ -50,8 +50,8 @@
 .download-store>strong { font-size:16px; }
 .download-store>span:last-child { font-size:11px; }
 a.download-store:hover { background:var(--aadi-tint); }
-.download-store.unavailable { background:#174a47; border:1px solid #5b807d; color:white; }
-.download-availability { color:#f7bb77; }
+.download-store.unavailable { background:#174a47; border:1px dashed #5b807d; color:white; cursor:default; }
+.download-availability { align-self:flex-start; padding:3px 10px; border-radius:20px; background:#f59e4226; color:#f7bb77 !important; font-weight:700; letter-spacing:.03em; }
 .home-landing .download-note { font-size:12px; margin:2px 0 0; }
 .download-art { position:relative; min-height:430px; display:grid; place-items:center; }
 .download-orbit { position:absolute; width:100%; max-width:360px; aspect-ratio:1; border-radius:50%; background:#195550; }

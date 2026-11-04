@@ -4,10 +4,14 @@ namespace App\Services;
 
 class LandingPage
 {
+    private bool $apps = false;
+
     public function __construct(private Marketplace $market) {}
 
     public function content(): array
     {
+        // Store links stay hidden ("Coming soon") until the apps are published and this switch is turned on.
+        $this->apps = (bool) config('aadi_landing.apps_launched', false);
         $featured = [];
         foreach (array_keys(Marketplace::TYPES) as $service) {
             $query = $this->market->model($service)::query()
@@ -34,8 +38,8 @@ class LandingPage
         return [
             'featured' => $featured, 'reviews' => $reviews,
             'downloads' => [
-                'android' => $this->httpsUrl(config('aadi_landing.google_play_url'), 'play.google.com'),
-                'ios' => $this->httpsUrl(config('aadi_landing.app_store_url'), 'apps.apple.com'),
+                'android' => $this->apps ? $this->httpsUrl(config('aadi_landing.google_play_url'), 'play.google.com') : null,
+                'ios' => $this->apps ? $this->httpsUrl(config('aadi_landing.app_store_url'), 'apps.apple.com') : null,
             ],
         ];
     }

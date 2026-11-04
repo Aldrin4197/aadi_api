@@ -147,3 +147,12 @@
 @media (min-width:951px) {
   .marketplace .map-explorer.is-home { height:clamp(600px, 74dvh, 720px); min-height:600px; }
 }
+
+/* One header for every marketplace page; it stays visible while scrolling. */
+.marketplace { --header-height:77px; }
+.marketplace .market-header { position:sticky; top:0; z-index:1200; }
+.marketplace .market-header nav > a, .marketplace .market-header nav > :is(a, button) { white-space:nowrap; }
+.marketplace .market-header nav > a.current { color:#137671; font-weight:700; }
+.marketplace :is(#explore-map, .home-landing [id]) { scroll-margin-top:calc(var(--header-height) + 16px); }
+@media (max-width:1100px) { .marketplace .market-header .landing-nav-link { display:none; } }
+@media (max-width:700px), (max-width:950px) and (max-height:550px) { .marketplace { --header-height:64px; } }

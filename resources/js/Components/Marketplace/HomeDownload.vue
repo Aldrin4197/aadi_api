@@ -7,11 +7,11 @@ const platforms = [{ key: 'android', name: 'Google Play', device: 'Android' }, {
 <template>
     <section id="download-aadi" class="landing-section" aria-labelledby="download-title">
         <div class="landing-download">
-            <div class="download-copy"><p class="landing-kicker">Aadi, wherever your day takes you</p><h2 id="download-title">Your neighborhood.<br />In your pocket.</h2><p>Keep spaces, vehicles, and local skills within reach. {{ downloads.android || downloads.ios ? 'Choose an available mobile app below, or keep exploring in your browser.' : 'Explore Aadi in your browser today, and find the mobile app here when it’s available.' }}</p>
+            <div class="download-copy"><p class="landing-kicker">Aadi, wherever your day takes you</p><h2 id="download-title">Your neighborhood.<br />In your pocket.</h2><p>Keep spaces, vehicles, and local skills within reach. {{ downloads.android || downloads.ios ? 'Choose an available mobile app below, or keep exploring in your browser.' : 'The Aadi mobile apps are coming soon to Google Play and the App Store. Until then, explore everything in your browser.' }}</p>
                 <div class="download-options">
                     <div v-for="platform in platforms" :key="platform.key" class="download-option">
                         <a v-if="downloads[platform.key]" :href="downloads[platform.key]" class="download-store" target="_blank" rel="noopener noreferrer"><span>{{ platform.device }}</span><strong>Get it on {{ platform.name }}</strong><span aria-hidden="true">↗</span></a>
-                        <div v-else class="download-store unavailable"><span>{{ platform.device }}</span><strong>{{ platform.name }}</strong><span class="download-availability">Coming soon</span></div>
+                        <div v-else class="download-store unavailable" role="group" :aria-label="`${platform.name}: coming soon`"><span>{{ platform.device }}</span><strong>{{ platform.name }}</strong><span class="download-availability">Coming soon</span></div>
                     </div>
                 </div>
                 <Link href="/explore" class="landing-text-link">Use Aadi on the web <span aria-hidden="true">↗</span></Link><p class="download-note">No installation needed to browse the map.</p>
