@@ -9,44 +9,17 @@ use App\Models\ServiceListing;
 use App\Models\User;
 use App\Models\VehicleListing;
 use App\Models\ViewingRequest;
+use App\Services\AdminOverview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request, AdminOverview $overview)
     {
-        $stats = [
-            'totalUsers' => User::count(),
-            'totalSpaces' => Listing::count(),
-            'totalVehicles' => VehicleListing::count(),
-            'totalServices' => ServiceListing::count(),
-            'totalViewings' => ViewingRequest::count(),
-            'pendingVerifications' => User::where('landlord_status', 'pending')->count(),
-            'pendingVehicleOwners' => User::where('vehicle_owner_status', 'pending')->count(),
-            'pendingServiceProviders' => User::where('service_provider_status', 'pending')->count(),
-        ];
-
-        // Recent activity
-        $recentListings = Listing::with('owner')
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-
-        $recentUsers = User::orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-
-        $recentViewings = ViewingRequest::orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-
         return Inertia::render('Admin/Dashboard', [
-            'stats' => $stats,
-            'recentListings' => $recentListings,
-            'recentUsers' => $recentUsers,
-            'recentViewings' => $recentViewings,
+            'overview' => $overview->build((int) $request->query('range', 30)),
         ]);
     }
 
