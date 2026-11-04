@@ -34,7 +34,7 @@ class AuthController extends Controller
 
         $verificationSent = true;
         try { event(new \Illuminate\Auth\Events\Registered($user)); }
-        catch (\Throwable $exception) { $verificationSent = false; }
+        catch (\Throwable $exception) { report($exception); $verificationSent = false; }
         $token = $user->createToken('mobile')->plainTextToken;
 
         return response()->json([

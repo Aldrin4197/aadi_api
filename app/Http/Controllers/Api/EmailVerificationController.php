@@ -15,7 +15,7 @@ class EmailVerificationController extends Controller
     {
         if ($request->user()->hasVerifiedEmail()) return response()->json(['emailVerified'=>true]);
         try { $request->user()->sendEmailVerificationNotification(); }
-        catch (\Throwable $exception) { return response()->json(['message'=>'The verification email could not be sent. Please try again shortly.'], 503); }
+        catch (\Throwable $exception) { report($exception); return response()->json(['message'=>'The verification email could not be sent. Please try again shortly.'], 503); }
         return response()->json(['message'=>'Verification email sent.', 'emailVerified'=>false]);
     }
 }

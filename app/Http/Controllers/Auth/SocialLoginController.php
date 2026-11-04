@@ -81,7 +81,7 @@ class SocialLoginController extends Controller
         $request->session()->regenerate();
         if ($created) {
             try { event(new Registered($user)); }
-            catch (\Throwable $exception) { return redirect()->route('verification.notice')->with('status', 'delivery-failed'); }
+            catch (\Throwable $exception) { report($exception); return redirect()->route('verification.notice')->with('status', 'delivery-failed'); }
         }
         return $user->hasVerifiedEmail() ? redirect()->intended('/dashboard') : redirect()->route('verification.notice');
     }

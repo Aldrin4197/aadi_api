@@ -18,7 +18,7 @@ class EmailVerificationNotificationController extends Controller
         }
 
         try { $request->user()->sendEmailVerificationNotification(); }
-        catch (\Throwable $exception) { return back()->with('status', 'delivery-failed'); }
+        catch (\Throwable $exception) { report($exception); return back()->with('status', 'delivery-failed'); }
 
         return back()->with('status', 'verification-link-sent');
     }

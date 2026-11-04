@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
         $request->session()->regenerate();
 
         try { event(new Registered($user)); }
-        catch (\Throwable $exception) { return redirect()->route('verification.notice')->with('status', 'delivery-failed'); }
+        catch (\Throwable $exception) { report($exception); return redirect()->route('verification.notice')->with('status', 'delivery-failed'); }
         return redirect()->route('verification.notice');
     }
 }
