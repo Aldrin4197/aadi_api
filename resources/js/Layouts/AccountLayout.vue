@@ -4,6 +4,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import AccountNavigation from '@/Components/Account/AccountNavigation.vue';
 import AccountMenu from '@/Components/Account/AccountMenu.vue';
 import NotificationBell from '@/Components/Account/NotificationBell.vue';
+import EmailVerifyBanner from '@/Components/Account/EmailVerifyBanner.vue';
 import '../../css/marketplace.css';
 import '../../css/account.css';
 const page = usePage();
@@ -44,6 +45,7 @@ watch(() => page.url, closeDrawer);
         <AccountMenu />
       </header>
       <div id="account-content" tabindex="-1" class="account-content">
+        <EmailVerifyBanner />
         <div v-if="page.props.flash?.success" class="notice success" role="status">{{ page.props.flash.success }}</div>
         <slot />
       </div>

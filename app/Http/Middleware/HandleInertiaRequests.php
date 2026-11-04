@@ -31,10 +31,14 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'flash' => ['success' => fn () => $request->session()->get('success'), 'ticket' => fn () => $request->session()->get('ticket')],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'ticket' => fn () => $request->session()->get('ticket'),
+                'verification' => fn () => in_array($request->session()->get('status'), ['verification-link-sent', 'delivery-failed'], true) ? $request->session()->get('status') : null,
+            ],
             'notifications' => ['unread' => fn () => $request->user() ? $request->user()->unreadNotifications()->count() : 0],
             'auth' => [
-                'user' => $request->user()?->only(['id', 'name', 'email', 'is_admin', 'avatar_url']),
+                'user' => $request->user() ? [...$request->user()->only(['id', 'name', 'email', 'is_admin', 'avatar_url']), 'emailVerified' => $request->user()->hasVerifiedEmail()] : null,
                 'onboarding' => $request->user() ? ['status'=>$request->user()->onboarding_status, 'data'=>$request->user()->onboarding_data] : null,
                 'providerRoles' => $request->user() ? [
                     'spaces' => $request->user()->landlord_status?->value ?? 'none',

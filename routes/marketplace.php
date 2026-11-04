@@ -16,7 +16,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/become-provider', [Application::class,'index']);
     Route::get('/provider-applications/{service}', [Application::class,'show']);
     Route::get('/provider-documents/{id}/{index}', [Application::class,'document']);
-    Route::post('/provider-applications/{service}', [Application::class,'store'])->middleware('throttle:6,1');
+    Route::post('/provider-applications/{service}', [Application::class,'store'])->middleware(['verified.email','throttle:6,1']);
     Route::get('/admin/approvals', [Application::class,'queue'])->middleware(EnsureAdmin::class);
     Route::post('/admin/approvals/{id}/{service}', [Application::class,'decide'])->middleware(EnsureAdmin::class);
 });

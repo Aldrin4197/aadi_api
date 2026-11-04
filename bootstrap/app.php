@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureLegalAcceptance::class,
         ]);
 
-        //
+        $middleware->alias(['verified.email' => \App\Http\Middleware\RequireVerifiedEmail::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

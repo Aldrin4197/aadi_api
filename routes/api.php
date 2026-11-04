@@ -31,18 +31,18 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
-    Route::post('me/landlord-application', [AuthController::class, 'applyForLandlord']);
+    Route::post('me/landlord-application', [AuthController::class, 'applyForLandlord'])->middleware('verified.email');
     Route::post('me/landlord-application/approve', [AuthController::class, 'approveLandlord'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
-    Route::post('me/vehicle-owner-application', [AuthController::class, 'applyForVehicleOwner']);
+    Route::post('me/vehicle-owner-application', [AuthController::class, 'applyForVehicleOwner'])->middleware('verified.email');
     Route::post('me/vehicle-owner-application/approve', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/vehicle-owner-application/approve/{userId}', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
-    Route::post('me/service-provider-application', [AuthController::class, 'applyForServiceProvider']);
+    Route::post('me/service-provider-application', [AuthController::class, 'applyForServiceProvider'])->middleware('verified.email');
     Route::post('me/service-provider-application/approve', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/service-provider-application/approve/{userId}', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
-    Route::post('me/aadi-haul-application', [AuthController::class, 'applyForVehicleOwner']);
+    Route::post('me/aadi-haul-application', [AuthController::class, 'applyForVehicleOwner'])->middleware('verified.email');
     Route::post('me/aadi-haul-application/approve', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/aadi-haul-application/approve/{userId}', [AuthController::class, 'approveVehicleOwner'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
-    Route::post('me/aadi-raketeer-application', [AuthController::class, 'applyForServiceProvider']);
+    Route::post('me/aadi-raketeer-application', [AuthController::class, 'applyForServiceProvider'])->middleware('verified.email');
     Route::post('me/aadi-raketeer-application/approve', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/aadi-raketeer-application/approve/{userId}', [AuthController::class, 'approveServiceProvider'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     
@@ -112,7 +112,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/profile/avatar', [\App\Http\Controllers\AvatarController::class,'store'])->middleware('throttle:10,1');
         Route::delete('/profile/avatar', [\App\Http\Controllers\AvatarController::class,'destroy']);
         Route::get('/provider-applications/{service}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'show']);
-        Route::post('/provider-applications/{service}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'store'])->middleware('throttle:6,1');
+        Route::post('/provider-applications/{service}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'store'])->middleware(['verified.email','throttle:6,1']);
         Route::get('/provider-documents/{id}/{index}', [\App\Http\Controllers\Marketplace\ProviderApplicationController::class,'document']);
         Route::post('/photos', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'upload'])->middleware('throttle:30,1');
     });

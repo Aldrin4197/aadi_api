@@ -1,6 +1,6 @@
 <script setup>
 import {computed,ref,watch} from 'vue';
-import {Head,Link,usePage,useForm} from '@inertiajs/vue3';
+import {Head,Link,usePage,useForm,router} from '@inertiajs/vue3';
 import ProviderStart from '@/Pages/Marketplace/ProviderStart.vue';
 import GettingStartedModal from '@/Components/Onboarding/GettingStartedModal.vue';
 const props=defineProps({service:String,status:String,application:Object,requirements:{type:Object,default:()=>({})}});
@@ -13,6 +13,9 @@ const form=useForm(initial());
 const pending=computed(()=>props.status==='pending'&&props.application?.status==='pending');
 const locked=computed(()=>pending.value||(props.status==='approved'&&!editing.value));
 const statuses=computed(()=>({...page.props.auth.providerRoles,[props.service]:props.status}));
+const unverified=computed(()=>page.props.auth.user?.emailVerified===false&&!locked.value);
+const resending=ref(false),verification=computed(()=>page.props.flash?.verification);
+function resend(){if(resending.value)return;resending.value=true;router.post('/email/verification-notification',{},{preserveScroll:true,preserveState:true,onFinish:()=>{resending.value=false;}});}
 const savedDocuments=computed(()=>(props.application?.documents||[]).filter(doc=>form.keepDocuments.includes(doc.index)));
 const label=type=>props.requirements[type]?.label||'Supporting document';
 function choose(event){const files=Array.from(event.target.files||[]);event.target.value='';selectionError.value='';if(files.length+form.documents.length+savedDocuments.value.length>10||files.some(f=>f.size>5*1024*1024||!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))){selectionError.value='Use JPG, PNG, WebP, or PDF files up to 5 MB each, with at most 10 documents in total.';return;}for(const file of files){form.documents.push(file);form.documentMeta.push({type:'',reference:'',expiresAt:''});}}
@@ -26,8 +29,9 @@ watch(()=>props.application,app=>{form.version=app?.version||null;form.keepDocum
 <ProviderStart :statuses="statuses"/>
 <Head :title="titles[service]+' · Getting started'"/>
 <button v-if="!open" type="button" class="provider-resume" @click="open=true">Resume {{ titles[service] }} application</button>
-<GettingStartedModal :open="open" :title="locked?(pending?'Your application is under review':'You’re an approved '+titles[service]):'Get started as a '+titles[service]" :steps="locked?[]:steps" :step="step" :busy="form.processing" @close="open=false">
-<div v-if="locked" class="getting-fields"><p>Approval applies to this role only. Your User account and other provider roles stay separate.</p><p v-if="application?.reviewNote" class="getting-note">{{ application.reviewNote }}</p><dl><dt>Name</dt><dd>{{ application?.displayName }}</dd><dt>Area</dt><dd>{{ application?.area }}</dd><dt>About your offering</dt><dd>{{ application?.description }}</dd></dl><div v-for="doc in application?.documents||[]" :key="doc.index"><a :href="doc.url">{{ label(doc.type) }} · {{ doc.name }}</a></div><div class="getting-actions"><button @click="open=false">Close</button><template v-if="status==='approved'"><button @click="editing=true;step=0">Update verification</button><Link :href="`/my-listings/${service}/new`" class="getting-link">Create listing</Link></template></div></div>
+<GettingStartedModal :open="open" :title="locked?(pending?'Your application is under review':'You’re an approved '+titles[service]):'Get started as a '+titles[service]" :steps="locked||unverified?[]:steps" :step="step" :busy="form.processing" @close="open=false">
+<div v-if="unverified" class="getting-fields" role="status"><p><strong>Verify your email to apply.</strong></p><p>Admins review every provider role, so we need to confirm that {{ page.props.auth.user.email }} is really yours first. Open the link we emailed you, then come back to this page.</p><p v-if="verification==='verification-link-sent'" class="getting-note">A new link is on its way. Check your inbox and spam folder.</p><p v-else-if="verification==='delivery-failed'" role="alert" class="getting-errors">We could not send the email. Please try again shortly.</p><div class="getting-actions"><button type="button" @click="open=false">Close</button><button type="button" class="getting-primary" :disabled="resending" @click="resend">{{ resending?'Sending…':'Resend verification email' }}</button></div></div>
+<div v-else-if="locked" class="getting-fields"><p>Approval applies to this role only. Your User account and other provider roles stay separate.</p><p v-if="application?.reviewNote" class="getting-note">{{ application.reviewNote }}</p><dl><dt>Name</dt><dd>{{ application?.displayName }}</dd><dt>Area</dt><dd>{{ application?.area }}</dd><dt>About your offering</dt><dd>{{ application?.description }}</dd></dl><div v-for="doc in application?.documents||[]" :key="doc.index"><a :href="doc.url">{{ label(doc.type) }} · {{ doc.name }}</a></div><div class="getting-actions"><button @click="open=false">Close</button><template v-if="status==='approved'"><button @click="editing=true;step=0">Update verification</button><Link :href="`/my-listings/${service}/new`" class="getting-link">Create listing</Link></template></div></div>
 <form v-else @submit.prevent="next">
 <p v-if="application?.reviewNote" class="getting-note"><strong>Admin feedback:</strong> {{ application.reviewNote }}</p>
 <p v-if="application?.status==='draft'" class="getting-note">Your saved draft is ready to continue.</p>

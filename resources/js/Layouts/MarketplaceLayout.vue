@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import AccountMenu from '@/Components/Account/AccountMenu.vue';
 import NotificationBell from '@/Components/Account/NotificationBell.vue';
+import EmailVerifyBanner from '@/Components/Account/EmailVerifyBanner.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import '../../css/marketplace.css';
 import '../../css/map-explorer.css';
@@ -25,6 +26,7 @@ const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
         <template v-else><Link href="/login">Log in</Link><Link href="/register" class="button primary">Register</Link></template>
       </nav>
     </header>
+    <EmailVerifyBanner />
     <div v-if="page.props.flash?.success" class="notice success" role="status">{{ page.props.flash.success }}</div>
     <slot />
     <slot name="footer" />
