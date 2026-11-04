@@ -24,6 +24,11 @@ const { state, visit, search, sortBy, reset } = useAdminTable('/admin/users', {
 });
 const active = computed(() => keys.some(key => state[key] !== ''));
 const roles = [['landlord_status', 'spaces'], ['vehicle_owner_status', 'haul'], ['service_provider_status', 'raketeer']];
+const countIcons = [
+    ['listings_count', 'm3 11 9-8 9 8M5 9v12h14V9M9 21v-8h6v8', 'properties'],
+    ['vehicle_listings_count', 'M3 5h12v12H3zM15 9h4l3 4v4h-7M5 17v3h3v-3M17 17v3h3v-3', 'vehicles'],
+    ['service_listings_count', 'M3 7h18v14H3zM8 7V3h8v4M3 12l9 4 9-4', 'rakets'],
+];
 const dateText = value => new Date(value).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
 const listingTotal = user => (user.listings_count || 0) + (user.vehicle_listings_count || 0) + (user.service_listings_count || 0);
 </script>
@@ -73,18 +78,28 @@ const listingTotal = user => (user.listings_count || 0) + (user.vehicle_listings
                                 <UserAvatar :user="user" />
                                 <div>
                                     <strong>{{ user.name }}<span v-if="user.is_admin" class="tag admin">Admin</span></strong>
-                                    <span>{{ user.email }}</span>
-                                    <span class="tag" :class="user.email_verified_at ? 'ok' : 'warn'">{{ user.email_verified_at ? 'Email verified' : 'Email unverified' }}</span>
+                                    <span class="email">{{ user.email }}
+                                        <svg v-if="user.email_verified_at" class="mail-state ok" viewBox="0 0 24 24" role="img" aria-label="Email verified"><title>Email verified</title><path d="M5 12.5l4.2 4.2L19 7" /></svg>
+                                        <svg v-else class="mail-state warn" viewBox="0 0 24 24" role="img" aria-label="Email not verified"><title>Email not verified</title><path d="M12 8v5m0 3.5h.01" /></svg>
+                                    </span>
                                 </div>
                             </div>
                         </td>
-                        <td><div class="user-roles"><RoleStatusBadge v-for="[field, service] in roles" :key="field" :service="service" :status="user[field] || 'none'" /></div></td>
+                        <td><div class="user-roles"><RoleStatusBadge v-for="[field, service] in roles" :key="field" compact :service="service" :status="user[field] || 'none'" /></div></td>
                         <td>
-                            <strong>{{ listingTotal(user) }}</strong>
-                            <small>{{ user.listings_count || 0 }} properties · {{ user.vehicle_listings_count || 0 }} vehicles · {{ user.service_listings_count || 0 }} rakets</small>
+                            <div class="counts" :title="`${user.listings_count || 0} properties, ${user.vehicle_listings_count || 0} vehicles, ${user.service_listings_count || 0} rakets`">
+                                <strong>{{ listingTotal(user) }}</strong>
+                                <span v-for="[key, path, label] in countIcons" :key="key" class="count" :class="{ zero: !user[key] }">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="path" /></svg>{{ user[key] || 0 }}<span class="sr-only"> {{ label }}</span>
+                                </span>
+                            </div>
                         </td>
                         <td class="nowrap">{{ dateText(user.created_at) }}</td>
-                        <td><Link :href="`/admin/users/${user.id}/listings`" class="users-view" :aria-label="`View listings for ${user.name}`">View listings →</Link></td>
+                        <td class="actions">
+                            <Link :href="`/admin/users/${user.id}/listings`" class="icon-action" :aria-label="`View listings for ${user.name}`" :title="`View ${user.name}'s listings`">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
+                            </Link>
+                        </td>
                     </tr>
                     <tr v-if="!users.data.length"><td colspan="5" class="empty">No users match these filters.</td></tr>
                 </tbody>
@@ -107,20 +122,28 @@ const listingTotal = user => (user.listings_count || 0) + (user.vehicle_listings
 .users-table { overflow:auto; border:1px solid #dce7e4; border-radius:12px; background:#fff; }
 .users-table table { width:100%; text-align:left; font-size:13px; border-collapse:collapse; }
 .users-table th { background:#f8faf9; padding:10px 18px; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#42665e; white-space:nowrap; }
-.users-table td { padding:16px 18px; border-top:1px solid #e5edeb; vertical-align:middle; }
+.users-table td { padding:12px 18px; border-top:1px solid #e5edeb; vertical-align:middle; }
 .users-table tbody tr:hover { background:#f8fbfa; }
 .user-identity { display:flex; align-items:center; gap:12px; min-width:230px; }
-.user-identity strong { display:flex; align-items:center; gap:8px; }
-.user-identity > div > span:not(.tag) { display:block; color:#637b76; font-size:12px; margin-top:4px; }
-.tag { display:inline-block; margin-top:6px; padding:3px 7px; border-radius:5px; font-size:10px; font-weight:700; background:#eff3f1; color:#586e6c; }
-.tag.admin { margin-top:0; background:#e8e4fb; color:#4b3fa8; }
-.tag.ok { background:#e1f5ec; color:#12744a; }
-.tag.warn { background:#fff3d6; color:#8a5a00; }
-.user-roles { display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-width:190px; }
-.users-table small { display:block; color:#637b76; font-size:12px; margin-top:5px; }
+.user-identity strong { display:flex; align-items:center; gap:8px; font-weight:700; }
+.user-identity .email { display:flex; align-items:center; gap:6px; color:#637b76; font-size:12px; margin-top:2px; overflow-wrap:anywhere; }
+.mail-state { width:14px; height:14px; flex-shrink:0; fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.mail-state.ok { stroke:#12744a; }
+.mail-state.warn { stroke:#b45f12; }
+.tag { display:inline-block; padding:2px 7px; border-radius:5px; font-size:10px; font-weight:700; background:#eff3f1; color:#586e6c; }
+.tag.admin { background:#e8e4fb; color:#4b3fa8; }
+.user-roles { display:flex; align-items:center; gap:12px; padding-right:6px; }
+.counts { display:flex; align-items:center; gap:12px; }
+.counts strong { min-width:18px; font-size:15px; }
+.count { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#42665e; font-variant-numeric:tabular-nums; }
+.count svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.count.zero { color:#b0bfbc; }
 .nowrap { white-space:nowrap; color:#586e6c; }
-.users-view { display:inline-block; white-space:nowrap; border:1px solid #b7d8d0; border-radius:8px; padding:10px 12px; color:#12675f; font-weight:700; }
-.users-view:focus-visible { outline:2px solid #137671; outline-offset:3px; }
+.actions { width:1%; text-align:right; }
+.icon-action { display:inline-grid; place-items:center; width:40px; height:40px; border:1px solid #cbded8; border-radius:10px; color:#12675f; background:#fff; }
+.icon-action:hover { background:#e3f6f4; border-color:#9fd0c6; }
+.icon-action svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+.icon-action:focus-visible { outline:2px solid #137671; outline-offset:3px; }
 .empty { text-align:center; padding:40px !important; color:#637b76; }
 @media (max-width:700px) { .users-summary { grid-template-columns:1fr; } }
 </style>
