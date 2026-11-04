@@ -38,6 +38,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->middleware('throttle:60,1');
+    Route::get('/notifications/count', [\App\Http\Controllers\NotificationController::class, 'count'])->middleware('throttle:120,1');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll'])->middleware('throttle:30,1');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->middleware('throttle:120,1');
     Route::post('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'store'])->middleware('throttle:10,1');
     Route::delete('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'destroy']);
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -93,6 +93,7 @@ class ProviderApplicationController extends Controller {
             throw $error;
         }
         foreach ($removed as $document) Storage::disk('local')->delete($document['path']);
+        if (!$draft) app(\App\Services\Notifier::class)->applicationSubmitted($request->user(), $service);
         if ($request->is('api/*')) return response()->json(['data'=>ProviderApplication::where('user_id',$request->user()->id)->where('service',$service)->firstOrFail()->toReviewData(true)], 201);
         return redirect('/provider-applications/'.$service)->with('success', $draft ? 'Application draft saved.' : 'Application submitted for review.');
     }
@@ -169,13 +170,15 @@ class ProviderApplicationController extends Controller {
         ]);
     }
     public function decide(Request $request, string $id, string $service) {
+        $applicant = null;
         $field = $this->market->statusField($service);
         $data = $request->validate([
             'version'=>'nullable|string|size:64', 'status'=>['required',Rule::in(['approved','rejected'])],
             'reviewNote'=>['nullable','string','max:2000', Rule::requiredIf($request->input('status') === 'rejected'), Rule::when($request->input('status') === 'rejected', ['min:10'])],
         ]);
-        DB::transaction(function () use ($request, $id, $service, $field, $data) {
+        DB::transaction(function () use ($request, $id, $service, $field, $data, &$applicant) {
             $user = User::whereKey($id)->lockForUpdate()->firstOrFail();
+            $applicant = $user;
             $application = ProviderApplication::where('user_id',$id)->where('service',$service)->first();
             abort_unless($user->$field?->value === 'pending' && (!$application || $application->status === 'pending'),422,'No pending application.');
             if ($application && !hash_equals($application->revision(), $data['version'] ?? '')) throw ValidationException::withMessages(['application'=>'This application changed. Reload it before reviewing.']);
@@ -186,6 +189,7 @@ class ProviderApplicationController extends Controller {
             $user->update([$field=>$data['status']]);
             $application?->update(['status'=>$data['status'], 'review_note'=>$data['reviewNote'] ?? null, 'reviewer_id'=>$request->user()->id, 'decided_at'=>now()]);
         });
+        app(\App\Services\Notifier::class)->applicationDecided($applicant, $service, $data['status'], $data['reviewNote'] ?? null);
         return back()->with('success','Application reviewed.');
     }
 }

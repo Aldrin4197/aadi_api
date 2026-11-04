@@ -7,6 +7,7 @@ use App\Mail\TicketReply;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
 use App\Services\AdminOverview;
+use App\Services\Notifier;
 use App\Services\SupportAnalytics;
 use App\Support\AdminTable;
 use Illuminate\Http\Request;
@@ -108,6 +109,7 @@ class TicketController extends Controller
             $ticket->last_activity_at = now();
             $ticket->save();
             foreach ($events as $event) $ticket->messages()->create(['user_id' => $admin->id, 'kind' => 'event', 'body' => $event]);
+            if (isset($data['status']) && $data['status'] === 'resolved' && $ticket->wasChanged('status')) app(Notifier::class)->ticketResolved($ticket);
         }
 
         return $this->show($ticket->fresh());
@@ -127,6 +129,7 @@ class TicketController extends Controller
             }
             $ticket->first_response_at ??= now();
             if ($ticket->status === 'open') $ticket->status = 'in_progress';
+            app(Notifier::class)->ticketReplied($ticket);
         }
         $ticket->last_activity_at = now();
         $ticket->save();

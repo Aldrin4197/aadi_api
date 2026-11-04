@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import AccountMenu from '@/Components/Account/AccountMenu.vue';
+import NotificationBell from '@/Components/Account/NotificationBell.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import '../../css/marketplace.css';
 import '../../css/map-explorer.css';
@@ -18,6 +19,7 @@ const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
         <a v-if="isHome" href="#for-providers" class="landing-nav-link">For providers</a>
         <a v-if="isHome" href="#support" class="landing-nav-link">Support</a>
         <template v-if="page.props.auth?.user">
+          <NotificationBell />
           <AccountMenu />
         </template>
         <template v-else><Link href="/login">Log in</Link><Link href="/register" class="button primary">Register</Link></template>

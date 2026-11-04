@@ -19,7 +19,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside));
 </script>
 <template>
   <details v-if="user" ref="details" class="account-menu" @keydown="escape" @focusout="event => { if (!event.currentTarget.contains(event.relatedTarget)) close(); }">
-    <summary :aria-label="`Account menu for ${user.name}`"><UserAvatar :user="user" /><span class="account-menu-label">My account</span></summary>
+    <summary :aria-label="`Account menu for ${user.name}`"><UserAvatar :user="user" /></summary>
     <div class="account-menu-panel">
       <div class="account-menu-identity"><strong>{{ user.name }}</strong><span>{{ user.email }}</span></div>
       <nav aria-label="Account navigation" @click="close">
@@ -35,7 +35,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside));
 </template>
 <style scoped>
 .account-menu { position: relative; }
-.account-menu summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 44px; border-radius: 24px; font-size: 13px; }
+.account-menu summary { list-style: none; display: grid; place-items: center; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; }
+.account-menu summary:focus-visible { outline: 2px solid #137671; outline-offset: 2px; }
 .account-menu summary::-webkit-details-marker { display: none; }
 .account-menu-panel { position: absolute; right: 0; top: calc(100% + 12px); width: min(280px, calc(100vw - 32px)); z-index: 1200; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: 0 12px 36px #193e3b20; padding: 8px; color: var(--ink); }
 .account-menu-identity { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
@@ -44,5 +45,4 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside));
 .account-menu-panel nav { display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding-top: 6px; }
 .account-menu-panel a, .account-menu-panel button { display: block; padding: 12px; border-radius: 6px; font-size: 13px; text-align: left; min-height: 44px; width: 100%; }
 .account-menu-panel a:hover, .account-menu-panel button:hover { background: #eff5f1; }
-@media (max-width: 700px) { .account-menu-label { display: none; } }
 </style>

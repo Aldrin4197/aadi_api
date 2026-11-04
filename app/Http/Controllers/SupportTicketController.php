@@ -33,6 +33,8 @@ class SupportTicketController extends Controller
             'source' => 'home',
         ]);
 
+        if (!$duplicate) app(\App\Services\Notifier::class)->ticketCreated($ticket);
+
         return back()->with('success', 'Thanks, we got your message and will reply by email.')->with('ticket', $ticket->reference);
     }
 }

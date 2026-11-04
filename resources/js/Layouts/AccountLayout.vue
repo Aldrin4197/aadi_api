@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import AccountNavigation from '@/Components/Account/AccountNavigation.vue';
 import AccountMenu from '@/Components/Account/AccountMenu.vue';
+import NotificationBell from '@/Components/Account/NotificationBell.vue';
 import '../../css/marketplace.css';
 import '../../css/account.css';
 const page = usePage();
@@ -39,6 +40,7 @@ watch(() => page.url, closeDrawer);
         <button class="account-mobile-toggle" aria-label="Open account navigation" aria-controls="account-drawer" :aria-expanded="drawerOpen" @click="openDrawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
         <div class="account-header-title"><span>My account</span><strong>{{ title }}</strong></div>
         <Link href="/explore" class="account-explore-link">Explore nearby ↗</Link>
+        <NotificationBell />
         <AccountMenu />
       </header>
       <div id="account-content" tabindex="-1" class="account-content">

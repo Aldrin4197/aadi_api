@@ -32,6 +32,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'flash' => ['success' => fn () => $request->session()->get('success'), 'ticket' => fn () => $request->session()->get('ticket')],
+            'notifications' => ['unread' => fn () => $request->user() ? $request->user()->unreadNotifications()->count() : 0],
             'auth' => [
                 'user' => $request->user()?->only(['id', 'name', 'email', 'is_admin', 'avatar_url']),
                 'onboarding' => $request->user() ? ['status'=>$request->user()->onboarding_status, 'data'=>$request->user()->onboarding_data] : null,

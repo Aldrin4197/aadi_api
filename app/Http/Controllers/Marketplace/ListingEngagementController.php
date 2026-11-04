@@ -35,10 +35,12 @@ class ListingEngagementController extends Controller {
         $item = $this->active($service, $id);
         abort_if($item['ownerId'] === (string) $r->user()->id, 403);
         $data = $r->validate(['rating'=>'required|integer|between:1,5', 'body'=>'required|string|min:10|max:2000']);
+        $isNew = !$this->engagement->reviews($service, $id)->where('user_id', $r->user()->id)->exists();
         DB::table('marketplace_reviews')->upsert([[
             'service'=>$service, 'listing_id'=>$id, 'user_id'=>$r->user()->id,
             ...$data, 'created_at'=>now(), 'updated_at'=>now(),
         ]], ['user_id','service','listing_id'], ['rating','body','updated_at']);
+        if ($isNew && ($owner = \App\Models\User::find($item['ownerId']))) app(\App\Services\Notifier::class)->reviewReceived($owner, $item['title'], (int) $data['rating'], "/offers/$service/$id");
         return $this->done($r);
     }
     public function deleteReview(Request $r, string $service, string $id) {
