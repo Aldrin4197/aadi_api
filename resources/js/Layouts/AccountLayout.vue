@@ -6,6 +6,8 @@ import AccountMenu from '@/Components/Account/AccountMenu.vue';
 import '../../css/marketplace.css';
 import '../../css/account.css';
 const page = usePage();
+const compact = ref(false);
+function toggleCompact() { compact.value = !compact.value; try { localStorage.setItem('aadi-account-compact', String(compact.value)); } catch {} }
 const drawer = ref(null);
 const drawerOpen = ref(false);
 const title = computed(() => page.url.startsWith('/saved-listings') ? 'Saved listings' : page.url.startsWith('/dashboard') ? 'Dashboard' : page.url.startsWith('/profile') ? 'Profile & settings' : page.url.startsWith('/my-listings') ? 'My listings' : page.url.startsWith('/admin/approvals') ? 'Review applications' : 'Provider roles');
@@ -18,7 +20,7 @@ watch(drawerOpen, open => {
   else if (previousOverflow !== undefined) { document.body.style.overflow = previousOverflow; previousOverflow = undefined; }
 });
 function resize() { if (desktop?.matches) closeDrawer(); }
-onMounted(() => { desktop = window.matchMedia('(min-width: 1024px)'); desktop.addEventListener('change', resize); });
+onMounted(() => { try { compact.value = localStorage.getItem('aadi-account-compact') === 'true'; } catch {} desktop = window.matchMedia('(min-width: 1024px)'); desktop.addEventListener('change', resize); });
 onBeforeUnmount(() => {
   desktop?.removeEventListener('change', resize);
   if (previousOverflow !== undefined) document.body.style.overflow = previousOverflow;
@@ -26,9 +28,9 @@ onBeforeUnmount(() => {
 watch(() => page.url, closeDrawer);
 </script>
 <template>
-  <div class="marketplace account-layout">
+  <div class="marketplace account-layout" :class="{ 'account-compact': compact }">
     <a class="account-skip" href="#account-content">Skip to content</a>
-    <aside class="account-sidebar"><AccountNavigation /></aside>
+    <aside class="account-sidebar"><AccountNavigation :compact="compact" /><button type="button" class="account-collapse" :aria-expanded="!compact" :aria-label="compact ? 'Expand sidebar' : 'Collapse sidebar'" :title="compact ? 'Expand sidebar' : undefined" @click="toggleCompact">{{ compact ? '→' : '← Collapse sidebar' }}</button></aside>
     <dialog id="account-drawer" ref="drawer" class="account-drawer" aria-label="Account navigation" @keydown.esc.prevent.stop="closeDrawer" @close="drawerOpen = false" @click="event => { if (event.target === drawer) closeDrawer(); }">
       <div class="account-drawer-inner"><button class="account-drawer-close" aria-label="Close navigation" autofocus @click="closeDrawer">✕</button><AccountNavigation /></div>
     </dialog>

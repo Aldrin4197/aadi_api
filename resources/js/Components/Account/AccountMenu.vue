@@ -19,7 +19,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside));
 </script>
 <template>
   <details v-if="user" ref="details" class="account-menu" @keydown="escape" @focusout="event => { if (!event.currentTarget.contains(event.relatedTarget)) close(); }">
-    <summary :aria-label="`Account menu for ${user.name}`"><UserAvatar :user="user" /><span class="account-menu-label">My account</span><span aria-hidden="true">⌄</span></summary>
+    <summary :aria-label="`Account menu for ${user.name}`"><UserAvatar :user="user" /><span class="account-menu-label">My account</span></summary>
     <div class="account-menu-panel">
       <div class="account-menu-identity"><strong>{{ user.name }}</strong><span>{{ user.email }}</span></div>
       <nav aria-label="Account navigation" @click="close">
