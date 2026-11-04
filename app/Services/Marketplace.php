@@ -2,7 +2,7 @@
 namespace App\Services;
 
 use App\Models\{Listing, VehicleListing, ServiceListing, User};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -24,8 +24,26 @@ class Marketplace
         return $user->{$this->statusField($service)}?->value === 'approved';
     }
     public function find(string $service, string $id): Model { return $this->model($service)::findOrFail($id); }
+    public function ownerColumn(string $service): string { return $service === 'raketeer' ? 'provider_id' : 'owner_id'; }
+    public function owns(User $user, Model $record, string $service): bool {
+        return (string) $record->{$this->ownerColumn($service)} === (string) $user->id;
+    }
     public function authorize(User $user, Model $record, string $service): void {
-        abort_unless($user->is_admin || (string) $record->{$service === 'raketeer' ? 'provider_id' : 'owner_id'} === (string) $user->id, 403);
+        abort_unless($user->is_admin || $this->owns($user, $record, $service), 403);
+    }
+    /** Restricts a listing query to a radius (km) around a point, nearest first. */
+    public function nearby(Builder $query, string $service, float $lat, float $lng, float $radiusKm, bool $selectDistance = false): Builder {
+        [$latColumn, $lngColumn] = $service === 'spaces' ? ['lat', 'lng'] : ['latitude', 'longitude'];
+        // Distance in SQL, clamped for floating-point rounding at identical coordinates.
+        $cosine = "cos(radians(?))*cos(radians($latColumn))*cos(radians($lngColumn)-radians(?))+sin(radians(?))*sin(radians($latColumn))";
+        $distance = "6371 * acos(CASE WHEN ($cosine) > 1 THEN 1 WHEN ($cosine) < -1 THEN -1 ELSE ($cosine) END)";
+        $bindings = array_merge([$lat, $lng, $lat], [$lat, $lng, $lat], [$lat, $lng, $lat]);
+        if ($selectDistance) $query->select($query->getModel()->getTable().'.*')->selectRaw("($distance) AS distance", $bindings);
+        // The radius is inlined as a float literal: SQLite compares bound (text) parameters as larger than any number.
+        $radius = sprintf('%.6F', $radiusKm);
+        return $query->whereNotNull($latColumn)->whereNotNull($lngColumn)
+            ->whereRaw("($distance) <= $radius", $bindings)
+            ->orderByRaw($distance, $bindings);
     }
     public function dto(Model $r, string $service): array {
         $space = $service === 'spaces'; $vehicle = $service === 'haul';
@@ -60,7 +78,6 @@ class Marketplace
     public function search(array $filters): array {
         $service = $filters['service'] ?? 'spaces';
         $space = $service === 'spaces';
-        $latColumn = $space ? 'lat' : 'latitude'; $lngColumn = $space ? 'lng' : 'longitude';
         $priceColumn = $space ? 'price' : ($service === 'haul' ? 'price_per_day' : 'price_amount');
         $query = $this->model($service)::query()->with($service === 'raketeer' ? 'provider' : 'owner')
             ->where('status', $space ? 'active' : 'available');
@@ -73,15 +90,8 @@ class Marketplace
         foreach (['minPrice' => '>=', 'maxPrice' => '<='] as $key => $operator) {
             if (isset($filters[$key])) $query->where($priceColumn, $operator, $filters[$key]);
         }
-        $nearby = isset($filters['lat'], $filters['lng']);
-        if ($nearby) {
-            $lat = (float) $filters['lat']; $lng = (float) $filters['lng']; $radius = (float) ($filters['radiusKm'] ?? 10);
-            // Distance in SQL, clamped for floating-point rounding at identical coordinates.
-            $cosine = "cos(radians(?))*cos(radians($latColumn))*cos(radians($lngColumn)-radians(?))+sin(radians(?))*sin(radians($latColumn))";
-            $distance = "6371 * acos(CASE WHEN ($cosine) > 1 THEN 1 WHEN ($cosine) < -1 THEN -1 ELSE ($cosine) END)";
-            $bindings = array_merge([$lat,$lng,$lat], [$lat,$lng,$lat], [$lat,$lng,$lat]);
-            $query->whereNotNull($latColumn)->whereNotNull($lngColumn)->whereRaw("($distance) <= ?", [...$bindings, $radius])
-                ->orderByRaw($distance, $bindings);
+        if (isset($filters['lat'], $filters['lng'])) {
+            $this->nearby($query, $service, (float) $filters['lat'], (float) $filters['lng'], (float) ($filters['radiusKm'] ?? 10));
         } else $query->latest();
         $page = $query->paginate(30)->withQueryString();
         return ['data' => $page->getCollection()->map(fn ($r) => $this->dto($r, $service))->values(),
@@ -105,7 +115,7 @@ class Marketplace
     public function save(User $user, string $service, array $data, ?Model $record = null): Model {
         if ($record) $this->authorize($user, $record, $service);
         abort_unless($user->is_admin || $this->approved($user, $service), 403, 'Apply and get approved for this provider role before managing listings.');
-        $owner = $record ? User::findOrFail($record->{$service === 'raketeer' ? 'provider_id' : 'owner_id'}) : $user;
+        $owner = $record ? User::findOrFail($record->{$this->ownerColumn($service)}) : $user;
         abort_if($data['status'] === 'active' && !$this->approved($owner, $service), 403, 'Provider approval is required to publish. Save a draft while your application is reviewed.');
         if ($service === 'spaces') $status = $data['status'];
         else $status = match($data['status']) { 'active' => 'available', 'draft' => 'inactive', 'rented' => 'rented', default => $service === 'haul' ? 'maintenance' : 'busy' };

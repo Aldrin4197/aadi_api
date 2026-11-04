@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', [\App\Http\Controllers\Marketplace\MarketplaceController::class, 'index'])->name('explore');
 Route::get('/dashboard', \App\Http\Controllers\Marketplace\AccountDashboardController::class)->middleware('auth')->name('dashboard');
@@ -33,34 +32,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-// Aadi Components Demo (Vue Components with Inertia.js)
-Route::prefix('admin-demo')->name('admin.demo.')->group(function () {
-    Route::get('/demo', function () {
-        return Inertia::render('Admin/ComponentsDemo');
-    })->name('dashboard');
-});
-
 Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'store'])->middleware('throttle:10,1');
     Route::delete('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'destroy']);
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-// Admin Component Demo Routes (using Blade components with Aadi branding)
-Route::prefix('admin-demo')->name('admin.demo.')->group(function () {
-    Route::get('/test', function () {
-        return 'Test route works!';
-    });
-    
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
-    
-    Route::get('/users', function () {
-        return view('admin.examples.users-index');
-    })->name('users');
 });
 
 Route::put('/account/onboarding', [\App\Http\Controllers\OnboardingController::class, 'update'])->middleware(['auth','throttle:20,1']);

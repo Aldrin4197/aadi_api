@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\ServiceProviderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServiceListingResource;
 use App\Models\ServiceListing;
+use App\Services\Marketplace;
 use Illuminate\Http\Request;
 
 class ServiceListingController extends Controller
 {
+    public function __construct(private Marketplace $market) {}
+
     public function index(Request $request)
     {
         $query = ServiceListing::with('provider');
@@ -69,7 +71,7 @@ class ServiceListingController extends Controller
         $user = $request->user();
 
         // Check if user is approved service provider
-        if ($user->service_provider_status !== ServiceProviderStatus::APPROVED) {
+        if (!$this->market->approved($user, 'raketeer')) {
             return response()->json([
                 'message' => 'You must be an approved service provider to create service listings.',
             ], 403);
@@ -115,7 +117,7 @@ class ServiceListingController extends Controller
     {
         $listing = ServiceListing::findOrFail($id);
 
-        if ($listing->provider_id !== $request->user()->id) {
+        if (!$this->market->owns($request->user(), $listing, 'raketeer')) {
             return response()->json([
                 'message' => 'You do not have permission to update this listing.',
             ], 403);
@@ -163,7 +165,7 @@ class ServiceListingController extends Controller
     {
         $listing = ServiceListing::findOrFail($id);
 
-        if ($listing->provider_id !== $request->user()->id) {
+        if (!$this->market->owns($request->user(), $listing, 'raketeer')) {
             return response()->json([
                 'message' => 'You do not have permission to delete this listing.',
             ], 403);

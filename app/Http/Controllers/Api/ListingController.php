@@ -7,11 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ListingResource;
 use App\Models\Listing;
 use App\Models\ListingView;
+use App\Services\Marketplace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ListingController extends Controller
 {
+    public function __construct(private Marketplace $market) {}
+
     public function search(Request $request)
     {
         $validated = $request->validate([
@@ -24,19 +27,9 @@ class ListingController extends Controller
             'availableOnly' => 'nullable|boolean',
         ]);
 
-        $lat = $validated['lat'];
-        $lng = $validated['lng'];
-        $radiusKm = $validated['radiusKm'];
         $availableOnly = $validated['availableOnly'] ?? true;
 
-        // Haversine formula for distance calculation
-        $query = Listing::query()
-            ->select('*')
-            ->selectRaw(
-                '(6371 * acos(cos(radians(?)) * cos(radians(lat)) * cos(radians(lng) - radians(?)) + sin(radians(?)) * sin(radians(lat)))) AS distance',
-                [$lat, $lng, $lat]
-            )
-            ->having('distance', '<=', $radiusKm);
+        $query = $this->market->nearby(Listing::query(), 'spaces', (float) $validated['lat'], (float) $validated['lng'], (float) $validated['radiusKm'], true);
 
         if ($availableOnly) {
             $query->where('status', ListingStatus::ACTIVE->value);
@@ -54,7 +47,7 @@ class ListingController extends Controller
             $query->where('price', '<=', $validated['maxPrice']);
         }
 
-        $listings = $query->orderBy('distance')->get();
+        $listings = $query->get();
 
         return ListingResource::collection($listings);
     }
@@ -98,7 +91,7 @@ class ListingController extends Controller
         ]);
 
         $user = $request->user();
-        abort_unless(app(\App\Services\Marketplace::class)->approved($user, 'spaces'), 403, 'Provider approval required.');
+        abort_unless($this->market->approved($user, 'spaces'), 403, 'Provider approval required.');
 
         $listing = Listing::create([
             'owner_id' => $user->id,
@@ -125,7 +118,7 @@ class ListingController extends Controller
         $listing = Listing::findOrFail($id);
 
         // Authorization
-        if ($listing->owner_id !== $request->user()->id) {
+        if (!$this->market->owns($request->user(), $listing, 'spaces')) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
@@ -153,7 +146,7 @@ class ListingController extends Controller
         $listing = Listing::findOrFail($id);
 
         // Authorization
-        if ($listing->owner_id !== $request->user()->id) {
+        if (!$this->market->owns($request->user(), $listing, 'spaces')) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 

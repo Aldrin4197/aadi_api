@@ -8,7 +8,6 @@ use App\Http\Controllers\Api\ServiceListingController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VehicleListingController;
 use App\Http\Controllers\Api\ViewingRequestController;
-use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -98,13 +97,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('raketeer', [ServiceListingController::class, 'store']);
     Route::put('raketeer/{id}', [ServiceListingController::class, 'update']);
     Route::delete('raketeer/{id}', [ServiceListingController::class, 'destroy']);
-});
-
-// Admin API Routes
-Route::prefix('admin')->middleware('web')->group(function () {
-    Route::post('/login', [AdminAuthController::class, 'login']);
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->middleware('web');
-    Route::get('/me', [AdminAuthController::class, 'me'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
 });
 
 // Versioned marketplace contract; web and mobile call the same application service.

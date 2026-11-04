@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\VehicleOwnerStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VehicleListingResource;
 use App\Models\VehicleListing;
+use App\Services\Marketplace;
 use Illuminate\Http\Request;
 
 class VehicleListingController extends Controller
 {
+    public function __construct(private Marketplace $market) {}
+
     public function index(Request $request)
     {
         $query = VehicleListing::with('owner');
@@ -34,17 +36,10 @@ class VehicleListingController extends Controller
 
         // Location-based search with distance
         if ($request->filled('latitude') && $request->filled('longitude')) {
-            $lat = $request->latitude;
-            $lng = $request->longitude;
-            $radius = $request->radius ?? 50; // Default 50km
-
-            $query->select('vehicle_listings.*')
-                ->selectRaw(
-                    '(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance',
-                    [$lat, $lng, $lat]
-                )
-                ->having('distance', '<=', $radius)
-                ->orderBy('distance');
+            $this->market->nearby(
+                $query, 'haul', (float) $request->latitude, (float) $request->longitude,
+                (float) ($request->radius ?? 50), true // Default 50km
+            );
         } else {
             $query->orderBy('created_at', 'desc');
         }
@@ -69,7 +64,7 @@ class VehicleListingController extends Controller
         $user = $request->user();
 
         // Check if user is approved vehicle owner
-        if ($user->vehicle_owner_status !== VehicleOwnerStatus::APPROVED) {
+        if (!$this->market->approved($user, 'haul')) {
             return response()->json([
                 'message' => 'You must be an approved vehicle owner to create vehicle listings.',
             ], 403);
@@ -129,7 +124,7 @@ class VehicleListingController extends Controller
     {
         $listing = VehicleListing::findOrFail($id);
 
-        if ($listing->owner_id !== $request->user()->id) {
+        if (!$this->market->owns($request->user(), $listing, 'haul')) {
             return response()->json([
                 'message' => 'You do not have permission to update this listing.',
             ], 403);
@@ -191,7 +186,7 @@ class VehicleListingController extends Controller
     {
         $listing = VehicleListing::findOrFail($id);
 
-        if ($listing->owner_id !== $request->user()->id) {
+        if (!$this->market->owns($request->user(), $listing, 'haul')) {
             return response()->json([
                 'message' => 'You do not have permission to delete this listing.',
             ], 403);
