@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, computed, useId, watch } from 'vue';
 
-const props = defineProps<{ resetKey: string; visible?: boolean; selectedId?: string | null; sidebar?: boolean }>();
+const props = defineProps<{ resetKey: string; visible?: boolean; selectedId?: string | null }>();
 const id = useId();
 const preferredMode = ref('carousel');
 const mobile = ref(false);
-const desktop = ref(false);
-let desktopViewport: MediaQueryList | undefined;
-const mode = computed(() => mobile.value ? preferredMode.value : props.sidebar && desktop.value ? 'list' : 'carousel');
+const mode = computed(() => mobile.value ? preferredMode.value : 'carousel');
 let viewport: MediaQueryList | undefined;
-function updateViewport() { mobile.value = viewport?.matches ?? false; desktop.value = desktopViewport?.matches ?? false; }
+function updateViewport() { mobile.value = viewport?.matches ?? false; }
 const position = ref(1), total = ref(0);
 const modes = [{key:'carousel', label:'Carousel', icon:'M3 5h5v14H3zM11 5h10v14H11z'}, {key:'list', label:'List', icon:'M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1'}, {key:'single', label:'Swipe', icon:'M7 4h10v16H7zM3 9l-2 3 2 3M21 9l2 3-2 3'}];
 const description = computed(() => mode.value === 'list' ? 'Matching listings' : 'Listing cards. Use left and right arrow keys to browse.');
@@ -57,7 +55,7 @@ function keydown(event: KeyboardEvent) {
 }
 async function refresh(reset = false) {
     await nextTick();
-    if (reset) rail.value?.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+    if (reset) rail.value?.scrollTo({ left: 0, behavior: 'instant' });
     observer?.disconnect();
     if (rail.value) {
         observer?.observe(rail.value);
@@ -67,8 +65,6 @@ async function refresh(reset = false) {
 }
 onMounted(() => {
     viewport = matchMedia('(max-width: 700px)');
-    desktopViewport = matchMedia('(min-width: 951px)');
-    desktopViewport.addEventListener('change', updateViewport);
     updateViewport();
     viewport.addEventListener('change', updateViewport);
     try { const saved = localStorage.getItem('aadi-listing-view'); if (modes.some(item => item.key === saved)) preferredMode.value = saved!; } catch {}
@@ -82,7 +78,6 @@ watch(() => props.visible, () => refresh());
 onBeforeUnmount(() => {
     observer?.disconnect();
     viewport?.removeEventListener('change', updateViewport);
-    desktopViewport?.removeEventListener('change', updateViewport);
 });
 </script>
 
@@ -118,7 +113,6 @@ onBeforeUnmount(() => {
 .view-list .carousel-rail { display:grid; gap:10px; max-height:280px; overflow-y:auto; overscroll-behavior:contain; scroll-snap-type:none; scrollbar-width:thin; max-width:600px; }
 .view-list :deep(.map-listing) { width:100%; max-width:none; grid-template-columns:90px minmax(0,1fr); }
 :deep(.map-card-actions) { flex-wrap:wrap; }
-:deep(.map-card-actions .listing-view-button) { flex-basis:100%; }
 @media(max-width:700px) { .view-toolbar { margin-inline:12px; } .view-list .carousel-rail { max-height:245px; } }
 
 .carousel-rail { scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior-x: contain; }

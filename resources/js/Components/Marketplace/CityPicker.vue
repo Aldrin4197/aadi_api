@@ -1,8 +1,9 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, useId, watch } from 'vue';
 import { cityLabel, searchCities } from './citySearch.mjs';
 const props = defineProps({ selected: String, disabled: Boolean });
 const emit = defineEmits(['select', 'clear']);
+const uid = useId();
 const open = ref(false), query = ref(''), cities = ref([]), loading = ref(false), error = ref(''), input = ref(null), trigger = ref(null);
 const matches = computed(() => searchCities(cities.value, query.value));
 async function load() {
@@ -28,11 +29,11 @@ watch(() => props.disabled, disabled => { if(disabled) open.value=false; });
 </script>
 <template>
 <div class="city-picker" @keydown.esc.stop.prevent="close">
-  <button ref="trigger" type="button" class="city-trigger" :disabled="disabled" :aria-expanded="open" aria-controls="city-search-panel" @click="toggle"><span>{{ selected || 'Search a city or municipality' }}</span><span aria-hidden="true">⌄</span></button>
-  <section v-if="open" id="city-search-panel" class="city-search-panel" aria-label="Find a Philippine city">
+  <button ref="trigger" type="button" class="city-trigger" :disabled="disabled" :aria-expanded="open" :aria-controls="'city-search-panel-'+uid" @click="toggle"><span>{{ selected || 'Search a city or municipality' }}</span><span aria-hidden="true">⌄</span></button>
+  <section v-if="open" :id="'city-search-panel-'+uid" class="city-search-panel" aria-label="Find a Philippine city">
     <div class="city-search-heading"><strong>Where are you looking?</strong><button type="button" aria-label="Close city search" @click="close">×</button></div>
-    <label for="city-query">City or municipality in the Philippines</label>
-    <input id="city-query" ref="input" v-model="query" type="search" placeholder="Try Cebu, Manila, or Calbayog" maxlength="100" autocomplete="off" @keydown.enter.stop.prevent />
+    <label :for="'city-query-'+uid">City or municipality in the Philippines</label>
+    <input :id="'city-query-'+uid" ref="input" v-model="query" type="search" placeholder="Try Cebu, Manila, or Calbayog" maxlength="100" autocomplete="off" @keydown.enter.stop.prevent />
     <p v-if="loading" role="status">Loading cities…</p>
     <div v-else-if="error" role="alert"><p>{{ error }}</p><button type="button" class="text-button" @click="load">Try again</button></div>
     <template v-else>

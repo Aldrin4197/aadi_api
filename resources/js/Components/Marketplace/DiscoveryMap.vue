@@ -52,7 +52,6 @@ function draw() {
 }
 function mapPadding() {
   const bounds=el.value.getBoundingClientRect(), parent=el.value.closest('.map-explorer');
-  if (parent?.classList.contains('has-searched') && matchMedia('(min-width: 951px)').matches) return {top:24,bottom:24};
   const controls=parent?.querySelector('.explorer-controls')?.getBoundingClientRect();
   const results=parent?.querySelector('.map-results');
   const bottom=results && getComputedStyle(results).display!=='none'?results.getBoundingClientRect():null;
@@ -70,7 +69,7 @@ onMounted(() => {
   drawCenter();
   markers=L.layerGroup().addTo(map); draw(); fit();
   map.on('click', e=>{ if(props.pick) emit('pick',[e.latlng.lat,e.latlng.lng]); });
-  resize = new ResizeObserver(()=>{ map.invalidateSize(); if (!props.selected) fit(); }); resize.observe(el.value);
+  resize = new ResizeObserver(()=>map.invalidateSize()); resize.observe(el.value);
 });
 watch(()=>props.scrollWheelZoom,enabled=>{if(map) { if(enabled) map.scrollWheelZoom.enable(); else map.scrollWheelZoom.disable(); }});
 watch(()=>props.listings,draw,{deep:true});
@@ -82,7 +81,7 @@ function fit() {
   if(points.length) map.fitBounds(L.latLngBounds(points),props.immersive ? {paddingTopLeft:[54,padding.top],paddingBottomRight:[54,padding.bottom],maxZoom:14} : {padding:[45,45],maxZoom:14});
 }
 watch(()=>props.listings,fit,{deep:true});
-watch(()=>props.center,center=>{if(map) { drawCenter(); if(props.fitListings && !props.selected) fit(); else map.setView(center,map.getZoom()); }},{deep:true});
+watch(()=>props.center,center=>{if(map) { drawCenter(); if(props.fitListings && !props.selected) fit(); else map.setView(center,Math.max(map.getZoom(),12)); }},{deep:true});
 watch(()=>props.selected,id=>{if(!props.immersive||!map)return;const item=props.listings.find(l=>l.id===id);if(item?.location.lat!=null&&item?.location.lng!=null){const padding=mapPadding();const point=map.project([item.location.lat,item.location.lng],map.getZoom());point.y-=(padding.top-padding.bottom)/2;map.panTo(map.unproject(point,map.getZoom()),{animate:!matchMedia('(prefers-reduced-motion: reduce)').matches});}});
 onBeforeUnmount(()=>{resize?.disconnect();map?.remove();});
 function search(){const c=map.getCenter();emit('search',[c.lat,c.lng]);}

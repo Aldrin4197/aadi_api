@@ -17,20 +17,36 @@ const props=defineProps({results:Object,filters:Object,types:Object,landing:{typ
 const form=ref({service:props.filters.service||'spaces',locationName:props.filters.locationName||'',q:props.filters.q||'',type:props.filters.type||'',minPrice:props.filters.minPrice??'',maxPrice:props.filters.maxPrice??'',radiusKm:props.filters.radiusKm||10,lat:props.filters.lat??'',lng:props.filters.lng??''});
 const page = usePage();
 const hasSearched = ref(page.url.includes('?'));
-const expanded = ref(!hasSearched.value);
+const expanded = ref(!hasSearched.value && page.url.split(/[?#]/)[0] !== '/');
 const compactTrigger = ref(null);
 onMounted(()=>{if(window.matchMedia('(max-width: 700px), (max-width: 950px) and (max-height: 550px)').matches) expanded.value=false;});
 const serviceLabels = {spaces:'Spaces',haul:'Vehicles',raketeer:'Rakets'};
 async function editSearch() { expanded.value=true; await nextTick(); document.getElementById('explorer-query')?.focus({preventScroll:true}); }
 async function collapseSearch() { expanded.value=false; filtersOpen.value=false; await nextTick(); compactTrigger.value?.focus({preventScroll:true}); }
 const isHome = computed(() => page.url.split(/[?#]/)[0] === '/');
+function scrollToMap() {
+  document.getElementById('explore-map')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+}
 function exploreCategory(value) {
   form.value.service = value;
   form.value.type = '';
   search(1, () => {
-    document.getElementById('explore-map')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    scrollToMap();
     compactTrigger.value?.focus({ preventScroll: true });
   });
+}
+function heroSearch({ service: value, city }) {
+  form.value.service = value;
+  form.value.type = '';
+  if (city) { form.value.locationName = city.label; form.value.lat = city.lat; form.value.lng = city.lng; }
+  else { form.value.locationName = ''; form.value.lat = ''; form.value.lng = ''; }
+  search(1, () => { scrollToMap(); compactTrigger.value?.focus({ preventScroll: true }); });
+}
+function heroLocate(value) {
+  form.value.service = value;
+  form.value.type = '';
+  scrollToMap();
+  locate();
 }
 const selected=ref(null), loading=ref(false), locationError=ref(''), locating=ref(false), filtersOpen=ref(false), cardsOpen=ref(true), comparisons=ref([]), compareDialog=ref(null), compareError=ref('');
 const center=computed(()=>props.filters.lat!=null&&props.filters.lng!=null?[Number(props.filters.lat),Number(props.filters.lng)]:props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null)?[props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lat,props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lng]:[12.0,124.75]);
@@ -52,11 +68,10 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 </script>
 <template><Layout><Head title="Find properties, vehicles & rakets nearby"><meta name="description" content="Find rental spaces, vehicles, and local services near you with Aadi. Browse the map, compare listed rates, and apply to offer your own space, vehicle, or skills." /></Head>
 <main id="main-content">
-<HomeHero v-if="isHome" />
-<section id="explore-map" :class="{'has-comparison':comparisons.length,'has-searched':hasSearched}" class="map-explorer" aria-label="Explore nearby listings" tabindex="-1">
+<HomeHero v-if="isHome" :busy="loading||locating" @search="heroSearch" @locate="heroLocate" />
+<section id="explore-map" :class="{'has-comparison':comparisons.length,'is-home':isHome}" class="map-explorer" aria-label="Explore nearby listings" tabindex="-1">
 <DiscoveryMap :scroll-wheel-zoom="!isHome" :listings="results.data" :center="center" :selected="selected" :fit-listings="filters.lat==null" immersive :preview="false" @select="selectListing" @search="area" />
-<aside class="explorer-sidebar" aria-label="Search and listing results">
-<section class="explorer-controls" :class="{'is-initial':!hasSearched,'is-compact':!expanded}" aria-label="Search and filter">
+<section class="explorer-controls" :class="{'is-initial':!hasSearched&&!isHome,'is-compact':!expanded}" aria-label="Search and filter">
 <div v-if="!expanded" class="compact-search-bar">
 <button ref="compactTrigger" type="button" class="compact-search-summary" aria-label="Edit search and filters" aria-expanded="false" @click="editSearch"><SearchIcon :name="filters.service || 'spaces'"/><span><strong>{{ serviceLabels[filters.service || 'spaces'] }}</strong><small>{{ [filters.q, filters.locationName || 'All locations', filters.type, filters.minPrice != null || filters.maxPrice != null ? 'Price filtered' : ''].filter(Boolean).join(' · ') }}</small></span><SearchIcon name="filters"/><span class="compact-edit-label">Edit</span></button>
 <button type="button" class="compact-icon-button" title="Use my location" aria-label="Use my location" :disabled="locating||loading" @click="locate"><SearchIcon name="location"/></button>
@@ -77,11 +92,10 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <section v-show="cardsOpen" id="map-results" class="map-results" :aria-busy="loading" aria-label="Matching listings">
 <div class="map-results-heading"><span role="status"><strong>{{ results.meta.total }}</strong> matches · showing {{ results.data.length }} on this page<span v-if="form.lat!==''"> · nearest first</span><span v-if="missingCoordinates"> · {{ missingCoordinates }} without a map location</span></span><div v-if="results.meta.lastPage>1" class="map-pages"><button :disabled="loading||results.meta.currentPage<=1" @click="search(results.meta.currentPage-1)">← Previous</button><span>{{ results.meta.currentPage }}/{{ results.meta.lastPage }}</span><button :disabled="loading||results.meta.currentPage>=results.meta.lastPage" @click="search(results.meta.currentPage+1)">Next →</button></div></div>
 <div v-if="!results.data.length" class="map-empty"><h2>No matches nearby yet</h2><p>{{ filters.locationName ? 'No listings match your filters near '+filters.locationName+'. Try a wider radius or fewer filters.' : 'Try another city or fewer filters.' }}</p><button class="button" @click="clear">Reset search</button></div>
-<ListingCarousel v-else :sidebar="hasSearched" :selected-id="selected" :reset-key="results.data.map(item=>item.service+item.id).join(',')" :visible="cardsOpen"><article v-for="item in results.data" :key="item.id" :id="'map-card-'+item.id" class="map-listing" :class="{selected:selected===item.id}">
+<ListingCarousel v-else :selected-id="selected" :reset-key="results.data.map(item=>item.service+item.id).join(',')" :visible="cardsOpen"><article v-for="item in results.data" :key="item.id" :id="'map-card-'+item.id" class="map-listing" :class="{selected:selected===item.id}">
 <button class="map-listing-photo" :aria-label="'Locate '+item.title+' on map'" :disabled="item.location.lat==null||item.location.lng==null" @click="selectListing(item.id)"><ListingImage :src="item.photos[0]" :alt="item.title" :service="item.service" :type="item.type" /></button>
 <div class="map-listing-body"><h2><ListingPreviewLink :item="item">{{ item.title }}</ListingPreviewLink></h2><p>{{ item.location.city||item.location.address||'Location not provided' }}<span v-if="distanceLabel(item)"> · {{ distanceLabel(item) }}</span></p><strong class="map-rate">{{ formatPrice(item.price) }} <small>/ {{ item.priceUnit }}</small></strong><div class="map-card-actions"><button class="text-button" :disabled="item.location.lat==null||item.location.lng==null" @click="selectListing(item.id)">On map</button><label class="compare-checkbox" :title="!isCompared(item) && comparisons.length>=3 ? 'Remove a selected listing to choose another (maximum 3).' : 'Select for comparison'"><input type="checkbox" :checked="isCompared(item)" :disabled="!isCompared(item) && comparisons.length>=3" :aria-label="'Select '+item.title+' for comparison'" @change="toggleCompare(item)" /><span>{{ isCompared(item) ? 'Selected' : 'Select' }}</span></label><ListingViewButton :item="item"/></div></div></article></ListingCarousel>
 </section>
-</aside>
 <div v-if="comparisons.length" class="map-compare-bar" aria-label="Selected listings for comparison">
   <div class="compare-thumbnails" aria-hidden="true"><ListingImage v-for="item in comparisons" :key="compareKey(item)" :src="item.photos?.[0]" alt="" :service="item.service" :type="item.type" /></div>
   <div class="compare-count"><strong>{{ comparisons.length }} {{ comparisons.length === 1 ? 'find' : 'finds' }} selected</strong><small>Choose up to 3 listings</small></div>
