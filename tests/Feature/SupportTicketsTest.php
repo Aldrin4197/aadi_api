@@ -158,7 +158,9 @@ class SupportTicketsTest extends TestCase
         $answered = $this->ticket(['subject' => 'Answered', 'created_at' => now()->subHours(10)]);
         $answered->forceFill(['first_response_at' => now()->subHours(8), 'status' => 'resolved', 'resolved_at' => now()->subHours(2)])->save();
 
-        $this->actingAs($this->admin())->get('/admin/tickets?range=7')->assertOk()->assertInertia(fn (Assert $p) => $p
+        $this->actingAs($this->admin())->get('/admin/tickets?view=insights&range=7')->assertOk()->assertInertia(fn (Assert $p) => $p
+            ->where('view', 'insights')
+            ->where('tickets', null)
             ->where('analytics.range.days', 7)
             ->has('analytics.trend.dates', 7)
             ->where('analytics.kpis.0.value', 2)
@@ -166,6 +168,74 @@ class SupportTicketsTest extends TestCase
             ->where('analytics.kpis.2.value', 2)
             ->where('analytics.kpis.3.value', 8)
             ->where('analytics.insights', fn ($items) => collect($items)->contains(fn ($i) => str_contains($i['title'], 'no reply yet'))));
+    }
+
+    public function test_the_ticket_list_no_longer_carries_the_insights(): void
+    {
+        $this->withoutVite();
+        $this->ticket();
+
+        $this->actingAs($this->admin())->get('/admin/tickets')->assertOk()->assertInertia(fn (Assert $p) => $p
+            ->where('view', 'tickets')->where('analytics', null)->has('tickets.data', 1));
+    }
+
+    public function test_a_ticket_can_be_assigned_to_another_admin_who_is_notified(): void
+    {
+        $ticket = $this->ticket();
+        $admin = $this->admin();
+        $colleague = User::factory()->create(['name' => 'Second Admin']);
+        $colleague->forceFill(['is_admin' => true])->save();
+
+        $this->actingAs($admin)->patchJson('/admin/tickets/'.$ticket->id, ['assignee' => $colleague->id])
+            ->assertOk()->assertJsonPath('ticket.assignee', 'Second Admin')->assertJsonPath('ticket.assignedToId', $colleague->id);
+
+        $this->assertSame($colleague->id, $ticket->fresh()->assigned_to);
+        $this->assertStringContainsString('Assigned to Second Admin by Support Admin.', $ticket->messages()->where('kind', 'event')->value('body'));
+        $this->assertSame(1, $colleague->unreadNotifications()->count());
+        $this->assertSame('ticket-assigned', $colleague->unreadNotifications()->first()->data['kind']);
+
+        $this->patchJson('/admin/tickets/'.$ticket->id, ['assignee' => $colleague->id])->assertOk();
+        $this->assertSame(1, $colleague->unreadNotifications()->count(), 'Re-selecting the same person does not notify twice.');
+        $this->assertSame(0, $admin->unreadNotifications()->count());
+
+        $this->patchJson('/admin/tickets/'.$ticket->id, ['assignee' => 'none'])->assertOk()->assertJsonPath('ticket.assignee', null);
+    }
+
+    public function test_tickets_cannot_be_assigned_to_non_admins_or_unknown_users(): void
+    {
+        $ticket = $this->ticket();
+        $member = User::factory()->create();
+
+        $this->actingAs($this->admin())->patchJson('/admin/tickets/'.$ticket->id, ['assignee' => $member->id])->assertUnprocessable();
+        $this->patchJson('/admin/tickets/'.$ticket->id, ['assignee' => '01ZZZZZZZZZZZZZZZZZZZZZZZZ'])->assertUnprocessable();
+        $this->assertNull($ticket->fresh()->assigned_to);
+    }
+
+    public function test_the_desk_lists_admins_and_filters_by_a_specific_assignee(): void
+    {
+        $this->withoutVite();
+        $admin = $this->admin();
+        $colleague = User::factory()->create(['name' => 'Second Admin']);
+        $colleague->forceFill(['is_admin' => true])->save();
+        $this->ticket(['subject' => 'Theirs', 'assigned_to' => $colleague->id]);
+        $this->ticket(['subject' => 'Nobody']);
+
+        $this->actingAs($admin)->get('/admin/tickets?assigned='.$colleague->id)->assertOk()->assertInertia(fn (Assert $p) => $p
+            ->has('tickets.data', 1)->where('tickets.data.0.subject', 'Theirs')
+            ->where('options.staff', fn ($staff) => collect($staff)->pluck('name')->sort()->values()->all() === ['Second Admin', 'Support Admin']));
+        $this->get('/admin/tickets?assigned='.User::factory()->create()->id)->assertSessionHasErrors('assigned');
+    }
+
+    public function test_the_ticket_table_paginates_with_a_whitelisted_page_size(): void
+    {
+        $this->withoutVite();
+        foreach (range(1, 12) as $i) $this->ticket(['subject' => "Ticket $i"]);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get('/admin/tickets?per_page=10')->assertInertia(fn (Assert $p) => $p
+            ->has('tickets.data', 10)->where('tickets.per_page', 10)->where('tickets.total', 12)->where('tickets.last_page', 2));
+        $this->get('/admin/tickets?per_page=10&page=2')->assertInertia(fn (Assert $p) => $p->has('tickets.data', 2));
+        $this->get('/admin/tickets?per_page=100000')->assertInertia(fn (Assert $p) => $p->where('tickets.per_page', 15)->has('tickets.data', 12));
     }
 
     public function test_dashboard_surfaces_open_tickets(): void

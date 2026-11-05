@@ -29,6 +29,16 @@ final class AdminTable
         return ['sort' => $sort, 'dir' => $direction];
     }
 
+    public const PER_PAGE_OPTIONS = [10, 15, 25, 50];
+
+    /** Rows per page chosen from a whitelist, so a request can't ask for the whole table. */
+    public static function perPage(Request $request, int $default = 15, array $options = self::PER_PAGE_OPTIONS): int
+    {
+        $requested = (int) $request->query('per_page', $default);
+
+        return in_array($requested, $options, true) ? $requested : $default;
+    }
+
     /** Escapes LIKE wildcards so searches match literally. */
     public static function like(string $term): string
     {

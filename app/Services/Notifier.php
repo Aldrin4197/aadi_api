@@ -34,6 +34,11 @@ class Notifier
         $this->toAdmins(new AppNotification('ticket', 'New support ticket', "{$ticket->reference}: ".Str::limit($ticket->subject, 90), '/admin/tickets', $ticket->priority === 'high' ? 'warning' : 'info'));
     }
 
+    public function ticketAssigned(SupportTicket $ticket, User $assignee, User $by): void
+    {
+        $this->send($assignee, new AppNotification('ticket-assigned', 'A ticket was assigned to you', "{$by->name} assigned {$ticket->reference}: ".Str::limit($ticket->subject, 80), '/admin/tickets', $ticket->priority === 'high' ? 'warning' : 'info'));
+    }
+
     public function ticketReplied(SupportTicket $ticket): void
     {
         if ($ticket->user) $this->send($ticket->user, new AppNotification('ticket-reply', 'Aadi support replied', "We answered {$ticket->reference} by email. Check your inbox.", null, 'info'));

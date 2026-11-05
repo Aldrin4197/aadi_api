@@ -15,12 +15,13 @@ import { Line, Bar } from 'vue-chartjs';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler, Legend);
 
 const props = defineProps({
-    tickets: { type: Object, required: true },
+    tickets: { type: Object, default: null },
+    view: { type: String, default: 'tickets' },
     filters: { type: Object, default: () => ({}) },
     sort: String,
     dir: String,
     counts: { type: Object, default: () => ({}) },
-    analytics: { type: Object, required: true },
+    analytics: { type: Object, default: null },
     options: { type: Object, required: true },
 });
 
@@ -34,12 +35,13 @@ const { state, visit, search, sortBy, reset } = useAdminTable('/admin/tickets', 
 
 const tabs = [['active', 'Active'], ['open', 'Open'], ['in_progress', 'In progress'], ['resolved', 'Resolved'], ['closed', 'Closed'], ['all', 'All']];
 const filtering = computed(() => keys.some(key => state[key] !== ''));
-const days = computed(() => props.analytics.range.days);
+const days = computed(() => props.analytics?.range.days ?? Number(props.filters.range || 30));
 function setStatus(status) { if (state.status !== status) { state.status = status; visit(); } }
-function setRange(value) { state.range = String(value); visit(); }
+function setRange(value) { state.range = String(value); router.get('/admin/tickets', { view: 'insights', range: value === 30 ? undefined : value }, { preserveState: true, preserveScroll: true, replace: true }); }
+function showView(view) { if (view !== props.view) router.get('/admin/tickets', view === 'insights' && state.range !== '30' ? { view, range: state.range } : view === 'insights' ? { view } : {}); }
 
 const selected = ref(null);
-const reloadList = () => router.reload({ only: ['tickets', 'counts', 'analytics'], preserveScroll: true, preserveState: true });
+const reloadList = () => router.reload({ only: ['tickets', 'counts'], preserveScroll: true, preserveState: true });
 const dateText = value => new Date(value).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
 const ago = iso => {
     const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -70,8 +72,8 @@ const categoryOptions = {
     responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } },
     scales: { x: { beginAtZero: true, ticks: { precision: 0, color: '#7b918d', font: { size: 11 } }, grid: { color: '#eef2f1' } }, y: { grid: { display: false }, ticks: { color: '#42665e', font: { size: 11 } } } },
 };
-const ageMax = computed(() => Math.max(1, ...props.analytics.ages.map(a => a.count)));
-const hasData = computed(() => props.analytics.totals.all > 0);
+const ageMax = computed(() => Math.max(1, ...(props.analytics?.ages ?? []).map(a => a.count)));
+const hasData = computed(() => (props.analytics?.totals.all ?? 0) > 0);
 </script>
 
 <template>
@@ -79,13 +81,20 @@ const hasData = computed(() => props.analytics.totals.all > 0);
     <AdminLayout>
         <template #header><div><h1 class="page-title">Support tickets</h1><p class="page-sub">Messages sent from the Support form on the home page.</p></div></template>
 
-        <div class="top">
-            <p>{{ counts.active ?? 0 }} active · {{ counts.all ?? 0 }} total. Analytics cover the last {{ days }} days.</p>
-            <div class="range" role="group" aria-label="Analytics range"><button v-for="option in analytics.range.options" :key="option" type="button" :aria-pressed="option === days" @click="setRange(option)">{{ option }} days</button></div>
+        <div class="views" role="tablist" aria-label="Support desk sections">
+            <button type="button" role="tab" :aria-selected="view === 'tickets'" @click="showView('tickets')">Tickets<span>{{ counts.active ?? 0 }}</span></button>
+            <button type="button" role="tab" :aria-selected="view === 'insights'" @click="showView('insights')">Insights</button>
         </div>
 
-        <section class="kpis" aria-label="Support analytics"><KpiCard v-for="kpi in analytics.kpis" :key="kpi.key" :kpi="kpi" :days="days" /></section>
+        <template v-if="view === 'insights'">
+        <div class="top">
+            <p>{{ counts.all ?? 0 }} tickets in total. Insights cover the last {{ days }} days.</p>
+            <div class="range" role="group" aria-label="Insights range"><button v-for="option in analytics.range.options" :key="option" type="button" :aria-pressed="option === days" @click="setRange(option)">{{ option }} days</button></div>
+        </div>
 
+        <section class="kpis" aria-label="Support insights"><KpiCard v-for="kpi in analytics.kpis" :key="kpi.key" :kpi="kpi" :days="days" /></section>
+
+        <div v-if="!hasData" class="panel nodata"><h2>No insights yet</h2><p>Charts and trends appear once the first support ticket arrives from the home page.</p></div>
         <div v-if="hasData" class="analytics">
             <section class="panel wide" aria-labelledby="flow-title">
                 <header><h2 id="flow-title">Ticket flow</h2><p>Opened versus resolved each day.</p></header>
@@ -104,7 +113,10 @@ const hasData = computed(() => props.analytics.totals.all > 0);
                 <InsightList :insights="analytics.insights" />
             </section>
         </div>
+        </template>
 
+        <template v-else>
+        <p class="lead">{{ counts.active ?? 0 }} active · {{ counts.all ?? 0 }} total. Open a ticket to reply, assign it or change its status.</p>
         <div class="tabs" role="tablist" aria-label="Ticket status">
             <button v-for="[key, label] in tabs" :key="key" type="button" role="tab" :aria-selected="state.status === key" @click="setStatus(key)">{{ label }}<span>{{ counts[key] ?? 0 }}</span></button>
         </div>
@@ -113,7 +125,7 @@ const hasData = computed(() => props.analytics.totals.all > 0);
             <label class="grow">Search<input v-model="state.q" type="search" placeholder="Reference, subject, name, email or message" maxlength="150" @input="search" /></label>
             <label>Topic<select v-model="state.category" @change="visit()"><option value="">Any topic</option><option v-for="(label, key) in options.categories" :key="key" :value="key">{{ label }}</option></select></label>
             <label>Priority<select v-model="state.priority" @change="visit()"><option value="">Any priority</option><option v-for="(label, key) in options.priorities" :key="key" :value="key">{{ label }}</option></select></label>
-            <label>Assigned<select v-model="state.assigned" @change="visit()"><option value="">Anyone</option><option value="me">Assigned to me</option><option value="unassigned">Unassigned</option></select></label>
+            <label>Assigned<select v-model="state.assigned" @change="visit()"><option value="">Anyone</option><option value="me">Assigned to me</option><option value="unassigned">Unassigned</option><option v-for="admin in options.staff.filter(a => a.id !== me)" :key="admin.id" :value="admin.id">{{ admin.name }}</option></select></label>
         </AdminFilters>
 
         <div class="table-wrap">
@@ -125,6 +137,7 @@ const hasData = computed(() => props.analytics.totals.all > 0);
                         <SortableTh column="category" :sort="state.sort" :dir="state.dir" @sort="sortBy($event)">Topic</SortableTh>
                         <SortableTh column="priority" :sort="state.sort" :dir="state.dir" @sort="sortBy($event, 'desc')">Priority</SortableTh>
                         <SortableTh column="status" :sort="state.sort" :dir="state.dir" @sort="sortBy($event)">Status</SortableTh>
+                        <SortableTh column="assignee" :sort="state.sort" :dir="state.dir" @sort="sortBy($event)">Assignee</SortableTh>
                         <SortableTh column="created" :sort="state.sort" :dir="state.dir" @sort="sortBy($event, 'desc')">Opened</SortableTh>
                         <SortableTh column="activity" :sort="state.sort" :dir="state.dir" @sort="sortBy($event, 'desc')">Activity</SortableTh>
                     </tr>
@@ -138,18 +151,19 @@ const hasData = computed(() => props.analytics.totals.all > 0);
                         <td>
                             <span class="pill" :class="`s-${ticket.status}`">{{ options.statuses[ticket.status] }}</span>
                             <small v-if="needsReply(ticket)" class="warn">No reply yet</small>
-                            <small v-else-if="ticket.assignee">{{ ticket.assignee }}</small>
                         </td>
+                        <td class="nowrap"><span v-if="ticket.assignee" class="assignee"><i aria-hidden="true">{{ ticket.assignee.slice(0, 1).toUpperCase() }}</i>{{ ticket.assignedToId === me ? 'You' : ticket.assignee }}</span><span v-else class="unassigned">Unassigned</span></td>
                         <td class="nowrap">{{ dateText(ticket.createdAt) }}</td>
                         <td class="nowrap">{{ ticket.lastActivityAt ? ago(ticket.lastActivityAt) : '—' }}<small v-if="ticket.repliesCount">{{ ticket.repliesCount }} {{ ticket.repliesCount === 1 ? 'reply' : 'replies' }}</small></td>
                     </tr>
                     <tr v-if="!tickets.data.length">
-                        <td colspan="7" class="empty">{{ counts.all ? 'No tickets match these filters.' : 'No tickets yet. Messages sent from the Support form on the home page will appear here.' }}</td>
+                        <td colspan="8" class="empty">{{ counts.all ? 'No tickets match these filters.' : 'No tickets yet. Messages sent from the Support form on the home page will appear here.' }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <AdminPagination :paginator="tickets" label="Ticket pages" />
+        </template>
 
         <TicketDialog v-if="selected" :key="selected.id" :ticket-id="selected.id" :options="options" :me="me" @close="selected = null" @changed="reloadList" />
     </AdminLayout>
@@ -159,6 +173,17 @@ const hasData = computed(() => props.analytics.totals.all > 0);
 .page-title { font-size:24px; font-weight:700; margin:0; }
 .page-sub { font-size:13px; color:#637b76; margin:2px 0 0; }
 .top { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+.views { display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid #dce7e4; }
+.views button { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 18px; margin-bottom:-1px; border-bottom:3px solid transparent; font-size:14px; font-weight:700; color:#586e6c; cursor:pointer; }
+.views button span { min-width:22px; padding:2px 7px; border-radius:20px; background:#eef2f1; font-size:11px; text-align:center; }
+.views button[aria-selected=true] { color:#103f3b; border-bottom-color:#137671; }
+.views button:focus-visible { outline:2px solid #137671; outline-offset:-2px; border-radius:6px; }
+.lead { margin:0 0 16px; font-size:13px; color:#586e6c; }
+.nodata { text-align:center; padding:44px 20px; margin-bottom:20px; }
+.nodata p { margin:0; color:#586e6c; font-size:13px; }
+.assignee { display:inline-flex; align-items:center; gap:8px; font-weight:600; color:#103f3b; }
+.assignee i { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#d9efeb; color:#12675f; font-size:11px; font-style:normal; font-weight:700; }
+.unassigned { font-size:12px; color:#8a9e99; }
 .top p { margin:0; font-size:13px; color:#586e6c; }
 .range { display:flex; gap:4px; padding:3px; background:#fff; border:1px solid #dce7e4; border-radius:11px; }
 .range button { min-height:36px; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700; color:#42665e; cursor:pointer; }

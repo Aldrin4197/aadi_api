@@ -54,7 +54,7 @@ class ListingInspectionController extends Controller {
             'owner'=>fn($q,$dir)=>$q->orderBy(User::select('name')->whereColumn('users.id',$table.'.'.$schema['owner']),$dir),
             'created'=>'created_at','updated'=>'updated_at',
         ],'created');
-        $listings=$query->paginate(15)->withQueryString()->through(function ($record) use ($market,$service,$relation) {
+        $listings=$query->paginate(AdminTable::perPage($request))->withQueryString()->through(function ($record) use ($market,$service,$relation) {
             return [...$market->dto($record,$service),
                 'sourceStatus'=>$record->status instanceof \BackedEnum ? $record->status->value : $record->status,
                 'updatedAt'=>$record->updated_at?->toIso8601String(),

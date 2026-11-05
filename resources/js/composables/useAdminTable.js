@@ -10,8 +10,10 @@ export function useAdminTable(path, initial, { only, defaults = {} } = {}) {
     let timer;
 
     function query(overrides = {}) {
+        // Rows-per-page lives in the URL rather than the table state, so filters and sorts keep it.
+        const perPage = new URLSearchParams(window.location.search).get('per_page');
         return Object.fromEntries(
-            Object.entries({ ...state, ...overrides }).filter(([key, value]) => value !== '' && value !== null && value !== undefined && value !== defaults[key]),
+            Object.entries({ ...state, ...(perPage ? { per_page: perPage } : {}), ...overrides }).filter(([key, value]) => value !== '' && value !== null && value !== undefined && value !== defaults[key]),
         );
     }
     function visit(overrides = {}) {

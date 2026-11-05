@@ -130,9 +130,13 @@ onBeforeUnmount(() => { dialog.value?.close(); window.document.body.style.overfl
                             <select :value="ticket.priority" :disabled="busy" @change="update({ priority: $event.target.value })"><option v-for="(label, key) in options.priorities" :key="key" :value="key">{{ label }}</option></select>
                         </label>
                         <div class="assign">
-                            <span>Assigned to</span>
-                            <strong>{{ ticket.assignee || 'Nobody yet' }}</strong>
-                            <button type="button" :disabled="busy" @click="update({ assignee: mine ? 'none' : 'me' })">{{ mine ? 'Unassign me' : 'Assign to me' }}</button>
+                            <label>Assigned to
+                                <select :value="ticket.assignedToId || ''" :disabled="busy" @change="update({ assignee: $event.target.value || 'none' })">
+                                    <option value="">Nobody yet</option>
+                                    <option v-for="admin in options.staff" :key="admin.id" :value="admin.id">{{ admin.name }}{{ admin.id === me ? ' (you)' : '' }}</option>
+                                </select>
+                            </label>
+                            <button v-if="!mine" type="button" :disabled="busy" @click="update({ assignee: 'me' })">Assign to me</button>
                         </div>
                         <button v-if="!['resolved', 'closed'].includes(ticket.status)" type="button" class="resolve" :disabled="busy" @click="update({ status: 'resolved' })">Mark as resolved</button>
                         <dl>

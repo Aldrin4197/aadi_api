@@ -42,7 +42,7 @@ class UserListingsController extends Controller {
             'providers'=>User::where(fn($q)=>$q->where('landlord_status','approved')->orWhere('vehicle_owner_status','approved')->orWhere('service_provider_status','approved'))->count(),
             'pending'=>User::where(fn($q)=>$q->where('landlord_status','pending')->orWhere('vehicle_owner_status','pending')->orWhere('service_provider_status','pending'))->count(),
         ];
-        return Inertia::render('Admin/Users/Index',['users'=>$query->paginate(15)->withQueryString(),'filters'=>$filters,...$sort,'summary'=>$summary]);
+        return Inertia::render('Admin/Users/Index',['users'=>$query->paginate(AdminTable::perPage($request))->withQueryString(),'filters'=>$filters,...$sort,'summary'=>$summary]);
     }
     public function show(Request $request, User $user, Marketplace $market) {
         $filters=$request->validate(['service'=>['sometimes',Rule::in(array_keys(Marketplace::TYPES))],'page'=>'sometimes|integer|min:1']);
@@ -54,7 +54,7 @@ class UserListingsController extends Controller {
         }
         $query=$market->model($service)::where($service==='raketeer'?'provider_id':'owner_id',$user->id)->with($service==='raketeer'?'provider':'owner');
         if ($service==='spaces') $query->where('category','space_rental');
-        $results=$query->latest()->paginate(12)->withQueryString()->through(fn($record)=>[
+        $results=$query->latest()->paginate(AdminTable::perPage($request, 12, [12, 24, 48]))->withQueryString()->through(fn($record)=>[
             ...$market->dto($record,$service),
             'sourceStatus'=>$record->status instanceof \BackedEnum ? $record->status->value : $record->status,
             'updatedAt'=>$record->updated_at?->toIso8601String(),

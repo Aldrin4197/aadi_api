@@ -161,7 +161,7 @@ class ProviderApplicationController extends Controller {
         $sort = array_key_exists((string) $request->query('sort'), $sorts) ? $request->query('sort') : ($status === 'pending' ? 'submitted' : 'decided');
         $dir = $request->query('dir') ? (strtolower($request->query('dir')) === 'asc' ? 'asc' : 'desc') : (in_array($sort, ['name','service'], true) || ($sort === 'submitted' && $status === 'pending') ? 'asc' : 'desc');
         $sorted = $filtered->sortBy($sorts[$sort], SORT_REGULAR, $dir === 'desc')->values();
-        $perPage = 12;
+        $perPage = \App\Support\AdminTable::perPage($request);
         $page = max(1, (int) ($filters['page'] ?? 1));
         $paginator = new \Illuminate\Pagination\LengthAwarePaginator($sorted->forPage($page, $perPage)->values(), $sorted->count(), $perPage, $page, ['path'=>$request->url(), 'query'=>$request->query()]);
         return Inertia::render('Marketplace/Approvals', [

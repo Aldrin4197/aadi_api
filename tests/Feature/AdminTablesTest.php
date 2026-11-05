@@ -96,6 +96,23 @@ class AdminTablesTest extends TestCase
         }
     }
 
+    public function test_every_admin_table_paginates_with_a_whitelisted_page_size(): void
+    {
+        $this->withoutVite();
+        $owner = User::factory()->create(['landlord_status' => 'approved']);
+        foreach (range(1, 11) as $i) $this->listing($owner, 'spaces', "Studio $i", 100 + $i);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get('/admin/listings?per_page=10')->assertInertia(fn (Assert $p) => $p
+            ->has('listings.data', 10)->where('listings.per_page', 10)->where('listings.total', 11)->where('listings.last_page', 2));
+        $this->get('/admin/listings?per_page=10&page=2')->assertInertia(fn (Assert $p) => $p->has('listings.data', 1));
+        $this->get('/admin/listings?per_page=9999')->assertInertia(fn (Assert $p) => $p->where('listings.per_page', 15));
+        $this->get('/admin/users?per_page=10')->assertInertia(fn (Assert $p) => $p->where('users.per_page', 10)->where('users.total', 2));
+        $this->get('/admin/users/'.$owner->id.'/listings?per_page=24')->assertInertia(fn (Assert $p) => $p->where('results.per_page', 24));
+        $this->get('/admin/users/'.$owner->id.'/listings?per_page=15')->assertInertia(fn (Assert $p) => $p->where('results.per_page', 12));
+        $this->get('/admin/approvals?per_page=25')->assertInertia(fn (Assert $p) => $p->where('applications.per_page', 25));
+    }
+
     public function test_search_treats_percent_and_underscore_literally(): void
     {
         $this->withoutVite();
