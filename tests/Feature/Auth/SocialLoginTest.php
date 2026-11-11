@@ -57,7 +57,7 @@ class SocialLoginTest extends TestCase
     public function test_google_creates_verified_account_and_consumes_state(): void
     {
         $this->google();
-        $this->withSession($this->flow())->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/dashboard');
+        $this->withSession($this->flow())->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/explore');
         $user = User::where('email', 'new@gmail.com')->firstOrFail();
         $this->assertTrue($user->hasVerifiedEmail());
         $this->assertAuthenticatedAs($user);
@@ -81,7 +81,7 @@ class SocialLoginTest extends TestCase
         $user = User::factory()->create(['email'=>'chosen@example.com']);
         DB::table('social_accounts')->insert(['user_id'=>$user->id,'provider'=>'google','provider_id'=>'google-123']);
         $this->google('changed@gmail.com');
-        $this->withSession($this->flow())->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/dashboard');
+        $this->withSession($this->flow())->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/explore');
         $this->assertAuthenticatedAs($user);
         $this->assertSame('chosen@example.com', $user->fresh()->email);
     }
@@ -122,7 +122,7 @@ class SocialLoginTest extends TestCase
         $flow=$this->flow();
         $flow['social_login']['user_id']=$user->id;
         $this->google();
-        $this->actingAs($user)->withSession($flow)->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/profile');
+        $this->actingAs($user)->withSession($flow)->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/settings');
         $this->assertDatabaseHas('social_accounts',['user_id'=>$user->id,'provider'=>'google','provider_id'=>'google-123']);
         $this->assertSame('original@example.com',$user->fresh()->email);
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
@@ -135,7 +135,7 @@ class SocialLoginTest extends TestCase
         DB::table('social_accounts')->insert(['user_id'=>$owner->id,'provider'=>'google','provider_id'=>'google-123']);
         $flow=$this->flow(); $flow['social_login']['user_id']=$user->id;
         $this->google();
-        $this->actingAs($user)->withSession($flow)->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/profile');
+        $this->actingAs($user)->withSession($flow)->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/settings');
         $this->assertDatabaseCount('social_accounts',1);
         $this->assertDatabaseHas('social_accounts',['user_id'=>$owner->id,'provider_id'=>'google-123']);
     }
@@ -143,7 +143,7 @@ class SocialLoginTest extends TestCase
     public function test_changed_session_user_invalidates_connect(): void
     {
         $flow=$this->flow(); $flow['social_login']['user_id']=User::factory()->create()->id;
-        $this->actingAs(User::factory()->create())->withSession($flow)->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/profile');
+        $this->actingAs(User::factory()->create())->withSession($flow)->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/settings');
         Http::assertNothingSent();
     }
 

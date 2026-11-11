@@ -3,9 +3,16 @@ use App\Http\Controllers\Marketplace\MarketplaceController as Market;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\Marketplace\ProviderApplicationController as Application;
 use Illuminate\Support\Facades\Route;
-Route::get('/explore', [Market::class,'index']);
+Route::get('/explore', [Market::class,'index'])->name('map');
 Route::get('/offers/{service}/{id}', [Market::class,'show'])->middleware('auth');
 Route::middleware('auth')->group(function () {
+    Route::get('/requests', [\App\Http\Controllers\Marketplace\MarketplaceRequestController::class, 'index']);
+    Route::get('/calendar', [\App\Http\Controllers\Marketplace\CalendarController::class, 'index']);
+    Route::post('/calendar/events', [\App\Http\Controllers\Marketplace\CalendarController::class, 'store'])->middleware('throttle:30,1');
+    Route::patch('/calendar/events/{calendarEvent}', [\App\Http\Controllers\Marketplace\CalendarController::class, 'update'])->middleware('throttle:30,1');
+    Route::delete('/calendar/events/{calendarEvent}', [\App\Http\Controllers\Marketplace\CalendarController::class, 'destroy'])->middleware('throttle:30,1');
+    Route::post('/offers/{service}/{id}/requests', [\App\Http\Controllers\Marketplace\MarketplaceRequestController::class, 'store'])->middleware('throttle:10,1');
+    Route::patch('/requests/{marketplaceRequest}', [\App\Http\Controllers\Marketplace\MarketplaceRequestController::class, 'update'])->middleware('throttle:30,1');
     Route::get('/my-listings', [Market::class,'manage']);
     Route::get('/my-listings/{service}/new', [Market::class,'form']);
     Route::get('/my-listings/{service}/{id}/edit', [Market::class,'form']);

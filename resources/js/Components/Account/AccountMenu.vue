@@ -2,8 +2,10 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import UserAvatar from './UserAvatar.vue';
+import { accountLinks } from './accountLinks.mjs';
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
+const links = computed(() => accountLinks({ isProvider: page.props.auth?.isProvider }));
 const details = ref(null);
 function close() { if (details.value) details.value.open = false; }
 function outside(event) { if (!details.value?.contains(event.target)) close(); }
@@ -23,10 +25,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside));
     <div class="account-menu-panel">
       <div class="account-menu-identity"><strong>{{ user.name }}</strong><span>{{ user.email }}</span><em v-if="user.emailVerified === false" class="account-menu-unverified">Email not verified</em></div>
       <nav aria-label="Account navigation" @click="close">
-        <Link href="/dashboard">My dashboard</Link>
-        <Link href="/profile">Profile & settings</Link>
-        <Link href="/my-listings">My listings</Link>
-        <Link href="/become-provider">Provider roles</Link>
+        <Link v-for="link in links" :key="link.href" :href="link.href">{{ link.label }}</Link>
         <Link v-if="user.is_admin" href="/admin/dashboard">Admin dashboard</Link>
         <Link href="/logout" method="post" as="button">Log out</Link>
       </nav>

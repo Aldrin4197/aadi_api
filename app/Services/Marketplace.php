@@ -31,6 +31,10 @@ class Marketplace
     public function authorize(User $user, Model $record, string $service): void {
         abort_unless($user->is_admin || $this->owns($user, $record, $service), 403);
     }
+    public function listingStatus(Model $record, string $service): string {
+        $status = $record->status instanceof \BackedEnum ? $record->status->value : $record->status;
+        return $service === 'spaces' ? $status : match($status) { 'available' => 'active', 'inactive' => 'draft', 'rented' => 'rented', default => 'reserved' };
+    }
     /** Restricts a listing query to a radius (km) around a point, nearest first. */
     public function nearby(Builder $query, string $service, float $lat, float $lng, float $radiusKm, bool $selectDistance = false): Builder {
         [$latColumn, $lngColumn] = $service === 'spaces' ? ['lat', 'lng'] : ['latitude', 'longitude'];
@@ -47,7 +51,6 @@ class Marketplace
     }
     public function dto(Model $r, string $service): array {
         $space = $service === 'spaces'; $vehicle = $service === 'haul';
-        $status = $r->status instanceof \BackedEnum ? $r->status->value : $r->status;
         return [
             'id' => (string) $r->id, 'service' => $service,
             'ownerId' => (string) ($service === 'raketeer' ? $r->provider_id : $r->owner_id),
@@ -61,11 +64,15 @@ class Marketplace
             'price' => (float) ($space ? $r->price : ($vehicle ? $r->price_per_day : $r->price_amount)),
             'priceUnit' => $space ? 'month' : ($vehicle ? 'day' : ($r->price_type === 'hourly' ? 'hour' : 'job')),
             'currency' => 'PHP',
+            'minimumStayMonths' => $space ? $r->minimum_stay_months : null,
+            'contractRules' => $space ? $r->contract_rules : null,
+            'driverAvailable' => $vehicle ? (bool) $r->driver_available : false,
+            'isSample' => (bool) $r->is_sample,
             'location' => ['lat' => ($space ? $r->lat : $r->latitude) === null ? null : (float) ($space ? $r->lat : $r->latitude),
                 'lng' => ($space ? $r->lng : $r->longitude) === null ? null : (float) ($space ? $r->lng : $r->longitude),
                 'address' => $space ? $r->address : ($vehicle ? $r->location : $r->service_area), 'city' => $space ? $r->city : null],
             'photos' => ($space ? $r->photos : $r->images) ?? [],
-            'status' => $space ? $status : match($status) { 'available' => 'active', 'inactive' => 'draft', 'rented' => 'rented', default => 'reserved' },
+            'status' => $this->listingStatus($r, $service),
             'details' => $vehicle ? array_filter(['brand' => $r->brand, 'model' => $r->model, 'year' => $r->year, 'transmission' => $r->transmission, 'fuel' => $r->fuel_type, 'seats' => $r->seating_capacity], fn ($value) => $value !== null && $value !== '') : (!$space ? array_filter(['category' => $r->service_category, 'response minutes' => $r->response_time_minutes, 'estimated minutes' => $r->estimated_duration_minutes], fn ($value) => $value !== null && $value !== '') : []),
             'comparison' => [
                 'features' => array_values(array_filter(($space ? $r->amenities : ($vehicle ? $r->features : $r->skills_required)) ?? [], 'is_string')),
@@ -110,6 +117,9 @@ class Marketplace
             'details.model' => ($service === 'haul' ? 'required' : 'nullable').'|string|max:100',
             'details.year' => ($service === 'haul' ? 'required' : 'nullable').'|integer|min:1950|max:'.(date('Y')+1),
             'priceUnit' => ['nullable', Rule::in(['month','day','job','hour'])],
+            'minimumStayMonths' => 'nullable|integer|min:1|max:1200',
+            'contractRules' => 'nullable|string|max:5000',
+            'driverAvailable' => 'sometimes|boolean',
         ]);
     }
     public function save(User $user, string $service, array $data, ?Model $record = null): Model {
@@ -122,10 +132,14 @@ class Marketplace
         $base = ['title' => $data['title'], 'description' => $data['description'], 'status' => $status];
         $location = $data['location'];
         $fields = match($service) {
-            'spaces' => ['owner_id'=>$owner->id,'owner_name'=>$owner->name,'category'=>'space_rental','type'=>$data['type'],'price'=>$data['price'],'lat'=>$location['lat'],'lng'=>$location['lng'],'address'=>$location['address'],'city'=>$location['city'] ?? null,'photos'=>$data['photos']],
-            'haul' => ['owner_id'=>$owner->id,'vehicle_type'=>$data['type'],'price_per_day'=>$data['price'],'location'=>$location['address'],'latitude'=>$location['lat'],'longitude'=>$location['lng'],'images'=>$data['photos'],'brand'=>$data['details']['brand'],'model'=>$data['details']['model'],'year'=>$data['details']['year']],
+            'spaces' => ['owner_id'=>$owner->id,'owner_name'=>$owner->name,'category'=>'space_rental','type'=>$data['type'],'price'=>$data['price'],'lat'=>$location['lat'],'lng'=>$location['lng'],'address'=>$location['address'],'city'=>$location['city'] ?? null,'photos'=>$data['photos'], ...array_intersect_key($data, array_flip(['minimumStayMonths', 'contractRules']))],
+            'haul' => ['owner_id'=>$owner->id,'vehicle_type'=>$data['type'],'price_per_day'=>$data['price'],'location'=>$location['address'],'latitude'=>$location['lat'],'longitude'=>$location['lng'],'images'=>$data['photos'],'brand'=>$data['details']['brand'],'model'=>$data['details']['model'],'year'=>$data['details']['year'], ...(array_key_exists('driverAvailable', $data) ? ['driver_available'=>$data['driverAvailable']] : [])],
             'raketeer' => ['provider_id'=>$owner->id,'service_type'=>$data['type'],'price_amount'=>$data['price'],'price_type'=>($data['priceUnit'] ?? 'job') === 'hour' ? 'hourly' : 'fixed','service_area'=>$location['address'],'latitude'=>$location['lat'],'longitude'=>$location['lng'],'images'=>$data['photos']],
         };
+        if ($service === 'spaces') {
+            if (array_key_exists('minimumStayMonths', $fields)) { $fields['minimum_stay_months'] = $fields['minimumStayMonths']; unset($fields['minimumStayMonths']); }
+            if (array_key_exists('contractRules', $fields)) { $fields['contract_rules'] = $fields['contractRules']; unset($fields['contractRules']); }
+        }
         $record ??= new ($this->model($service));
         $record->fill([...$base, ...$fields])->save();
         return $record->fresh();

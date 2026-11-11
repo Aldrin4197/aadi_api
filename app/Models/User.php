@@ -74,6 +74,13 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /** True once any provider role (landlord, vehicle owner, service provider) has been approved. */
+    public function isApprovedProvider(): bool
+    {
+        return collect([$this->landlord_status, $this->vehicle_owner_status, $this->service_provider_status])
+            ->contains(fn ($status) => $status?->value === 'approved');
+    }
+
     /**
      * Relationships
      */

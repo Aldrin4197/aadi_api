@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -20,6 +21,43 @@ class ProfileTest extends TestCase
             ->get('/profile');
 
         $response->assertOk();
+    }
+
+    public function test_settings_requires_authentication_and_shows_only_the_current_users_connections(): void
+    {
+        $this->get('/settings')->assertRedirect('/login');
+
+        config(['social_login.google.client_id' => 'test-client', 'social_login.google.client_secret' => 'test-secret']);
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        DB::table('social_accounts')->insert([
+            'user_id' => $other->id, 'provider' => 'google', 'provider_id' => 'other-user',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->actingAs($user)->withoutVite()->get('/settings')
+            ->assertInertia(fn (Assert $page) => $page->component('Account/Settings')
+                ->where('connectedProviders', [])->missing('profile'));
+        DB::table('social_accounts')->insert([
+            'user_id' => $user->id, 'provider' => 'google', 'provider_id' => 'own-user',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->get('/settings')->assertInertia(fn (Assert $page) => $page
+            ->where('connectedProviders', ['google']));
+    }
+
+    public function test_settings_preserves_password_and_deletion_validation(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->from('/settings')->put('/password', [
+            'current_password' => 'incorrect',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertRedirect('/settings')->assertSessionHasErrors('current_password');
+
+        $this->from('/settings')->delete('/profile', ['password' => 'incorrect'])
+            ->assertRedirect('/settings')->assertSessionHasErrors('password');
+        $this->assertNotNull($user->fresh());
     }
 
     public function test_account_navigation_receives_avatar_without_private_credentials(): void

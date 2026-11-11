@@ -5,6 +5,7 @@ import AccountNavigation from '@/Components/Account/AccountNavigation.vue';
 import AccountMenu from '@/Components/Account/AccountMenu.vue';
 import NotificationBell from '@/Components/Account/NotificationBell.vue';
 import EmailVerifyBanner from '@/Components/Account/EmailVerifyBanner.vue';
+import MobileBottomNavigation from '@/Components/Account/MobileBottomNavigation.vue';
 import { useSidebarCollapse } from '@/composables/useSidebarCollapse';
 import '../../css/marketplace.css';
 import '../../css/account.css';
@@ -12,7 +13,7 @@ const page = usePage();
 const { compact, animate, toggle: toggleCompact } = useSidebarCollapse('aadi-account-compact');
 const drawer = ref(null);
 const drawerOpen = ref(false);
-const title = computed(() => page.url.startsWith('/saved-listings') ? 'Saved listings' : page.url.startsWith('/dashboard') ? 'Dashboard' : page.url.startsWith('/profile') ? 'Profile & settings' : page.url.startsWith('/my-listings') ? 'My listings' : page.url.startsWith('/admin/approvals') ? 'Review applications' : 'Provider roles');
+const title = computed(() => page.url.startsWith('/saved-listings') ? 'Saved listings' : page.url.startsWith('/requests') ? 'Requests' : page.url.startsWith('/calendar') ? 'Calendar' : page.url.startsWith('/dashboard') ? 'Dashboard' : page.url.startsWith('/profile') ? 'Profile' : page.url.startsWith('/settings') ? 'Settings' : page.url.startsWith('/my-listings') ? 'My listings' : page.url.startsWith('/admin/approvals') ? 'Review applications' : 'Provider roles');
 function closeDrawer() { drawer.value?.close(); drawerOpen.value = false; }
 function openDrawer() { drawer.value?.showModal(); drawerOpen.value = true; }
 let desktop;
@@ -30,7 +31,7 @@ onBeforeUnmount(() => {
 watch(() => page.url, closeDrawer);
 </script>
 <template>
-  <div class="marketplace account-layout" :class="{ 'account-compact': compact, 'is-animating': animate }">
+  <div class="marketplace account-layout" :class="{ 'account-compact': compact, 'is-animating': animate, 'has-mobile-navigation': page.props.auth?.user }">
     <a class="account-skip" href="#account-content">Skip to content</a>
     <aside class="account-sidebar"><AccountNavigation :compact="compact" /><button type="button" class="account-collapse" :aria-expanded="!compact" :aria-label="compact ? 'Expand sidebar' : 'Collapse sidebar'" :title="compact ? 'Expand sidebar' : undefined" @click="toggleCompact">{{ compact ? '→' : '← Collapse sidebar' }}</button></aside>
     <dialog id="account-drawer" ref="drawer" class="account-drawer" aria-label="Account navigation" @keydown.esc.prevent.stop="closeDrawer" @close="drawerOpen = false" @click="event => { if (event.target === drawer) closeDrawer(); }">
@@ -40,7 +41,7 @@ watch(() => page.url, closeDrawer);
       <header class="account-header">
         <button class="account-mobile-toggle" aria-label="Open account navigation" aria-controls="account-drawer" :aria-expanded="drawerOpen" @click="openDrawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
         <div class="account-header-title"><span>My account</span><strong>{{ title }}</strong></div>
-        <Link href="/explore" class="account-explore-link">Explore nearby ↗</Link>
+        <Link href="/explore" class="account-explore-link">Open map ↗</Link>
         <NotificationBell />
         <AccountMenu />
       </header>
@@ -49,6 +50,7 @@ watch(() => page.url, closeDrawer);
         <div v-if="page.props.flash?.success" class="notice success" role="status">{{ page.props.flash.success }}</div>
         <slot />
       </div>
+      <MobileBottomNavigation v-if="page.props.auth?.user" />
     </div>
   </div>
 </template>

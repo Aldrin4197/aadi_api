@@ -21,7 +21,7 @@ class ProviderApplicationTest extends TestCase {
     }
     public function test_user_can_browse_and_submit_independent_role_applications(): void {
         $user=User::factory()->create();
-        $this->actingAs($user)->get('/dashboard')->assertOk();
+        $this->actingAs($user)->get('/dashboard')->assertRedirect('/explore');
         $this->get('/become-provider')->assertOk();
         foreach (['spaces','haul','raketeer'] as $role) {
             $this->post('/provider-applications/'.$role,$this->details($role))->assertRedirect('/provider-applications/'.$role);

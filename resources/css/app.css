@@ -53,3 +53,16 @@
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
   dialog { margin: auto; }
 }
+
+dialog, [role="dialog"], dialog [scroll-region], dialog .thread {
+  scrollbar-width: none;
+}
+dialog::-webkit-scrollbar, [role="dialog"]::-webkit-scrollbar,
+dialog [scroll-region]::-webkit-scrollbar, dialog .thread::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 700px), (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  html, body { scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+}

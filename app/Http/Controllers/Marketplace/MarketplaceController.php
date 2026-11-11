@@ -16,6 +16,8 @@ class MarketplaceController extends Controller {
             'radiusKm'=>'nullable|numeric|min:1|max:200','minPrice'=>'nullable|numeric|min:0','maxPrice'=>['nullable','numeric','min:0',...($r->filled('minPrice') ? ['gte:minPrice'] : [])],'page'=>'nullable|integer|min:1']);
     }
     public function index(Request $r) {
+        // Signed-in users go straight to the map; the marketing landing page is for visitors.
+        if ($r->user() && $r->path() === '/') return redirect(route('map', absolute: false).($r->getQueryString() ? '?'.$r->getQueryString() : ''));
         $filters = $this->filters($r);
         return Inertia::render('Marketplace/Explore', [
             'results'=>$this->market->search($filters), 'filters'=>(object)$filters, 'types'=>Marketplace::TYPES,
@@ -31,7 +33,7 @@ class MarketplaceController extends Controller {
             try { app(\App\Services\ListingEngagement::class)->recordView((string) $record->id, $r->user(), $r->ip(), $item['ownerId']); }
             catch (\Throwable $error) { report($error); }
         }
-        return $r->is('api/*') ? response()->json(['data'=>$item]) : Inertia::render('Marketplace/Show', ['listing'=>$item, 'engagement'=>app(\App\Services\ListingEngagement::class)->summary($service, $id, $r->user()?->id)]);
+        return $r->is('api/*') ? response()->json(['data'=>$item]) : Inertia::render('Marketplace/Show', ['listing'=>$item, 'engagement'=>app(\App\Services\ListingEngagement::class)->summary($service, $id, $r->user()?->id), 'timezone'=>config('app.timezone')]);
     }
     public function manage(Request $r) {
         $listings = collect(); $statuses = [];

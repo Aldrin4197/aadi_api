@@ -38,6 +38,8 @@ class Listing extends Model
         'attributes',
         'status',
         'property_verification',
+        'minimum_stay_months',
+        'contract_rules',
     ];
 
     protected function casts(): array

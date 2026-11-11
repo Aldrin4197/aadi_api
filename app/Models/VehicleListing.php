@@ -42,6 +42,7 @@ class VehicleListing extends Model
         'rating_count',
         'available_from',
         'available_to',
+        'driver_available',
     ];
 
     protected $casts = [
@@ -59,6 +60,7 @@ class VehicleListing extends Model
         'seating_capacity' => 'integer',
         'available_from' => 'date',
         'available_to' => 'date',
+        'driver_available' => 'boolean',
     ];
 
     // Relationships

@@ -21,6 +21,6 @@ class VerifyEmailController extends Controller
             $outcome = 'verified';
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1')->with('email_verified', $outcome);
+        return redirect()->intended(route('map', absolute: false).'?verified=1')->with('email_verified', $outcome);
     }
 }

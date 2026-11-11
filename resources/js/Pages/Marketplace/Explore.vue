@@ -1,7 +1,9 @@
 <script setup>
 import ListingPreviewLink from '@/Components/Marketplace/ListingPreviewLink.vue';
-import { computed, ref, watch, nextTick, onMounted } from 'vue';
+import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { storeToRefs } from 'pinia';
+import { useExploreStore } from '@/stores/explore.mjs';
 import Layout from '@/Layouts/MarketplaceLayout.vue';
 import DiscoveryMap from '@/Components/Marketplace/DiscoveryMap.vue';
 import HomeLanding from '@/Components/Marketplace/HomeLanding.vue';
@@ -14,7 +16,11 @@ import ListingCarousel from '@/Components/Marketplace/ListingCarousel.vue';
 import ListingImage from '@/Components/Marketplace/ListingImage.vue';
 import { distanceKm, formatPrice, compareKey } from '@/Components/Marketplace/comparison.mjs';
 const props=defineProps({results:Object,filters:Object,types:Object,landing:{type:Object,default:()=>({})}});
-const form=ref({service:props.filters.service||'spaces',locationName:props.filters.locationName||'',q:props.filters.q||'',type:props.filters.type||'',minPrice:props.filters.minPrice??'',maxPrice:props.filters.maxPrice??'',radiusKm:props.filters.radiusKm||10,lat:props.filters.lat??'',lng:props.filters.lng??''});
+const exploreStore=useExploreStore();
+exploreStore.reset();
+exploreStore.syncFilters(props.filters);
+const {form,comparisons}=storeToRefs(exploreStore);
+onBeforeUnmount(()=>exploreStore.reset());
 const page = usePage();
 const hasSearched = ref(page.url.includes('?'));
 const expanded = ref(!hasSearched.value && page.url.split(/[?#]/)[0] !== '/');
@@ -48,17 +54,18 @@ function heroLocate(value) {
   scrollToMap();
   locate();
 }
-const selected=ref(null), loading=ref(false), locationError=ref(''), locating=ref(false), filtersOpen=ref(false), cardsOpen=ref(true), comparisons=ref([]), compareDialog=ref(null), compareError=ref('');
+const selected=ref(null), loading=ref(false), locationError=ref(''), locating=ref(false), filtersOpen=ref(false), cardsOpen=ref(true), compareDialog=ref(null), compareError=ref(''), listingMode=ref('carousel');
 const center=computed(()=>props.filters.lat!=null&&props.filters.lng!=null?[Number(props.filters.lat),Number(props.filters.lng)]:props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null)?[props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lat,props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lng]:[12.0,124.75]);
 const headings={spaces:['A place to call yours.','Rooms, homes, and spaces around you.'],haul:['Your next ride is nearby.','Find the right vehicle for wherever life takes you.'],raketeer:['Good help, close to home.','Find local skills and services for your next project.']};
 function search(page=1,afterSearch=null){locationError.value='';loading.value=true;const query=Object.fromEntries(Object.entries({...form.value,page}).filter(([,v])=>v!==''&&v!==null));router.get(isHome.value ? '/' : '/explore',query,{preserveScroll:true,preserveState:true,onSuccess:async()=>{hasSearched.value=true;await collapseSearch();afterSearch?.();},onFinish:()=>loading.value=false,onError:()=>locationError.value='Search could not be completed. Check your filters and try again.'});}
 function selectListing(id){selected.value=id;cardsOpen.value=true;}
-const isCompared=item=>comparisons.value.some(l=>compareKey(l)===compareKey(item));
-function toggleCompare(item){const key=compareKey(item);compareError.value='';if(comparisons.value.some(l=>compareKey(l)===key)) comparisons.value=comparisons.value.filter(l=>compareKey(l)!==key);else if(comparisons.value.length<3) comparisons.value.push(item);else compareError.value='Choose up to three listings. Remove one to add another.';}
+function locateListing(id){selectListing(id);if(listingMode.value!=='carousel')cardsOpen.value=false;}
+const isCompared=item=>exploreStore.isCompared(item);
+function toggleCompare(item){compareError.value=exploreStore.toggleCompare(item)?'':'Choose up to three listings. Remove one to add another.';}
 const distanceLabel=item=>{const km=distanceKm(props.filters.lat,props.filters.lng,item.location.lat,item.location.lng);return km===null?'':`${km.toFixed(1)} km away`;};
 const missingCoordinates=computed(()=>props.results.data.filter(l=>l.location.lat==null||l.location.lng==null).length);
 watch(()=>props.results,()=>{selected.value=null;});
-watch(()=>props.filters,filters=>{form.value={service:filters.service||'spaces',locationName:filters.locationName||'',q:filters.q||'',type:filters.type||'',minPrice:filters.minPrice??'',maxPrice:filters.maxPrice??'',radiusKm:filters.radiusKm||10,lat:filters.lat??'',lng:filters.lng??''};});
+watch(()=>props.filters,filters=>exploreStore.syncFilters(filters));
 function service(value){form.value.service=value;form.value.type='';search();}
 function area(coords,name='Map search center'){locationError.value='';form.value.locationName=name;[form.value.lat,form.value.lng]=coords;search();}
 function chooseCity(city){area([city.lat,city.lng],city.label);}
@@ -69,7 +76,7 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <template><Layout><Head title="Find properties, vehicles & rakets nearby"><meta name="description" content="Find rental spaces, vehicles, and local services near you with Aadi. Browse the map, compare listed rates, and apply to offer your own space, vehicle, or skills." /></Head>
 <main id="main-content">
 <HomeHero v-if="isHome" :busy="loading||locating" @search="heroSearch" @locate="heroLocate" />
-<section id="explore-map" :class="{'has-comparison':comparisons.length,'is-home':isHome}" class="map-explorer" aria-label="Explore nearby listings" tabindex="-1">
+<section id="explore-map" :class="{'has-comparison':comparisons.length,'is-home':isHome,'results-expanded':cardsOpen && listingMode!=='carousel'}" class="map-explorer" aria-label="Explore nearby listings" tabindex="-1">
 <DiscoveryMap :scroll-wheel-zoom="!isHome" :listings="results.data" :center="center" :selected="selected" :fit-listings="filters.lat==null" immersive :preview="false" @select="selectListing" @search="area" />
 <section class="explorer-controls" :class="{'is-initial':!hasSearched&&!isHome,'is-compact':!expanded}" aria-label="Search and filter">
 <div v-if="!expanded" class="compact-search-bar">
@@ -90,11 +97,11 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <p v-if="expanded && !page.props.auth?.user" class="explorer-hint">Browse, preview, and compare freely. Log in for full listing details.</p>
 </section>
 <section v-show="cardsOpen" id="map-results" class="map-results" :aria-busy="loading" aria-label="Matching listings">
-<div class="map-results-heading"><span role="status"><strong>{{ results.meta.total }}</strong> matches · showing {{ results.data.length }} on this page<span v-if="form.lat!==''"> · nearest first</span><span v-if="missingCoordinates"> · {{ missingCoordinates }} without a map location</span></span><div v-if="results.meta.lastPage>1" class="map-pages"><button :disabled="loading||results.meta.currentPage<=1" @click="search(results.meta.currentPage-1)">← Previous</button><span>{{ results.meta.currentPage }}/{{ results.meta.lastPage }}</span><button :disabled="loading||results.meta.currentPage>=results.meta.lastPage" @click="search(results.meta.currentPage+1)">Next →</button></div></div>
+<div class="map-results-heading"><button v-if="listingMode!=='carousel'" type="button" class="results-map-button" @click="cardsOpen=false">← Map</button><span role="status"><strong>{{ results.meta.total }}</strong> matches · showing {{ results.data.length }} on this page<span v-if="form.lat!==''"> · nearest first</span><span v-if="missingCoordinates"> · {{ missingCoordinates }} without a map location</span></span><div v-if="results.meta.lastPage>1" class="map-pages"><button :disabled="loading||results.meta.currentPage<=1" @click="search(results.meta.currentPage-1)">← Previous</button><span>{{ results.meta.currentPage }}/{{ results.meta.lastPage }}</span><button :disabled="loading||results.meta.currentPage>=results.meta.lastPage" @click="search(results.meta.currentPage+1)">Next →</button></div></div>
 <div v-if="!results.data.length" class="map-empty"><h2>No matches nearby yet</h2><p>{{ filters.locationName ? 'No listings match your filters near '+filters.locationName+'. Try a wider radius or fewer filters.' : 'Try another city or fewer filters.' }}</p><button class="button" @click="clear">Reset search</button></div>
-<ListingCarousel v-else :selected-id="selected" :reset-key="results.data.map(item=>item.service+item.id).join(',')" :visible="cardsOpen"><article v-for="item in results.data" :key="item.id" :id="'map-card-'+item.id" class="map-listing" :class="{selected:selected===item.id}">
-<button class="map-listing-photo" :aria-label="'Locate '+item.title+' on map'" :disabled="item.location.lat==null||item.location.lng==null" @click="selectListing(item.id)"><ListingImage :src="item.photos[0]" :alt="item.title" :service="item.service" :type="item.type" /></button>
-<div class="map-listing-body"><h2><ListingPreviewLink :item="item">{{ item.title }}</ListingPreviewLink></h2><p>{{ item.location.city||item.location.address||'Location not provided' }}<span v-if="distanceLabel(item)"> · {{ distanceLabel(item) }}</span></p><strong class="map-rate">{{ formatPrice(item.price) }} <small>/ {{ item.priceUnit }}</small></strong><div class="map-card-actions"><button class="text-button" :disabled="item.location.lat==null||item.location.lng==null" @click="selectListing(item.id)">On map</button><label class="compare-checkbox" :title="!isCompared(item) && comparisons.length>=3 ? 'Remove a selected listing to choose another (maximum 3).' : 'Select for comparison'"><input type="checkbox" :checked="isCompared(item)" :disabled="!isCompared(item) && comparisons.length>=3" :aria-label="'Select '+item.title+' for comparison'" @change="toggleCompare(item)" /><span>{{ isCompared(item) ? 'Selected' : 'Select' }}</span></label><ListingViewButton :item="item"/></div></div></article></ListingCarousel>
+<ListingCarousel v-else :selected-id="selected" :reset-key="results.data.map(item=>item.service+item.id).join(',')" :visible="cardsOpen" @mode-change="listingMode=$event"><article v-for="item in results.data" :key="item.id" :id="'map-card-'+item.id" class="map-listing" :class="{selected:selected===item.id}">
+<button class="map-listing-photo" :aria-label="'Locate '+item.title+' on map'" :disabled="item.location.lat==null||item.location.lng==null" @click="locateListing(item.id)"><ListingImage :src="item.photos[0]" :alt="item.title" :service="item.service" :type="item.type" /></button>
+<div class="map-listing-body"><p v-if="listingMode==='single'" class="listing-kind">{{ serviceLabels[item.service] }}<span v-if="item.type"> · {{ item.type.replace(/([A-Z])/g,' $1') }}</span></p><h2><ListingPreviewLink :item="item">{{ item.title }}</ListingPreviewLink></h2><p>{{ item.location.city||item.location.address||'Location not provided' }}<span v-if="distanceLabel(item)"> · {{ distanceLabel(item) }}</span></p><strong class="map-rate">{{ formatPrice(item.price) }} <small>/ {{ item.priceUnit }}</small></strong><div class="map-card-actions"><button class="text-button" :disabled="item.location.lat==null||item.location.lng==null" @click="locateListing(item.id)">On map</button><label class="compare-checkbox" :title="!isCompared(item) && comparisons.length>=3 ? 'Remove a selected listing to choose another (maximum 3).' : 'Select for comparison'"><input type="checkbox" :checked="isCompared(item)" :disabled="!isCompared(item) && comparisons.length>=3" :aria-label="'Select '+item.title+' for comparison'" @change="toggleCompare(item)" /><span>{{ isCompared(item) ? 'Selected' : 'Select' }}</span></label><ListingViewButton :item="item"/></div></div></article></ListingCarousel>
 </section>
 <div v-if="comparisons.length" class="map-compare-bar" aria-label="Selected listings for comparison">
   <div class="compare-thumbnails" aria-hidden="true"><ListingImage v-for="item in comparisons" :key="compareKey(item)" :src="item.photos?.[0]" alt="" :service="item.service" :type="item.type" /></div>

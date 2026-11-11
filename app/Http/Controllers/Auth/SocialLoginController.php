@@ -31,7 +31,7 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider, SocialLogin $social)
     {
         abort_unless($social->enabled($provider), 404);
-        $destination = $request->user() ? '/profile' : '/login';
+        $destination = $request->user() ? '/settings' : '/login';
         $flow = $request->session()->pull('social_login');
         if (!is_array($flow) || ($flow['provider'] ?? '') !== $provider || ($flow['expires'] ?? 0) < time() ||
             ($flow['user_id'] ?? null) !== $request->user()?->id ||
@@ -63,7 +63,7 @@ class SocialLoginController extends Controller
                 }
                 // Never attach an identity to an existing account using email alone.
                 if (User::whereRaw('LOWER(email) = ?', [$identity['email']])->exists()) {
-                    throw ValidationException::withMessages(['social'=>'An Aadi account already uses this email. Sign in with your existing password, then connect this provider in Profile & settings. You can reset your password if needed.']);
+                    throw ValidationException::withMessages(['social'=>'An Aadi account already uses this email. Sign in with your existing password, then connect this provider in Settings. You can reset your password if needed.']);
                 }
                 $user = User::create(['name'=>$identity['name'], 'email'=>$identity['email'], 'password'=>Str::random(64)]);
                 if ($identity['verified']) $user->markEmailAsVerified();
@@ -76,13 +76,13 @@ class SocialLoginController extends Controller
             // OAuth responses may contain credentials: do not log exception bodies or URLs.
             return redirect($destination)->with('status', 'Social sign-in could not be completed. Please try again or use email sign-in.');
         }
-        if ($flow['user_id'] ?? null) return redirect('/profile')->with('status', 'Social login connected.');
+        if ($flow['user_id'] ?? null) return redirect('/settings')->with('status', 'Social login connected.');
         Auth::login($user);
         $request->session()->regenerate();
         if ($created) {
             try { event(new Registered($user)); }
             catch (\Throwable $exception) { report($exception); return redirect()->route('verification.notice')->with('status', 'delivery-failed'); }
         }
-        return $user->hasVerifiedEmail() ? redirect()->intended('/dashboard') : redirect()->route('verification.notice');
+        return $user->hasVerifiedEmail() ? redirect()->intended(route('map', absolute: false)) : redirect()->route('verification.notice');
     }
 }

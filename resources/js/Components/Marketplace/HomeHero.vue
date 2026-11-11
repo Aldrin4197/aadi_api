@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import CityPicker from './CityPicker.vue';
 import SearchIcon from './SearchIcon.vue';
+import AadiHeroScene from './AadiHeroScene.vue';
 
 defineProps({ busy: Boolean });
 const emit = defineEmits(['search', 'locate']);
@@ -32,10 +33,10 @@ const submit = () => emit('search', { service: active.value, city: city.value })
                 <button type="button" class="hero-locate" :disabled="busy" @click="emit('locate', active)"><SearchIcon name="location" />Use my current location</button>
             </form>
             <div class="aadi-hero-actions"><a href="#how-it-works" class="landing-text-link">See how Aadi works</a></div>
-            <p class="aadi-hero-foot">Browse freely, no account needed. Booking and payments aren’t available yet, and providers are reviewed before they publish.</p>
+            <p class="aadi-hero-foot">Browse freely. Requests require an account and provider acceptance; payment is arranged directly.</p>
         </div>
         <figure class="hero-scene hero-switcher">
-            <img :src="`/images/illustrations/${scene.image}.svg`" :alt="`${scene.label} illustration`" width="480" height="300" fetchpriority="high" />
+            <AadiHeroScene :category="active" :fallback-src="`/images/illustrations/${scene.image}.svg`" :label="scene.label" />
             <figcaption aria-live="polite"><strong>{{ scene.title }}</strong><p>{{ scene.text }}</p><span class="hero-illustration-note">Illustration · explore live listings below</span></figcaption>
         </figure>
     </section>

@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user() ? [...$request->user()->only(['id', 'name', 'email', 'is_admin', 'avatar_url']), 'emailVerified' => $request->user()->hasVerifiedEmail()] : null,
                 'onboarding' => $request->user() ? ['status'=>$request->user()->onboarding_status, 'data'=>$request->user()->onboarding_data] : null,
+                'isProvider' => $request->user()?->isApprovedProvider() ?? false,
                 'providerRoles' => $request->user() ? [
                     'spaces' => $request->user()->landlord_status?->value ?? 'none',
                     'haul' => $request->user()->vehicle_owner_status?->value ?? 'none',

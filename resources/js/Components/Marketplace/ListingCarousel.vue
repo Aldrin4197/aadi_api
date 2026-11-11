@@ -2,12 +2,10 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, computed, useId, watch } from 'vue';
 
 const props = defineProps<{ resetKey: string; visible?: boolean; selectedId?: string | null }>();
+const emit = defineEmits<{ 'mode-change': [mode: string] }>();
 const id = useId();
 const preferredMode = ref('carousel');
-const mobile = ref(false);
-const mode = computed(() => mobile.value ? preferredMode.value : 'carousel');
-let viewport: MediaQueryList | undefined;
-function updateViewport() { mobile.value = viewport?.matches ?? false; }
+const mode = computed(() => preferredMode.value);
 const position = ref(1), total = ref(0);
 const modes = [{key:'carousel', label:'Carousel', icon:'M3 5h5v14H3zM11 5h10v14H11z'}, {key:'list', label:'List', icon:'M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1'}, {key:'single', label:'Swipe', icon:'M7 4h10v16H7zM3 9l-2 3 2 3M21 9l2 3-2 3'}];
 const description = computed(() => mode.value === 'list' ? 'Matching listings' : 'Listing cards. Use left and right arrow keys to browse.');
@@ -48,14 +46,14 @@ function move(direction: number) {
 }
 function keydown(event: KeyboardEvent) {
     // Preserve arrow-key behavior within card links, checkboxes and other controls.
-    if (event.target !== rail.value) return;
+    if (event.target !== rail.value || mode.value === 'list') return;
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
         event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1);
     }
 }
 async function refresh(reset = false) {
     await nextTick();
-    if (reset) rail.value?.scrollTo({ left: 0, behavior: 'instant' });
+    if (reset) rail.value?.scrollTo({ left: 0, top: 0, behavior: 'instant' });
     observer?.disconnect();
     if (rail.value) {
         observer?.observe(rail.value);
@@ -64,26 +62,23 @@ async function refresh(reset = false) {
     measure();
 }
 onMounted(() => {
-    viewport = matchMedia('(max-width: 700px)');
-    updateViewport();
-    viewport.addEventListener('change', updateViewport);
     try { const saved = localStorage.getItem('aadi-listing-view'); if (modes.some(item => item.key === saved)) preferredMode.value = saved!; } catch {}
+    emit('mode-change', mode.value);
     observer = new ResizeObserver(measure); refresh();
 });
 watch(preferredMode, () => { try { localStorage.setItem('aadi-listing-view', preferredMode.value); } catch {} });
-watch(mode, async () => { await refresh(true); revealSelected(); });
+watch(mode, async () => { emit('mode-change', mode.value); await refresh(true); revealSelected(); });
 watch(() => props.selectedId, async () => { await nextTick(); revealSelected(); });
 watch(() => props.resetKey, () => refresh(true));
 watch(() => props.visible, () => refresh());
 onBeforeUnmount(() => {
     observer?.disconnect();
-    viewport?.removeEventListener('change', updateViewport);
 });
 </script>
 
 <template>
     <div class="listing-carousel" :class="'view-' + mode" role="region" aria-label="Matching listing cards">
-        <div v-if="mobile" class="view-toolbar"><div class="view-modes" role="group" aria-label="Listing view"><button v-for="view in modes" :key="view.key" type="button" :aria-pressed="mode === view.key" :aria-controls="id" @click="preferredMode = view.key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path :d="view.icon"/></svg>{{ view.label }}</button></div><span v-if="mode === 'single'" class="view-position" aria-live="polite">{{ position }} / {{ total }}</span></div>
+        <div class="view-toolbar"><div class="view-modes" role="group" aria-label="Listing view"><button v-for="view in modes" :key="view.key" type="button" :aria-pressed="mode === view.key" :aria-controls="id" @click="preferredMode = view.key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path :d="view.icon"/></svg>{{ view.label }}</button></div><span v-if="mode === 'single'" class="view-position" aria-live="polite">{{ position }} / {{ total }}</span></div>
         <div :id="id" ref="rail" class="map-card-rail carousel-rail" tabindex="0"
             :aria-label="description" @scroll.passive="measure" @keydown="keydown">
             <slot />
@@ -107,18 +102,24 @@ onBeforeUnmount(() => {
 .view-modes svg { width:18px; height:18px; }
 .view-modes button[aria-pressed=true] { background:#fff3bf; }
 .view-position { background:white; border-radius:12px; padding:10px; font-size:12px; font-variant-numeric:tabular-nums; }
-.view-single { max-width:520px; margin-inline:auto; }
-.view-single .carousel-rail { scroll-snap-type:x mandatory; }
-.view-single :deep(.map-listing) { flex:0 0 100%; max-width:none; scroll-snap-stop:always; }
-.view-list .carousel-rail { display:grid; gap:10px; max-height:280px; overflow-y:auto; overscroll-behavior:contain; scroll-snap-type:none; scrollbar-width:thin; max-width:600px; }
-.view-list :deep(.map-listing) { width:100%; max-width:none; grid-template-columns:90px minmax(0,1fr); }
+.view-single, .view-list { display:flex; flex:1; min-height:0; flex-direction:column; }
+.view-single .carousel-rail { flex:1; min-height:0; gap:0; padding:0; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; }
+.view-single :deep(.map-listing) { box-sizing:border-box; flex:0 0 100%; max-width:none; display:block; overflow-y:auto; overscroll-behavior-y:contain; scrollbar-width:none; -ms-overflow-style:none; border:0; border-radius:0; box-shadow:none; scroll-snap-align:start; scroll-snap-stop:always; }
+.view-single :deep(.map-listing::-webkit-scrollbar) { display:none; }
+.view-single :deep(.map-listing-photo) { display:block; width:100%; height:clamp(200px, 42dvh, 480px); }
+.view-single :deep(.map-listing-body) { max-width:720px; margin:auto; padding:20px; }
+.view-single :deep(.map-listing h2) { font-size:clamp(22px, 4vw, 32px); }
+.view-single :deep(.map-listing-body p) { font-size:14px; }
+.view-single :deep(.map-rate) { font-size:24px; }
+.view-list .carousel-rail { display:grid; align-content:start; grid-auto-rows:max-content; flex:1; min-height:0; gap:12px; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; scroll-snap-type:none; }
+.view-list :deep(.map-listing) { width:100%; max-width:none; grid-template-columns:110px minmax(0,1fr); }
 :deep(.map-card-actions) { flex-wrap:wrap; }
-@media(max-width:700px) { .view-toolbar { margin-inline:12px; } .view-list .carousel-rail { max-height:245px; } }
+@media(max-width:700px) { .view-toolbar { margin-inline:12px; } }
 
 .carousel-rail { scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior-x: contain; }
 .carousel-rail::-webkit-scrollbar { display: none; }
 .carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #ffffffdf; border-radius: 50%; background: #ffffffd9; color: var(--aadi-dark, #0b3a38); box-shadow: 0 4px 18px #0b3a3833; backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); transition: background .15s ease, box-shadow .15s ease; }
-.carousel-arrow:hover { background: #e3f6f4f2; box-shadow: 0 5px 20px #0b3a3840; }
+@media (hover:hover) and (pointer:fine) { .carousel-arrow:hover { background: #e3f6f4f2; box-shadow: 0 5px 20px #0b3a3840; } }
 .carousel-arrow svg { width: 22px; height: 22px; }
 .carousel-previous { left: 8px; }
 .carousel-next { right: 8px; }

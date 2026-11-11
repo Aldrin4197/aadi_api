@@ -3,6 +3,9 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import PhoneInput from '@/Components/PhoneInput.vue';
+import AddressCityField from '@/Components/AddressCityField.vue';
+import { showToast } from '@/Components/toast.mjs';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -24,6 +27,11 @@ const form = useForm({
     email: user.email,
     phone: props.profile?.phone || '', bio: props.profile?.bio || '', city: props.profile?.city || '', address: props.profile?.address || '',
 });
+function saveProfile() {
+    form.patch(route('profile.update'), {
+        onSuccess: () => showToast('Profile saved.'),
+    });
+}
 </script>
 
 <template>
@@ -39,7 +47,7 @@ const form = useForm({
         </header>
 
         <form
-            @submit.prevent="form.patch(route('profile.update'))"
+            @submit.prevent="saveProfile"
             class="mt-6 space-y-6"
         >
             <div>
@@ -77,8 +85,8 @@ const form = useForm({
                 <p v-if="isVerified && verifiedOn" class="mt-2 text-xs text-gray-500">Verified on {{ verifiedOn }}. Changing your email address will require you to verify it again.</p>
             </div>
 
-            <div><InputLabel for="phone" value="Phone number"/><TextInput id="phone" v-model="form.phone" type="tel" autocomplete="tel" maxlength="40" class="mt-1 block w-full"/><InputError :message="form.errors.phone"/></div>
-            <div><InputLabel for="city" value="City / municipality"/><TextInput id="city" v-model="form.city" autocomplete="address-level2" maxlength="255" class="mt-1 block w-full"/><InputError :message="form.errors.city"/></div>
+            <div><InputLabel for="phone" value="Phone number"/><PhoneInput id="phone" v-model="form.phone"/><InputError :message="form.errors.phone"/></div>
+            <div><InputLabel for="city" value="City / municipality"/><AddressCityField id="city" v-model="form.city"/><InputError :message="form.errors.city"/></div>
             <div><InputLabel for="address" value="Address (private)"/><TextInput id="address" v-model="form.address" autocomplete="street-address" maxlength="255" class="mt-1 block w-full"/><InputError :message="form.errors.address"/></div>
             <div><InputLabel for="bio" value="About you"/><textarea id="bio" v-model="form.bio" rows="4" maxlength="1000"/><InputError :message="form.errors.bio"/></div>
 

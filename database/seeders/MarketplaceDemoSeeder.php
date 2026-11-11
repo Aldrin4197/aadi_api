@@ -47,7 +47,7 @@ class MarketplaceDemoSeeder extends Seeder
                     'address' => 'Sample location, Catbalogan, Samar',
                     'photos' => [], 'amenities' => $amenities,
                     'property_verification' => 'none',
-                ]);
+                ])->forceFill(['is_sample' => true])->save();
             }
 
             $vehicles = [
@@ -68,7 +68,7 @@ class MarketplaceDemoSeeder extends Seeder
                     'location' => 'Sample pickup point, Catbalogan, Samar',
                     'latitude' => 11.7740 + $i * 0.0012, 'longitude' => 124.8850 + $i * 0.0010,
                     'images' => [], 'features' => [],
-                ]);
+                ])->forceFill(['is_sample' => true])->save();
             }
 
             $services = [
@@ -87,7 +87,7 @@ class MarketplaceDemoSeeder extends Seeder
                     'service_area' => 'Sample service area, Catbalogan, Samar',
                     'latitude' => 11.7720 + $i * 0.0015, 'longitude' => 124.8840 + $i * 0.0013,
                     'images' => [],
-                ]);
+                ])->forceFill(['is_sample' => true])->save();
             }
         });
 

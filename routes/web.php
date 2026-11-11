@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'store'])->middleware('throttle:10,1');
     Route::delete('/profile/avatar', [\App\Http\Controllers\AvatarController::class, 'destroy']);
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/settings', [ProfileController::class, 'settings'])->name('settings');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

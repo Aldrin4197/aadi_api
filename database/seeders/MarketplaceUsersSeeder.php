@@ -88,6 +88,7 @@ class MarketplaceUsersSeeder extends Seeder
         $lng += $index * 0.0010;
         $base = [
             'currency'=>'PHP',
+            'is_sample'=>true,
             'description'=>'DEMO LISTING — fictional offer belonging to a demo account. Locations, prices and features are illustrative. Not available for booking.',
         ];
         if ($service === 'spaces') {

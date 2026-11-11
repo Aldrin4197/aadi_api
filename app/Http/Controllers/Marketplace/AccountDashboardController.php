@@ -10,6 +10,8 @@ class AccountDashboardController extends Controller
 {
     public function __invoke(Request $request, Marketplace $market)
     {
+        // The management dashboard is for approved providers; everyone else uses the map.
+        if (!$request->user()->isApprovedProvider()) return redirect(route('map', absolute: false));
         $inventory = []; $recent = collect();
         foreach (array_keys(Marketplace::TYPES) as $service) {
             $query = $market->model($service)::query()

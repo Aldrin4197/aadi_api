@@ -15,7 +15,7 @@ async function load() {
     const body = await response.json();
     if (!Array.isArray(body.cities) || !body.cities.length) throw new Error('directory');
     cities.value = body.cities;
-  } catch { error.value = 'City search could not load. Try again, use your location, or choose a center on the map.'; }
+  } catch { error.value = 'City search could not load. Try again or enter the location manually.'; }
   finally { loading.value = false; }
 }
 async function toggle() {
