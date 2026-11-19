@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
+    Route::delete('me', [AuthController::class, 'destroy'])->middleware('throttle:5,1,account-deletion');
     Route::post('me/landlord-application', [AuthController::class, 'applyForLandlord'])->middleware('verified.email');
     Route::post('me/landlord-application/approve', [AuthController::class, 'approveLandlord'])->middleware(\App\Http\Middleware\EnsureAdmin::class);
     Route::post('me/vehicle-owner-application', [AuthController::class, 'applyForVehicleOwner'])->middleware('verified.email');
@@ -104,8 +105,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/offers', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'search']);
     Route::get('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'show']);
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/users/{user}/reports', [\App\Http\Controllers\AccountReportController::class, 'store'])->middleware('throttle:5,1');
+        Route::put('/users/{user}/likes', [\App\Http\Controllers\ProfileLikeController::class, 'store'])->middleware('throttle:30,1');
+        Route::delete('/users/{user}/likes', [\App\Http\Controllers\ProfileLikeController::class, 'destroy'])->middleware('throttle:30,1');
         Route::post('/offers/{service}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'store']);
         Route::put('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'update']);
+        Route::patch('/offers/{service}/{id}/availability', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'availability']);
         Route::delete('/offers/{service}/{id}', [\App\Http\Controllers\Marketplace\MarketplaceController::class,'destroy']);
         Route::get('/profile', [\App\Http\Controllers\Api\ProfileController::class,'show']);
         Route::patch('/profile', [\App\Http\Controllers\Api\ProfileController::class,'update']);
@@ -129,6 +134,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/v1/providers/{user}', \App\Http\Controllers\Marketplace\ProviderProfileController::class);
+Route::get('/v1/users/{user}/likes', [\App\Http\Controllers\ProfileLikeController::class, 'index'])->middleware('throttle:60,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('v1/email-verification', [\App\Http\Controllers\Api\EmailVerificationController::class, 'show']);

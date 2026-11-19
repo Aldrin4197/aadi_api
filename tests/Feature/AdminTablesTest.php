@@ -22,6 +22,7 @@ class AdminTablesTest extends TestCase
 
     private function listing(User $owner, string $service, string $title, float $price, string $status = 'active'): void
     {
+        $owner->forceFill(['aadi_plus_until' => now()->addYear()])->save();
         app(Marketplace::class)->save($owner, $service, [
             'title' => $title, 'description' => 'Table fixture.', 'type' => Marketplace::TYPES[$service][0],
             'price' => $price, 'status' => $status, 'photos' => [],
@@ -72,7 +73,7 @@ class AdminTablesTest extends TestCase
     public function test_marketplace_tables_filter_and_sort_for_every_category(): void
     {
         $this->withoutVite();
-        $owner = User::factory()->create(['name' => 'Alpha Owner', 'landlord_status' => 'approved', 'vehicle_owner_status' => 'approved', 'service_provider_status' => 'approved']);
+        $owner = User::factory()->create(['name' => 'Alpha Owner', 'landlord_status' => 'approved', 'vehicle_owner_status' => 'approved', 'service_provider_status' => 'approved', 'aadi_plus_until' => now()->addYear()]);
         $admin = $this->admin();
 
         foreach (['spaces' => 'listings', 'haul' => 'vehicles', 'raketeer' => 'services'] as $service => $path) {

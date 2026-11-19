@@ -63,6 +63,13 @@ class SocialLoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertDatabaseHas('social_accounts', ['user_id'=>$user->id, 'provider'=>'google', 'provider_id'=>'google-123']);
         $this->assertNull(session('social_login'));
+        $this->assertNull($user->birth_date);
+        $this->get('/saved-listings')->assertRedirect('/profile');
+        $this->patch('/profile', [
+            'name'=>$user->name, 'email'=>$user->email, 'birth_date'=>today()->subYears(17)->toDateString(),
+            'sex_assigned_at_birth'=>'prefer_not_to_say', 'city'=>'Catbalogan', 'address'=>'Private address',
+        ])->assertSessionHasNoErrors();
+        $this->assertTrue($user->fresh()->hasCompleteProfile());
         Notification::assertNothingSent();
     }
 
@@ -84,6 +91,17 @@ class SocialLoginTest extends TestCase
         $this->withSession($this->flow())->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/explore');
         $this->assertAuthenticatedAs($user);
         $this->assertSame('chosen@example.com', $user->fresh()->email);
+    }
+
+    public function test_restricted_account_cannot_use_social_login(): void
+    {
+        $user = User::factory()->create(['email'=>'chosen@example.com']);
+        $user->restriction_type = 'disabled';
+        $user->save();
+        DB::table('social_accounts')->insert(['user_id'=>$user->id,'provider'=>'google','provider_id'=>'google-123']);
+        $this->google('chosen@example.com');
+        $this->withSession($this->flow())->get('/auth/google/callback?state=expected-state&code=code')->assertRedirect('/login');
+        $this->assertGuest();
     }
 
     public function test_facebook_does_not_grant_email_verification(): void

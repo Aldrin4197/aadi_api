@@ -36,19 +36,35 @@ onBeforeUnmount(() => {
     <Teleport :to="target">
         <div class="app-toast-region" aria-live="polite">
             <div v-if="currentToast" class="app-toast" :class="currentToast.kind" :role="currentToast.kind === 'error' ? 'alert' : 'status'">
-                <span>{{ currentToast.message }}</span>
-                <button type="button" aria-label="Dismiss notification" @click="dismissToast">×</button>
+                <span class="app-toast-icon" aria-hidden="true">
+                    <svg v-if="currentToast.kind === 'error'" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 7v6M12 17h.01" /></svg>
+                    <svg v-else viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></svg>
+                </span>
+                <span class="app-toast-message">{{ currentToast.message }}</span>
+                <button type="button" aria-label="Dismiss notification" @click="dismissToast">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+                </button>
             </div>
         </div>
     </Teleport>
 </template>
 
 <style scoped>
-.app-toast-region { position:fixed; z-index:3000; top:calc(16px + env(safe-area-inset-top, 0px)); right:max(16px, env(safe-area-inset-right, 0px)); width:min(420px, calc(100vw - 32px)); pointer-events:none; }
-.app-toast { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border:1px solid #a9d8c0; border-radius:12px; background:#fff; color:#193e3b; box-shadow:0 12px 32px #193e3b2e; font:600 14px/1.5 sans-serif; pointer-events:auto; }
-.app-toast.error { border-color:#e5a89e; color:#9c261d; }
-.app-toast span { flex:1; min-width:0; overflow-wrap:anywhere; }
-.app-toast button { display:grid; place-items:center; flex:none; width:44px; height:44px; margin:-8px; border:0; border-radius:8px; background:transparent; color:inherit; font-size:22px; cursor:pointer; }
+.app-toast-region { position:fixed; z-index:3000; right:max(16px, env(safe-area-inset-right, 0px)); bottom:calc(16px + env(safe-area-inset-bottom, 0px)); width:min(400px, calc(100vw - 32px)); pointer-events:none; }
+.app-toast { display:flex; align-items:center; gap:12px; padding:12px 12px 12px 14px; border:1px solid #cfe5da; border-radius:12px; background:#fff; color:#193e3b; box-shadow:0 12px 32px rgb(25 62 59 / .18); font:600 14px/1.5 sans-serif; pointer-events:auto; }
+.app-toast.error { border-color:#efcec9; color:#8d2921; }
+.app-toast-icon { display:grid; place-items:center; flex:none; width:34px; height:34px; border-radius:10px; background:#e4f4ed; color:#137671; }
+.app-toast.error .app-toast-icon { background:#fcece9; color:#a4352b; }
+.app-toast-icon svg { width:20px; height:20px; }
+.app-toast svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.app-toast-message { flex:1; min-width:0; overflow-wrap:anywhere; }
+.app-toast button { display:grid; place-items:center; flex:none; width:44px; height:44px; margin:-6px; border:0; border-radius:8px; background:transparent; color:inherit; cursor:pointer; touch-action:manipulation; }
+.app-toast button svg { width:18px; height:18px; }
+.app-toast button:active { background:rgb(25 62 59 / .08); }
 .app-toast button:focus-visible { outline:2px solid #137671; outline-offset:2px; }
-@media(max-width:480px) { .app-toast-region { left:max(12px, env(safe-area-inset-left, 0px)); right:max(12px, env(safe-area-inset-right, 0px)); width:auto; } }
+@media(max-width:700px) {
+    .app-toast-region { top:calc(12px + env(safe-area-inset-top, 0px)); right:max(12px, env(safe-area-inset-right, 0px)); bottom:auto; left:max(12px, env(safe-area-inset-left, 0px)); width:auto; max-width:440px; margin-inline:auto; }
+    .app-toast { padding:8px 12px; border-radius:10px; font-size:13px; }
+    .app-toast-icon { width:30px; height:30px; border-radius:8px; }
+}
 </style>

@@ -69,7 +69,7 @@ class ProviderApplicationTest extends TestCase {
         $user=User::factory()->create();
         $this->actingAs($user)->post('/provider-applications/haul',[])->assertSessionHasErrors(['displayName','details.applicantType','confirmed']);
         $this->get('/admin/approvals')->assertForbidden();
-        $this->post('/admin/approvals/'.$user->id.'/haul',['status'=>'approved','version'=>ProviderApplication::firstOrFail()->revision()])->assertForbidden();
+        $this->post('/admin/approvals/'.$user->id.'/haul',['status'=>'approved','version'=>'none'])->assertForbidden();
         $this->get('/provider-applications/unknown')->assertNotFound();
     }
 }

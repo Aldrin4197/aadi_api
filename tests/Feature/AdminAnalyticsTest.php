@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Listing;
+use App\Models\AccountReport;
 use App\Models\ListingView;
 use App\Models\User;
 use App\Services\Marketplace;
@@ -46,8 +47,10 @@ class AdminAnalyticsTest extends TestCase
         $this->actingAs($this->admin())->get('/admin/analytics')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Analytics')
             ->where('analytics.range.days', 30)
-            ->has('analytics.kpis', 6)
+            ->has('analytics.kpis', 7)
             ->has('analytics.trend.dates', 30)
+            ->where('analytics.reports.statuses.0.count', 0)
+            ->where('analytics.reports.decisions.0.count', 0)
             ->has('analytics.topListings', 0)
             ->where('analytics.insights', fn ($items) => collect($items)->contains(fn ($i) => str_contains($i['title'], 'No property views'))));
     }
@@ -90,6 +93,40 @@ class AdminAnalyticsTest extends TestCase
 
         $this->actingAs($this->admin())->get('/admin/dashboard')->assertInertia(fn (Assert $page) => $page
             ->where('overview.kpis', fn ($kpis) => collect($kpis)->contains(fn ($k) => $k['key'] === 'engagement' && $k['value'] === 1)));
+    }
+
+    public function test_report_metrics_distinguish_backlog_submissions_and_review_events(): void
+    {
+        $this->withoutVite();
+        $this->travelTo(now()->startOfDay()->addHours(12));
+        $admin = $this->admin();
+        $reporter = User::factory()->create();
+        $target = User::factory()->create();
+        $makeReport = function ($created, $status) use ($reporter, $target) {
+            $report = AccountReport::create(['reporter_id' => $reporter->id, 'reported_id' => $target->id, 'reason' => 'A detailed account of events.']);
+            $report->created_at = $created;
+            $report->status = $status;
+            $report->save();
+            return $report;
+        };
+        $first = $makeReport(today()->subDays(6), 'reversed');
+        $makeReport(today()->subDays(7), 'pending');
+        $makeReport(today()->subDays(30), 'pending');
+        $makeReport(today()->addDay(), 'pending');
+        DB::table('account_report_reviews')->insert([
+            ['account_report_id' => $first->id, 'admin_id' => $admin->id, 'action' => 'confirm', 'points' => 3, 'note' => 'Reviewed report.', 'created_at' => today()->subDays(7)],
+            ['account_report_id' => $first->id, 'admin_id' => $admin->id, 'action' => 'reverse', 'points' => 3, 'note' => 'Reversed decision.', 'created_at' => today()],
+        ]);
+        $this->actingAs($admin)->get('/admin/dashboard?range=7')->assertInertia(fn (Assert $page) => $page
+            ->where('overview.kpis', fn ($kpis) => collect($kpis)->contains(fn ($k) => $k['key'] === 'reports' && $k['value'] === 3 && $k['href'] === '/admin/reports'))
+            ->where('overview.trend.series.reports', [1, 0, 0, 0, 0, 0, 0]));
+        $this->get('/admin/analytics?range=7')->assertInertia(fn (Assert $page) => $page
+            ->where('analytics.kpis.6.value', 1)->where('analytics.kpis.6.previousInRange', 1)
+            ->where('analytics.trend.series.reports', [1, 0, 0, 0, 0, 0, 0])
+            ->where('analytics.reports.statuses.0.count', 3)->where('analytics.reports.statuses.3.count', 1)
+            ->where('analytics.reports.decisions.0.count', 0)->where('analytics.reports.decisions.2.count', 1));
+        $this->get('/admin/analytics?range=30')->assertInertia(fn (Assert $page) => $page
+            ->where('analytics.kpis.6.value', 2)->where('analytics.reports.decisions.0.count', 1));
     }
 
     public function test_opening_a_property_records_one_view_per_visitor_and_ignores_owners_and_admins(): void

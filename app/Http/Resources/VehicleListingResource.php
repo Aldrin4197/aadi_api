@@ -41,6 +41,7 @@ class VehicleListingResource extends JsonResource
             'longitude' => $this->longitude ? (float) $this->longitude : null,
             'distance' => $this->when(isset($this->distance), fn() => round($this->distance, 2)),
             'status' => $this->status,
+            'availabilityPaused' => (bool) $this->availability_paused || (bool) $this->owner?->isRestricted(),
             'images' => $this->images ?? [],
             'viewsCount' => $this->views_count,
             'ratingAverage' => (float) $this->rating_average,

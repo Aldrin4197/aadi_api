@@ -77,6 +77,7 @@ class SocialLoginController extends Controller
             return redirect($destination)->with('status', 'Social sign-in could not be completed. Please try again or use email sign-in.');
         }
         if ($flow['user_id'] ?? null) return redirect('/settings')->with('status', 'Social login connected.');
+        if ($user->isRestricted()) return redirect('/login')->with('status', 'This account is currently restricted. Please contact support.');
         Auth::login($user);
         $request->session()->regenerate();
         if ($created) {

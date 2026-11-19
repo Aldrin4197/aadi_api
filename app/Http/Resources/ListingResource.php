@@ -32,6 +32,7 @@ class ListingResource extends JsonResource
             'amenities' => $this->amenities ?? [],
             'attributes' => $this->attributes ?? [],
             'status' => $this->status instanceof \BackedEnum ? $this->status->value : $this->status,
+            'availabilityPaused' => (bool) $this->availability_paused || (bool) $this->owner?->isRestricted(),
             'propertyVerification' => $this->property_verification instanceof \BackedEnum ? $this->property_verification->value : $this->property_verification,
             'ratingAverage' => (float) $this->rating_average,
             'ratingCount' => $this->rating_count,

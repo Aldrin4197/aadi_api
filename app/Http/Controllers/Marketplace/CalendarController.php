@@ -28,19 +28,44 @@ class CalendarController extends Controller
             ]);
         $requests = MarketplaceRequest::where('status', 'accepted')
             ->where(fn ($query) => $query->where('customer_id', $user->id)->orWhere('provider_id', $user->id))
-            ->where('requested_at', '>=', $start->toDateTimeString())->where('requested_at', '<', $end->toDateTimeString())
+            ->where('requested_at', '<', $end->toDateTimeString())
+            ->where(fn ($query) => $query->whereDate('requested_until', '>=', $start->toDateString())
+                ->orWhere(fn ($query) => $query->whereNull('requested_until')->where('requested_at', '>=', $start->toDateTimeString())))
             ->orderBy('requested_at')->get()
-            ->map(fn (MarketplaceRequest $item) => [
-                'id' => $item->id, 'kind' => 'request', 'title' => $item->listing_title,
-                'date' => $item->requested_at->format('Y-m-d'),
-                'time' => $item->service === 'spaces' ? $item->requested_at->format('H:i') : null,
-                'service' => $item->service, 'isProvider' => (string) $item->provider_id === (string) $user->id,
-            ]);
+            ->flatMap(function (MarketplaceRequest $item) use ($start, $end, $user) {
+                $first = CarbonImmutable::parse($item->requested_at)->startOfDay()->max($start);
+                $last = CarbonImmutable::parse($item->requested_until ?? $item->requested_at)->startOfDay()->min($end->subDay());
+                $days = [];
+                for ($day = $first; $day->lte($last); $day = $day->addDay()) {
+                    $days[] = [
+                        'id' => $item->id, 'kind' => 'request', 'title' => $item->listing_title,
+                        'date' => $day->toDateString(),
+                        'time' => $item->service === 'spaces' ? $item->requested_at->format('H:i') : null,
+                        'service' => $item->service, 'isProvider' => (string) $item->provider_id === (string) $user->id,
+                    ];
+                }
+                return $days;
+            });
 
+        $tenancies = collect();
+        if ($user->isApprovedProvider() && app(\App\Services\Marketplace::class)->approved($user, 'spaces')) {
+            $tenancies = \App\Models\ProviderRecord::where('provider_id', $user->id)->where('kind', 'tenancy')
+                ->whereIn('status', ['scheduled', 'active'])->whereDate('starts_on', '<', $end->toDateString())
+                ->where(fn ($q) => $q->whereNull('ends_on')->orWhereDate('ends_on', '>=', $start->toDateString()))
+                ->get()->flatMap(function ($item) use ($start, $end) {
+                    $first = CarbonImmutable::parse($item->starts_on)->startOfDay()->max($start);
+                    $last = $item->ends_on ? CarbonImmutable::parse($item->ends_on)->startOfDay()->min($end->subDay()) : $end->subDay();
+                    $days = [];
+                    for ($day = $first; $day->lte($last); $day = $day->addDay()) {
+                        $days[] = ['id' => $item->id, 'kind' => 'tenancy', 'title' => $item->listing_title, 'date' => $day->toDateString(), 'time' => null];
+                    }
+                    return $days;
+                });
+        }
         return Inertia::render('Account/Calendar', [
             'month' => $start->format('Y-m'), 'today' => now(config('app.timezone'))->toDateString(),
             'selectedDate' => isset($data['date']) && str_starts_with($data['date'], $start->format('Y-m').'-') ? $data['date'] : null,
-            'timezone' => config('app.timezone'), 'events' => $personal->concat($requests)->values(),
+            'timezone' => config('app.timezone'), 'events' => $personal->concat($requests)->concat($tenancies)->values(),
         ]);
     }
 

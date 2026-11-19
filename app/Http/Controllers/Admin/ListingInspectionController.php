@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\Marketplace;
+use App\Services\{ListingBadgeService, Marketplace};
 use App\Support\AdminTable;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,7 +19,7 @@ class ListingInspectionController extends Controller {
     public function spaces(Request $request, Marketplace $market) { return $this->index($request,$market,'spaces','Listings'); }
     public function vehicles(Request $request, Marketplace $market) { return $this->index($request,$market,'haul','Vehicles'); }
     public function services(Request $request, Marketplace $market) { return $this->index($request,$market,'raketeer','Services'); }
-    private function index(Request $request, Marketplace $market, string $service, string $page) {
+    private function index(Request $request, Marketplace $market, string $service, string $pageName) {
         $schema=self::SCHEMA[$service]; $relation=$schema['relation'];
         $model=$market->model($service);
         $base=fn()=>$service==='spaces' ? $model::where('category','space_rental') : $model::query();
@@ -54,14 +54,16 @@ class ListingInspectionController extends Controller {
             'owner'=>fn($q,$dir)=>$q->orderBy(User::select('name')->whereColumn('users.id',$table.'.'.$schema['owner']),$dir),
             'created'=>'created_at','updated'=>'updated_at',
         ],'created');
-        $listings=$query->paginate(AdminTable::perPage($request))->withQueryString()->through(function ($record) use ($market,$service,$relation) {
-            return [...$market->dto($record,$service),
+        $page=$query->paginate(AdminTable::perPage($request))->withQueryString();
+        $badges=app(ListingBadgeService::class)->forRecords($page->getCollection(),$service);
+        $listings=$page->through(function ($record) use ($market,$service,$relation,$badges) {
+            return [...$market->dto($record,$service,null,$badges[(string)$record->id]),
                 'sourceStatus'=>$record->status instanceof \BackedEnum ? $record->status->value : $record->status,
                 'updatedAt'=>$record->updated_at?->toIso8601String(),
                 'adminOwner'=>$record->{$relation}?->only(['id','name','email']) ?? ['id'=>null,'name'=>'Owner unavailable','email'=>null],
             ];
         });
-        return Inertia::render('Admin/'.$page.'/Index',[
+        return Inertia::render('Admin/'.$pageName.'/Index',[
             'listings'=>$listings,'filters'=>$filters,...$sort,
             'options'=>['statuses'=>$statuses,'types'=>$types],
             'totals'=>['all'=>$base()->count(),'live'=>$base()->where('status',$schema['live'])->count()],

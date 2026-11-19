@@ -2,6 +2,8 @@
 import { computed, ref, watch } from 'vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import AccountPageHeader from '@/Components/Account/AccountPageHeader.vue';
+import AccountEmptyState from '@/Components/Account/AccountEmptyState.vue';
+import { accountIcons } from '@/Components/Account/accountLinks.mjs';
 import CalendarGrid from '@/Components/CalendarGrid.vue';
 import { monthLabel, shiftMonth } from '@/Components/calendarDates.mjs';
 import Layout from '@/Layouts/AccountLayout.vue';
@@ -59,9 +61,9 @@ function remove(id) {
             <div class="calendar-layout">
                 <section class="account-panel calendar-panel" aria-label="Calendar">
                     <div class="calendar-month">
-                        <button type="button" aria-label="Previous month" :disabled="adding" @click="changeMonth(-1)">‹</button>
+                        <button type="button" class="button calendar-step" aria-label="Previous month" :disabled="adding" @click="changeMonth(-1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="accountIcons.previous" /></svg></button>
                         <h2>{{ monthLabel(month) }}</h2>
-                        <button type="button" aria-label="Next month" :disabled="adding" @click="changeMonth(1)">›</button>
+                        <button type="button" class="button calendar-step" aria-label="Next month" :disabled="adding" @click="changeMonth(1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="accountIcons.next" /></svg></button>
                     </div>
                     <CalendarGrid :month="month" :selected="selected" :today="today" :counts="counts" @select="selected = $event" />
                     <p class="calendar-key"><span aria-hidden="true">●</span> Scheduled on this date</p>
@@ -77,18 +79,24 @@ function remove(id) {
                         <div v-if="Object.keys(form.errors).length" class="notice error" role="alert"><p v-for="(error, key) in form.errors" :key="key">{{ error }}</p></div>
                         <div class="event-actions"><button class="button primary" :disabled="form.processing">{{ form.processing ? 'Saving…' : 'Save event' }}</button><button type="button" class="button" :disabled="form.processing" @click="adding = false; editing = null">Cancel</button></div>
                     </form>
-                    <div v-if="!selectedEvents.length" class="agenda-empty">Nothing scheduled for this date.</div>
+                    <AccountEmptyState
+                        v-if="!selectedEvents.length"
+                        :icon="accountIcons.calendar"
+                        title="Nothing scheduled"
+                        description="Choose another date or add a personal event to your calendar."
+                    />
                     <div v-if="Object.keys(deleteForm.errors).length" class="notice error" role="alert"><p v-for="(error, key) in deleteForm.errors" :key="key">{{ error }}</p></div>
                     <article v-for="event in selectedEvents" :key="`${event.kind}-${event.id}`" class="event">
-                        <p class="event-kind">{{ event.kind === 'personal' ? 'Private event' : `${kinds[event.service]} · ${event.isProvider ? 'Provider' : 'Customer'}` }}</p>
+                        <p class="event-kind">{{ event.kind === 'personal' ? 'Private event' : event.kind === 'tenancy' ? 'Property tenancy · Provider' : `${kinds[event.service]} · ${event.isProvider ? 'Provider' : 'Customer'}` }}</p>
                         <h3>{{ event.title }}</h3>
                         <p>{{ event.time ? `${event.time} (${timezone})` : 'Date only' }}</p>
                         <p v-if="event.note" class="event-note">{{ event.note }}</p>
                         <Link v-if="event.kind === 'request'" href="/requests">View requests →</Link>
+                        <Link v-else-if="event.kind === 'tenancy'" href="/provider/records">View rentals and jobs →</Link>
                         <div v-else-if="deleting === event.id" class="event-actions">
-                            <span>Delete this event?</span><button type="button" :disabled="deleteForm.processing" @click="remove(event.id)">Confirm delete</button><button type="button" :disabled="deleteForm.processing" @click="deleting = null">Keep</button>
+                            <span>Delete this event?</span><button type="button" class="button danger-button" :disabled="deleteForm.processing" @click="remove(event.id)">Confirm delete</button><button type="button" class="button" :disabled="deleteForm.processing" @click="deleting = null">Keep</button>
                         </div>
-                        <div v-else class="event-actions"><button type="button" :disabled="adding" @click="edit(event)">Edit</button><button type="button" :disabled="adding" @click="deleting = event.id">Delete</button></div>
+                        <div v-else class="event-actions"><button type="button" class="button" :disabled="adding" @click="edit(event)">Edit</button><button type="button" class="button danger-button" :disabled="adding" @click="deleting = event.id">Delete</button></div>
                     </article>
                 </section>
             </div>
@@ -97,28 +105,28 @@ function remove(id) {
 </template>
 
 <style scoped>
-.calendar-intro { color:#586e6c; line-height:1.6; font-size:14px; margin-bottom:24px; }
+.calendar-intro { color:var(--muted); line-height:1.6; font-size:var(--aadi-text-body); margin:0 0 22px; max-width:76ch; }
 .calendar-layout { display:grid; grid-template-columns:minmax(280px, 1fr) minmax(0, 1.15fr); gap:20px; align-items:start; }
 .calendar-panel,.agenda { padding:20px; min-width:0; }
 .calendar-month,.agenda-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.calendar-month h2,.agenda h2 { margin:0; font-size:19px; }
-.calendar-month button { width:44px; height:44px; font-size:26px; border-radius:8px; }
+.calendar-month h2,.agenda h2 { margin:0; font-size:var(--aadi-text-heading); }
+.calendar-step { width:44px; height:44px; padding:0; }
+.calendar-step svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .calendar-month button:disabled { opacity:.4; }
-.calendar-key,.agenda-kicker,.event-kind { font-size:12px; color:#586e6c; }
+.calendar-key,.agenda-kicker,.event-kind { font-size:var(--aadi-text-small); color:var(--muted); }
 .calendar-key span { color:#db8c20; }
-.agenda-kicker { margin:0 0 4px; font-weight:700; color:#137671; }
-.agenda-empty { color:#586e6c; font-size:14px; padding:24px 0; }
+.agenda-kicker { margin:0 0 4px; font-weight:700; color:var(--teal); }
 .event { padding:16px 0; border-top:1px solid #dcece9; overflow-wrap:anywhere; }
 .event:first-of-type { margin-top:16px; }
-.event h3 { margin:4px 0; font-size:16px; }
-.event p { margin:5px 0; font-size:13px; color:#586e6c; }
-.event .event-kind { color:#137671; font-weight:700; }
+.event h3 { margin:4px 0; font-size:var(--aadi-text-subheading); }
+.event p { margin:5px 0; font-size:var(--aadi-text-small); color:var(--muted); }
+.event .event-kind { color:var(--teal); font-weight:700; }
 .event-note { white-space:pre-wrap; }
-.event a,.event-actions button:not(.button) { color:#12675f; text-decoration:underline; font-weight:700; }
+.event a { color:var(--teal); text-decoration:underline; font-weight:700; }
 .event-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:12px; font-size:13px; }
-.event-actions button:not(.button) { min-height:44px; }
+.danger-button { color:#9e342b!important; border-color:#e7c4c0!important; }
 .event-form { display:grid; gap:12px; padding:18px 0; }
-.event-form h3 { margin:0; font-size:16px; }
+.event-form h3 { margin:0; font-size:var(--aadi-text-subheading); }
 .event-form label { display:grid; gap:5px; font-size:13px; font-weight:700; }
 .event-form input,.event-form textarea { width:100%; min-height:44px; border:1px solid #c9dbd8; border-radius:8px; padding:10px; font-size:16px; }
 @media(max-width:700px) { .calendar-layout { grid-template-columns:1fr; } .calendar-panel,.agenda { padding:16px; } }

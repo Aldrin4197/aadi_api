@@ -17,14 +17,14 @@ class VerificationDeliveryTest extends TestCase
     public function test_web_registration_sends_verification(): void
     {
         Notification::fake();
-        $this->post('/register', ['name'=>'New User','email'=>'new@example.com','password'=>'password','password_confirmation'=>'password'])->assertRedirect(route('verification.notice'));
+        $this->post('/register', ['name'=>'New User','email'=>'new@example.com','birth_date'=>'1990-01-01','password'=>'password','password_confirmation'=>'password'])->assertRedirect(route('verification.notice'));
         Notification::assertSentTo(User::where('email','new@example.com')->firstOrFail(), VerifyEmail::class);
     }
 
     public function test_mobile_registration_and_resend_share_verification_status(): void
     {
         Notification::fake();
-        $this->postJson('/api/auth/register', ['name'=>'Mobile User','email'=>'mobile@example.com','password'=>'password'])->assertCreated()->assertJsonPath('user.emailVerified', false)->assertJsonPath('verificationEmailSent', true);
+        $this->postJson('/api/auth/register', ['name'=>'Mobile User','email'=>'mobile@example.com','birth_date'=>'1990-01-01','password'=>'password'])->assertCreated()->assertJsonPath('user.emailVerified', false)->assertJsonPath('verificationEmailSent', true);
         $user=User::where('email','mobile@example.com')->firstOrFail();
         Notification::assertSentTo($user, VerifyEmail::class);
         Sanctum::actingAs($user);

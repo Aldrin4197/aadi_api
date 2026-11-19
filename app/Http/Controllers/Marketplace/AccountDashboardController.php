@@ -25,13 +25,18 @@ class AccountDashboardController extends Controller
                 'drafts' => (clone $query)->where('status', $service === 'spaces' ? 'draft' : 'inactive')->count(),
             ];
             foreach ((clone $query)->with($service === 'raketeer' ? 'provider' : 'owner')->latest()->orderByDesc('id')->limit(4)->get() as $record) {
-                $item = $market->dto($record, $service);
+                $item = $market->dto($record, $service, null, []);
                 $recent->push(collect($item)->only(['id','service','title','photos','price','priceUnit','status','createdAt'])->all());
             }
         }
         return Inertia::render('Account/Dashboard', [
             'inventory' => $inventory,
             'recentListings' => $recent->sortByDesc('createdAt')->take(4)->values(),
+            'crmCurrent' => \App\Models\ProviderRecord::where('provider_id', $request->user()->id)
+                ->whereIn('service', array_column(array_filter($inventory, fn ($item) => $item['roleStatus'] === 'approved'), 'service'))
+                ->whereIn('kind', ['tenancy', 'rental', 'job'])->whereIn('status', ['scheduled', 'active'])
+                ->whereDate('starts_on', '<=', today())
+                ->where(fn ($q) => $q->whereNull('ends_on')->orWhereDate('ends_on', '>=', today()))->count(),
         ]);
     }
 }

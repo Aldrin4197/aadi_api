@@ -3,10 +3,10 @@ import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import L from 'leaflet';
 import { markerPath } from './mapMarkers.mjs';
 import 'leaflet/dist/leaflet.css';
-const props = defineProps({ listings: { type: Array, default: () => [] }, center: { type: Array, default: () => [12.0, 124.75] }, selected: String, pick: Boolean, searchable: { type: Boolean, default: true }, fitListings: Boolean, immersive: Boolean, preview: { type: Boolean, default: true }, scrollWheelZoom: { type: Boolean, default: true } });
+const props = defineProps({ listings: { type: Array, default: () => [] }, center: { type: Array, default: () => [12.0, 124.75] }, selected: String, pick: Boolean, pickOrigin: Boolean, route: Object, origin: Object, searchable: { type: Boolean, default: true }, fitListings: Boolean, immersive: Boolean, preview: { type: Boolean, default: true }, scrollWheelZoom: { type: Boolean, default: true } });
 const selectedListing = computed(() => props.listings.find(item => item.id === props.selected));
-const emit = defineEmits(['select','search','pick']);
-const el = ref(null); const tileError = ref(false); let map, markers, centerMarker, resize;
+const emit = defineEmits(['select','search','pick','pick-origin']);
+const el = ref(null); const tileError = ref(false); let map, markers, centerMarker, resize, routeLayer, originMarker;
 const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 const customTiles = import.meta.env.VITE_MAP_TILE_URL;
 const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -54,7 +54,8 @@ function mapPadding() {
   const bounds=el.value.getBoundingClientRect(), parent=el.value.closest('.map-explorer');
   const controls=parent?.querySelector('.explorer-controls')?.getBoundingClientRect();
   const results=parent?.querySelector('.map-results');
-  const bottom=results && getComputedStyle(results).display!=='none'?results.getBoundingClientRect():null;
+  const panel=parent?.querySelector('.explore-directions');
+  const bottom=panel?.getBoundingClientRect() || (results && getComputedStyle(results).display!=='none'?results.getBoundingClientRect():null);
   return {top:Math.min(bounds.height*.35,Math.max(24,(controls?.bottom||bounds.top)-bounds.top+16)),bottom:Math.min(bounds.height*.45,Math.max(24,bottom?bounds.bottom-bottom.top+16:40))};
 }
 onMounted(() => {
@@ -68,9 +69,41 @@ onMounted(() => {
   }).on('tileerror',()=>tileError.value=true).on('tileload',()=>tileError.value=false).addTo(map);
   drawCenter();
   markers=L.layerGroup().addTo(map); draw(); fit();
-  map.on('click', e=>{ if(props.pick) emit('pick',[e.latlng.lat,e.latlng.lng]); });
+  map.on('click', e=>{ if(props.pickOrigin) emit('pick-origin',[e.latlng.lat,e.latlng.lng]); else if(props.pick) emit('pick',[e.latlng.lat,e.latlng.lng]); });
   resize = new ResizeObserver(()=>map.invalidateSize()); resize.observe(el.value);
+  drawOrigin();
+  drawRoute();
 });
+function drawOrigin() {
+  if (!map) return;
+  originMarker?.remove();
+  originMarker = null;
+  if (!props.origin) return;
+  const isLocation = props.origin.source === 'location';
+  const label = isLocation ? 'Your location' : 'Starting point';
+  const icon = L.divIcon({
+    className: `directions-origin ${isLocation ? 'directions-location' : 'directions-pin'}`,
+    html: isLocation ? '<span></span>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-12a7 7 0 1 1 14 0c0 5.9-7 12-7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg>',
+    iconSize: [32,32],
+    iconAnchor: isLocation ? [16,16] : [16,30],
+  });
+  originMarker = L.marker(props.origin.coordinates, { icon, title: label, alt: label, interactive: false, keyboard: false }).addTo(map);
+  if (isLocation && !props.route) map.panTo(props.origin.coordinates);
+}
+function drawRoute() {
+  if (!map) return;
+  routeLayer?.remove();
+  routeLayer = null;
+  if (!props.route) return;
+  const line = L.polyline(props.route.coordinates, { color:'#137671', weight:5, opacity:.9 });
+  routeLayer = L.featureGroup([line]).addTo(map);
+  const padding = mapPadding();
+  const bounds = line.getBounds();
+  if (props.origin) bounds.extend(props.origin.coordinates);
+  map.fitBounds(bounds, props.immersive ? { paddingTopLeft:[54,padding.top], paddingBottomRight:[54,padding.bottom], maxZoom:16 } : { padding:[36,36], maxZoom:16 });
+}
+watch(()=>props.route,drawRoute);
+watch(()=>props.origin,drawOrigin);
 watch(()=>props.scrollWheelZoom,enabled=>{if(map) { if(enabled) map.scrollWheelZoom.enable(); else map.scrollWheelZoom.disable(); }});
 watch(()=>props.listings,draw,{deep:true});
 watch(()=>props.selected,selectStyles);
@@ -90,7 +123,8 @@ function search(){const c=map.getCenter();emit('search',[c.lat,c.lng]);}
 <button type="button" class="map-reset" aria-label="Reset map view" title="Reset map view" @click="resetView"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="6"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></button>
 <button v-if="!pick && searchable" class="button map-search" @click="search">Search near map center</button>
 <a v-if="preview && selectedListing && !pick" :href="`/offers/${selectedListing.service}/${selectedListing.id}`" class="map-selection"><strong>{{ selectedListing.title }}</strong><span>View listing →</span></a>
-<div v-if="pick" class="map-hint">Click the map to set the listing location</div>
+<div v-if="pickOrigin" class="map-hint">Click the map to choose your starting point</div>
+<div v-else-if="pick" class="map-hint">Click the map to set the listing location</div>
 <div v-if="tileError" class="map-hint" role="status">Map tiles unavailable. You can still browse the results.</div>
 </div></template>
 
@@ -115,5 +149,8 @@ function search(){const c=map.getCenter();emit('search',[c.lat,c.lng]);}
 .aadi-category-pin svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:width .15s ease,height .15s ease}
 .aadi-map .aadi-category-pin.selected{background:#137671;color:white;box-shadow:0 0 0 4px #f6ca52,0 3px 9px #0004}
 .aadi-category-pin.selected svg{width:24px;height:24px}.aadi-category-pin:focus-visible{outline:3px solid #f59e42;outline-offset:5px}
+.aadi-map .directions-origin { display:grid; place-items:center; }
+.aadi-map .directions-location span { width:18px; height:18px; border:3px solid white; border-radius:50%; background:#1676d2; box-shadow:0 0 0 5px #1676d233,0 2px 6px #0005; }
+.aadi-map .directions-pin svg { width:32px; height:32px; fill:#137671; stroke:#fff; stroke-width:1.6; filter:drop-shadow(0 2px 2px #0005); }
 @media(prefers-reduced-motion:reduce){.aadi-map .aadi-category-pin,.aadi-category-pin svg{transition:none}}
 </style>

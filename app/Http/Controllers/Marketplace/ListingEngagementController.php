@@ -9,7 +9,7 @@ use Inertia\Inertia;
 class ListingEngagementController extends Controller {
     public function __construct(private Marketplace $market, private ListingEngagement $engagement) {}
     private function active(string $service, string $id): array {
-        $item = $this->market->dto($this->market->find($service, $id), $service);
+        $item = $this->market->dto($this->market->find($service, $id), $service, null, []);
         abort_unless($item['status'] === 'active', 404);
         return $item;
     }
@@ -22,7 +22,13 @@ class ListingEngagementController extends Controller {
         $this->active($service, $id);
         $key = ['user_id'=>$r->user()->id, 'listing_id'=>$id];
         if ($service !== 'spaces') $key['service'] = $service;
-        DB::table($service === 'spaces' ? 'favorites' : 'marketplace_saves')->upsert(
+        $table = $service === 'spaces' ? 'favorites' : 'marketplace_saves';
+        $limit = app(\App\Services\AadiPlusPerks::class)->limit('saved_listings', $r->user());
+        if ($limit !== null && !DB::table($table)->where($key)->exists()) {
+            $count = DB::table('favorites')->where('user_id', $r->user()->id)->count() + DB::table('marketplace_saves')->where('user_id', $r->user()->id)->count();
+            if ($count >= $limit) throw \Illuminate\Validation\ValidationException::withMessages(['save' => "You can save up to {$limit} listings. ".($r->user()->hasAadiPlus() ? '' : 'Upgrade to Aadi Plus to save more.')]);
+        }
+        DB::table($table)->upsert(
             [[...$key, 'created_at'=>now(), 'updated_at'=>now()]], array_keys($key), ['updated_at']);
         return $this->done($r);
     }
@@ -56,9 +62,21 @@ class ListingEngagementController extends Controller {
             ->select('listing_id', 'created_at')->selectRaw("'spaces' as service")
             ->unionAll(DB::table('marketplace_saves')->where('user_id', $r->user()->id)->select('listing_id','created_at','service'))
             ->orderByDesc('created_at')->paginate(18)->withQueryString();
-        $rows->through(function ($row) {
-            $record = $this->market->model($row->service)::find($row->listing_id);
-            $item = $record ? $this->market->dto($record, $row->service) : null;
+        $recordsByService = [];
+        $badgesByService = [];
+        foreach (array_keys(Marketplace::TYPES) as $service) {
+            $ids = $rows->getCollection()->where('service', $service)->pluck('listing_id');
+            if ($ids->isEmpty()) continue;
+            $records = $this->market->model($service)::with($service === 'raketeer' ? 'provider' : 'owner')
+                ->whereIn('id', $ids)->get()->keyBy(fn ($record) => (string) $record->id);
+            $recordsByService[$service] = $records;
+            $badgesByService[$service] = app(\App\Services\ListingBadgeService::class)
+                ->forRecords($records, $service, $r->user());
+        }
+        $rows->through(function ($row) use ($recordsByService, $badgesByService, $r) {
+            $record = ($recordsByService[$row->service] ?? collect())->get((string) $row->listing_id);
+            $badges = $badgesByService[$row->service][(string) ($record?->id ?? '')] ?? [];
+            $item = $record ? $this->market->dto($record, $row->service, $r->user(), $badges) : null;
             return $item && $item['status'] === 'active' ? $item : ['id'=>$row->listing_id, 'service'=>$row->service, 'unavailable'=>true];
         });
         return $r->is('api/*') ? response()->json($rows)->header('Cache-Control','private, no-store')

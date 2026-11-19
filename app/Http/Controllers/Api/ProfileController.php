@@ -5,7 +5,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\Request;
 class ProfileController extends Controller {
     public function show(Request $request) {
-        return response()->json(['data'=>$request->user()->only(['id','name','email','phone','bio','city','address','avatar_url','email_verified_at'])])->header('Cache-Control','private, no-store');
+        return response()->json(['data'=>$request->user()->only(['id','name','email','phone','bio','city','address','birth_date','sex_assigned_at_birth','avatar_url','email_verified_at'])])->header('Cache-Control','private, no-store');
     }
     public function update(ProfileUpdateRequest $request) {
         $user = $request->user();$user->fill($request->validated());

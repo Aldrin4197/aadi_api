@@ -9,6 +9,8 @@ defineProps<{
     socialProviders?: string[];
     connectedProviders?: string[];
     status?: string;
+    email?: string;
+    usesSocialLogin?: boolean;
 }>();
 </script>
 
@@ -22,17 +24,17 @@ defineProps<{
                 <Link href="/profile" class="button">Edit profile</Link>
             </section>
             <section v-if="socialProviders?.length" class="profile-section" aria-label="Connected sign-in accounts">
-                <h2 class="text-lg font-semibold">Social sign-in</h2>
-                <p class="mt-2 text-sm text-gray-600">Connect Google or Facebook to this Aadi account. We’ll ask you to confirm your password first. If you signed up socially, use Forgot password to set one.</p>
-                <p v-if="status" role="status" class="mt-3 text-sm">{{ status }}</p>
-                <div class="mt-4 flex flex-wrap gap-3"><template v-for="provider in socialProviders" :key="provider"><span v-if="connectedProviders?.includes(provider)" class="rounded-xl bg-[#fff3bf] px-4 py-3 text-sm font-semibold">{{ provider === 'google' ? 'Google' : 'Facebook' }} connected</span><a v-else :href="`/settings/social/${provider}/connect`" class="inline-flex min-h-11 items-center rounded-xl border border-[#137671] px-4 py-3 text-sm font-semibold text-[#137671]">Connect {{ provider === 'google' ? 'Google' : 'Facebook' }}</a></template></div>
+                <h2>Social sign-in</h2>
+                <p class="settings-description">Connect Google or Facebook to this Aadi account. We’ll ask you to confirm your password first. If you signed up socially, use Forgot password to set one.</p>
+                <p v-if="status" role="status" class="account-feedback">{{ status }}</p>
+                <div class="settings-social-actions"><template v-for="provider in socialProviders" :key="provider"><span v-if="connectedProviders?.includes(provider)" class="account-status is-connected">{{ provider === 'google' ? 'Google' : 'Facebook' }} connected</span><a v-else :href="`/settings/social/${provider}/connect`" class="button">Connect {{ provider === 'google' ? 'Google' : 'Facebook' }}</a></template></div>
             </section>
             <p v-else-if="status" role="status" class="mb-4 text-sm">{{ status }}</p>
             <section class="profile-section" aria-label="Password">
                 <UpdatePasswordForm class="max-w-xl" />
             </section>
             <section class="profile-section" aria-label="Delete account">
-                <DeleteUserForm class="max-w-xl" />
+                <DeleteUserForm class="max-w-xl" :email="email" :uses-social-login="usesSocialLogin" />
             </section>
         </main>
     </AccountLayout>
@@ -42,4 +44,6 @@ defineProps<{
 @media (pointer: coarse) {
     .account-settings :deep(input) { font-size: 16px; }
 }
+    .settings-description { color:var(--muted); font-size:var(--aadi-text-body); line-height:1.6; margin:8px 0 0; max-width:70ch; }
+    .settings-social-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:16px; }
 </style>

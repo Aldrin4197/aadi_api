@@ -26,6 +26,12 @@ class SavedSearchController extends Controller
             'query' => 'required|array',
         ]);
 
+        $limit = app(\App\Services\AadiPlusPerks::class)->limit('saved_searches', $request->user());
+        if ($limit !== null && $request->user()->savedSearches()->count() >= $limit) {
+            return response()->json(['message' => "You can save up to {$limit} searches."
+                .($request->user()->hasAadiPlus() ? '' : ' Upgrade to Aadi Plus to save more.')], 422);
+        }
+
         $savedSearch = $request->user()->savedSearches()->create([
             'name' => $validated['name'],
             'query' => $validated['query'],

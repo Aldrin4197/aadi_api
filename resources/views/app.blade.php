@@ -4,7 +4,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 
-        <title inertia>Aadi</title>
+        <title inertia>{{ $page['props']['seo']['public'] ? $page['props']['seo']['title'] : 'Aadi' }}</title>
+        <meta inertia="robots" name="robots" content="{{ $page['props']['seo']['robots'] }}">
+        @if ($page['props']['seo']['public'])
+        <meta inertia="description" name="description" content="{{ $page['props']['seo']['description'] }}">
+        <link inertia="canonical" rel="canonical" href="{{ $page['props']['seo']['canonical'] }}">
+        <meta inertia="og-title" property="og:title" content="{{ $page['props']['seo']['title'] }}">
+        <meta inertia="og-description" property="og:description" content="{{ $page['props']['seo']['description'] }}">
+        <meta inertia="og-url" property="og:url" content="{{ $page['props']['seo']['canonical'] }}">
+        <meta inertia="og-type" property="og:type" content="website">
+        <meta inertia="og-image" property="og:image" content="{{ $page['props']['seo']['image'] }}">
+        <meta inertia="twitter-card" name="twitter:card" content="summary">
+        @endif
 
         <link rel="icon" type="image/png" href="/images/logos/Aadi_icon.png?v=aadi-1">
         <meta name="application-name" content="Aadi">
@@ -24,6 +35,23 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        @if (request()->is('/', 'explore'))
+        <noscript>
+            <main>
+                <h1>Find properties, vehicles and local services nearby</h1>
+                <p>Browse rental spaces, utility vehicles and local rakets on Aadi. Compare options and discover nearby providers.</p>
+                <p>JavaScript is required to use the interactive map and browse listings.</p>
+                <a href="/explore">Explore Aadi</a>
+            </main>
+        </noscript>
+        @elseif (request()->is('privacy-policy', 'terms-of-service', 'data-deletion'))
+        <noscript>
+            <main>
+                <h1>{{ $page['props']['document']['title'] }}</h1>
+                <pre style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit">{{ $page['props']['document']['content'] }}</pre>
+            </main>
+        </noscript>
+        @endif
         @inertia
     </body>
 </html>

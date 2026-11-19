@@ -1,0 +1,10 @@
+.error-page { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; padding: 2rem; background: #f5faf8; color: #173d39; font-family: "Quicksand", system-ui, sans-serif; }
+body { margin: 0; }
+.error-content { width: min(100%, 34rem); margin: 0 auto; }
+.error-brand { display: inline-flex; gap: .6rem; align-items: center; color: #173d39; font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+.error-brand img { width: 2rem; height: 2rem; object-fit: contain; }
+.error-code { margin: 4rem 0 1rem; color: #167c71; font-size: .75rem; font-weight: 700; letter-spacing: .12em; }
+.error-content h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3.75rem); letter-spacing: -.04em; line-height: 1.1; }
+.error-message { max-width: 40ch; margin: 1rem 0 2rem; color: #57736d; line-height: 1.6; }
+.error-link { display: inline-flex; align-items: center; gap: 1rem; min-height: 44px; padding: 0 1rem; border-radius: .6rem; background: #167c71; color: white; font-weight: 700; text-decoration: none; }
+.error-link:focus-visible, .error-brand:focus-visible { outline: 3px solid #d88b32; outline-offset: 3px; }

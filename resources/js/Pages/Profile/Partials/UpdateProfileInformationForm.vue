@@ -26,6 +26,7 @@ const form = useForm({
     name: user.name,
     email: user.email,
     phone: props.profile?.phone || '', bio: props.profile?.bio || '', city: props.profile?.city || '', address: props.profile?.address || '',
+    birth_date: props.profile?.birth_date || '', sex_assigned_at_birth: props.profile?.sex_assigned_at_birth || '',
 });
 function saveProfile() {
     form.patch(route('profile.update'), {
@@ -86,8 +87,24 @@ function saveProfile() {
             </div>
 
             <div><InputLabel for="phone" value="Phone number"/><PhoneInput id="phone" v-model="form.phone"/><InputError :message="form.errors.phone"/></div>
-            <div><InputLabel for="city" value="City / municipality"/><AddressCityField id="city" v-model="form.city"/><InputError :message="form.errors.city"/></div>
-            <div><InputLabel for="address" value="Address (private)"/><TextInput id="address" v-model="form.address" autocomplete="street-address" maxlength="255" class="mt-1 block w-full"/><InputError :message="form.errors.address"/></div>
+            <div>
+                <InputLabel for="birth_date" value="Birthdate (private)" />
+                <TextInput id="birth_date" type="date" v-model="form.birth_date" required autocomplete="bday" class="mt-1 block w-full" />
+                <InputError :message="form.errors.birth_date" />
+            </div>
+            <div>
+                <InputLabel for="sex_assigned_at_birth" value="Sex assigned at birth (private)" />
+                <select id="sex_assigned_at_birth" v-model="form.sex_assigned_at_birth" required class="profile-select">
+                    <option value="" disabled>Select an option</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+                <p class="mt-2 text-sm text-gray-600">You can choose “Prefer not to say.” This is not used for age checks.</p>
+                <InputError :message="form.errors.sex_assigned_at_birth" />
+            </div>
+            <div><InputLabel for="city" value="City / municipality (public)"/><AddressCityField id="city" v-model="form.city" required/><InputError :message="form.errors.city"/></div>
+            <div><InputLabel for="address" value="Full address (private)"/><TextInput id="address" v-model="form.address" autocomplete="street-address" maxlength="255" required class="mt-1 block w-full"/><InputError :message="form.errors.address"/></div>
             <div><InputLabel for="bio" value="About you"/><textarea id="bio" v-model="form.bio" rows="4" maxlength="1000"/><InputError :message="form.errors.bio"/></div>
 
             <div v-if="mustVerifyEmail && !isVerified">
@@ -133,6 +150,7 @@ function saveProfile() {
 </template>
 <style scoped>
 .email-label-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.profile-select { display:block; width:100%; min-height:44px; margin-top:4px; padding:10px 12px; border:1px solid #cbded9; border-radius:9px; background:#fff; font-size:16px; }
 .email-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; line-height: 1.4; }
 .email-badge svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .email-badge.verified { background: #e3f6ea; color: #14683a; border: 1px solid #b9e3c8; }

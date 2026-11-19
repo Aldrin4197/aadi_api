@@ -24,7 +24,7 @@ const isHome = computed(() => !signedIn.value && page.url.split(/[?#]/)[0] === '
           <a :href="isHome ? '#support' : '/#support'" class="landing-nav-link">Support</a>
         </template>
         <template v-if="signedIn">
-          <NotificationBell />
+          <NotificationBell v-if="page.props.auth?.profileComplete" />
           <AccountMenu />
         </template>
         <template v-else><Link href="/login">Log in</Link><Link href="/register" class="button primary">Register</Link></template>

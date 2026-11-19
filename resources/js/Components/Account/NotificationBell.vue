@@ -83,16 +83,20 @@ async function readAll() {
 
 function outside(event) { if (open.value && !root.value?.contains(event.target)) close(); }
 function keydown(event) { if (event.key === 'Escape' && open.value) { event.stopPropagation(); close(true); } }
-function visible() { if (!document.hidden) refreshCount(); }
+function refreshNotifications() { if (open.value) load(); else refreshCount(); }
+function visible() { if (!document.hidden) refreshNotifications(); }
+function onRealtime() { if (!document.hidden) refreshNotifications(); }
 
 onMounted(() => {
     document.addEventListener('pointerdown', outside);
     document.addEventListener('visibilitychange', visible);
-    timer = setInterval(refreshCount, 60000);
+    window.addEventListener('aadi:realtime', onRealtime);
+    timer = setInterval(refreshNotifications, 60000);
 });
 onBeforeUnmount(() => {
     document.removeEventListener('pointerdown', outside);
     document.removeEventListener('visibilitychange', visible);
+    window.removeEventListener('aadi:realtime', onRealtime);
     clearInterval(timer);
 });
 watch(() => page.url, () => { if (open.value) close(); });

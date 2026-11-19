@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia';
 import { useExploreStore } from '@/stores/explore.mjs';
 import Layout from '@/Layouts/MarketplaceLayout.vue';
 import DiscoveryMap from '@/Components/Marketplace/DiscoveryMap.vue';
+import ListingDirections from '@/Components/Marketplace/ListingDirections.vue';
 import HomeLanding from '@/Components/Marketplace/HomeLanding.vue';
 import HomeHero from '@/Components/Marketplace/HomeHero.vue';
 import SearchIcon from '@/Components/Marketplace/SearchIcon.vue';
@@ -14,6 +15,7 @@ import CompareListings from '@/Components/Marketplace/CompareListings.vue';
 import ListingViewButton from '@/Components/Marketplace/ListingViewButton.vue';
 import ListingCarousel from '@/Components/Marketplace/ListingCarousel.vue';
 import ListingImage from '@/Components/Marketplace/ListingImage.vue';
+import ListingBadges from '@/Components/Marketplace/ListingBadges.vue';
 import { distanceKm, formatPrice, compareKey } from '@/Components/Marketplace/comparison.mjs';
 const props=defineProps({results:Object,filters:Object,types:Object,landing:{type:Object,default:()=>({})}});
 const exploreStore=useExploreStore();
@@ -55,16 +57,19 @@ function heroLocate(value) {
   locate();
 }
 const selected=ref(null), loading=ref(false), locationError=ref(''), locating=ref(false), filtersOpen=ref(false), cardsOpen=ref(true), compareDialog=ref(null), compareError=ref(''), listingMode=ref('carousel');
+const directionsListing=ref(null), directions=ref(null), directionsRoute=ref(null), directionsOrigin=ref(null), pickingOrigin=ref(false);
 const center=computed(()=>props.filters.lat!=null&&props.filters.lng!=null?[Number(props.filters.lat),Number(props.filters.lng)]:props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null)?[props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lat,props.results.data.find(l=>l.location.lat!=null&&l.location.lng!=null).location.lng]:[12.0,124.75]);
 const headings={spaces:['A place to call yours.','Rooms, homes, and spaces around you.'],haul:['Your next ride is nearby.','Find the right vehicle for wherever life takes you.'],raketeer:['Good help, close to home.','Find local skills and services for your next project.']};
 function search(page=1,afterSearch=null){locationError.value='';loading.value=true;const query=Object.fromEntries(Object.entries({...form.value,page}).filter(([,v])=>v!==''&&v!==null));router.get(isHome.value ? '/' : '/explore',query,{preserveScroll:true,preserveState:true,onSuccess:async()=>{hasSearched.value=true;await collapseSearch();afterSearch?.();},onFinish:()=>loading.value=false,onError:()=>locationError.value='Search could not be completed. Check your filters and try again.'});}
-function selectListing(id){selected.value=id;cardsOpen.value=true;}
+function closeDirections(){directionsListing.value=null;directionsRoute.value=null;directionsOrigin.value=null;pickingOrigin.value=false;}
+function openDirections(item){closeDirections();selected.value=item.id;cardsOpen.value=false;expanded.value=false;directionsListing.value=item;scrollToMap();}
+function selectListing(id){if(directionsListing.value?.id===id)return;if(directionsListing.value)closeDirections();selected.value=id;cardsOpen.value=true;}
 function locateListing(id){selectListing(id);if(listingMode.value!=='carousel')cardsOpen.value=false;}
 const isCompared=item=>exploreStore.isCompared(item);
 function toggleCompare(item){compareError.value=exploreStore.toggleCompare(item)?'':'Choose up to three listings. Remove one to add another.';}
 const distanceLabel=item=>{const km=distanceKm(props.filters.lat,props.filters.lng,item.location.lat,item.location.lng);return km===null?'':`${km.toFixed(1)} km away`;};
 const missingCoordinates=computed(()=>props.results.data.filter(l=>l.location.lat==null||l.location.lng==null).length);
-watch(()=>props.results,()=>{selected.value=null;});
+watch(()=>props.results,()=>{selected.value=null;closeDirections();});
 watch(()=>props.filters,filters=>exploreStore.syncFilters(filters));
 function service(value){form.value.service=value;form.value.type='';search();}
 function area(coords,name='Map search center'){locationError.value='';form.value.locationName=name;[form.value.lat,form.value.lng]=coords;search();}
@@ -73,11 +78,12 @@ function clearLocation(){form.value.lat='';form.value.lng='';form.value.location
 function locate(){locationError.value='';if(!navigator.geolocation){locationError.value='Location is unavailable. Search a city or move the map.';return;}locating.value=true;navigator.geolocation.getCurrentPosition(p=>{locating.value=false;area([p.coords.latitude,p.coords.longitude],'Your current location');},()=>{locating.value=false;locationError.value='Location access failed. Search a city or move the map instead.';},{timeout:10000});}
 function clear(){form.value={service:form.value.service,locationName:'',q:'',type:'',minPrice:'',maxPrice:'',radiusKm:10,lat:'',lng:''};search();}
 </script>
-<template><Layout><Head title="Find properties, vehicles & rakets nearby"><meta name="description" content="Find rental spaces, vehicles, and local services near you with Aadi. Browse the map, compare listed rates, and apply to offer your own space, vehicle, or skills." /></Head>
+<template><Layout><Head title="Find properties, vehicles & rakets nearby" />
 <main id="main-content">
 <HomeHero v-if="isHome" :busy="loading||locating" @search="heroSearch" @locate="heroLocate" />
 <section id="explore-map" :class="{'has-comparison':comparisons.length,'is-home':isHome,'results-expanded':cardsOpen && listingMode!=='carousel'}" class="map-explorer" aria-label="Explore nearby listings" tabindex="-1">
-<DiscoveryMap :scroll-wheel-zoom="!isHome" :listings="results.data" :center="center" :selected="selected" :fit-listings="filters.lat==null" immersive :preview="false" @select="selectListing" @search="area" />
+<DiscoveryMap :scroll-wheel-zoom="!isHome" :listings="results.data" :center="center" :selected="selected" :fit-listings="filters.lat==null" :route="directionsRoute" :origin="directionsOrigin" :pick-origin="pickingOrigin" immersive :preview="false" @select="selectListing" @search="area" @pick-origin="directions?.choosePoint($event)" />
+<ListingDirections v-if="directionsListing" :key="`${directionsListing.service}-${directionsListing.id}`" ref="directions" class="explore-directions" :listing="directionsListing" @route="directionsRoute=$event" @origin="directionsOrigin=$event" @pick="pickingOrigin=$event" @close="closeDirections" />
 <section class="explorer-controls" :class="{'is-initial':!hasSearched&&!isHome,'is-compact':!expanded}" aria-label="Search and filter">
 <div v-if="!expanded" class="compact-search-bar">
 <button ref="compactTrigger" type="button" class="compact-search-summary" aria-label="Edit search and filters" aria-expanded="false" @click="editSearch"><SearchIcon :name="filters.service || 'spaces'"/><span><strong>{{ serviceLabels[filters.service || 'spaces'] }}</strong><small>{{ [filters.q, filters.locationName || 'All locations', filters.type, filters.minPrice != null || filters.maxPrice != null ? 'Price filtered' : ''].filter(Boolean).join(' · ') }}</small></span><SearchIcon name="filters"/><span class="compact-edit-label">Edit</span></button>
@@ -101,7 +107,7 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <div v-if="!results.data.length" class="map-empty"><h2>No matches nearby yet</h2><p>{{ filters.locationName ? 'No listings match your filters near '+filters.locationName+'. Try a wider radius or fewer filters.' : 'Try another city or fewer filters.' }}</p><button class="button" @click="clear">Reset search</button></div>
 <ListingCarousel v-else :selected-id="selected" :reset-key="results.data.map(item=>item.service+item.id).join(',')" :visible="cardsOpen" @mode-change="listingMode=$event"><article v-for="item in results.data" :key="item.id" :id="'map-card-'+item.id" class="map-listing" :class="{selected:selected===item.id}">
 <button class="map-listing-photo" :aria-label="'Locate '+item.title+' on map'" :disabled="item.location.lat==null||item.location.lng==null" @click="locateListing(item.id)"><ListingImage :src="item.photos[0]" :alt="item.title" :service="item.service" :type="item.type" /></button>
-<div class="map-listing-body"><p v-if="listingMode==='single'" class="listing-kind">{{ serviceLabels[item.service] }}<span v-if="item.type"> · {{ item.type.replace(/([A-Z])/g,' $1') }}</span></p><h2><ListingPreviewLink :item="item">{{ item.title }}</ListingPreviewLink></h2><p>{{ item.location.city||item.location.address||'Location not provided' }}<span v-if="distanceLabel(item)"> · {{ distanceLabel(item) }}</span></p><strong class="map-rate">{{ formatPrice(item.price) }} <small>/ {{ item.priceUnit }}</small></strong><div class="map-card-actions"><button class="text-button" :disabled="item.location.lat==null||item.location.lng==null" @click="locateListing(item.id)">On map</button><label class="compare-checkbox" :title="!isCompared(item) && comparisons.length>=3 ? 'Remove a selected listing to choose another (maximum 3).' : 'Select for comparison'"><input type="checkbox" :checked="isCompared(item)" :disabled="!isCompared(item) && comparisons.length>=3" :aria-label="'Select '+item.title+' for comparison'" @change="toggleCompare(item)" /><span>{{ isCompared(item) ? 'Selected' : 'Select' }}</span></label><ListingViewButton :item="item"/></div></div></article></ListingCarousel>
+<div class="map-listing-body"><p v-if="listingMode==='single'" class="listing-kind">{{ serviceLabels[item.service] }}<span v-if="item.type"> · {{ item.type.replace(/([A-Z])/g,' $1') }}</span></p><h2><ListingPreviewLink :item="item">{{ item.title }}</ListingPreviewLink></h2><ListingBadges :badges="item.badges"/><p>{{ item.location.city||item.location.address||'Location not provided' }}<span v-if="distanceLabel(item)"> · {{ distanceLabel(item) }}</span></p><p v-if="item.location.lat==null||item.location.lng==null">Map location unavailable for directions.</p><p v-if="item.availabilityPaused" class="listing-unavailable">{{ item.service === 'spaces' ? 'Occupied / unavailable' : 'Currently unavailable' }}</p><strong class="map-rate">{{ formatPrice(item.price) }} <small>/ {{ item.priceUnit }}</small></strong><div class="map-card-actions"><button class="text-button" :disabled="item.location.lat==null||item.location.lng==null" @click="locateListing(item.id)">On map</button><button class="text-button" :disabled="item.location.lat==null||item.location.lng==null" @click="openDirections(item)">Directions</button><label class="compare-checkbox" :title="!isCompared(item) && comparisons.length>=3 ? 'Remove a selected listing to choose another (maximum 3).' : 'Select for comparison'"><input type="checkbox" :checked="isCompared(item)" :disabled="!isCompared(item) && comparisons.length>=3" :aria-label="'Select '+item.title+' for comparison'" @change="toggleCompare(item)" /><span>{{ isCompared(item) ? 'Selected' : 'Select' }}</span></label><ListingViewButton :item="item"/></div></div></article></ListingCarousel>
 </section>
 <div v-if="comparisons.length" class="map-compare-bar" aria-label="Selected listings for comparison">
   <div class="compare-thumbnails" aria-hidden="true"><ListingImage v-for="item in comparisons" :key="compareKey(item)" :src="item.photos?.[0]" alt="" :service="item.service" :type="item.type" /></div>
@@ -119,7 +125,13 @@ function clear(){form.value={service:form.value.service,locationName:'',q:'',typ
 <template v-if="isHome" #footer>
   <footer class="landing-footer">
     <div><Link href="/" aria-label="Aadi home"><img src="/images/logos/Aadi_Color.png" alt="Aadi" width="92" height="42" loading="lazy" /></Link><p>Good things. Nearby.</p></div>
-    <nav aria-label="Footer navigation"><a href="#explore-map">Explore the map</a><a href="#featured-listings">Featured finds</a><a v-if="landing?.reviews?.length" href="#community-reviews">Reviews</a><a href="#download-aadi">Get the app</a><a href="#support">Support</a><Link href="/become-provider">Become a provider</Link><Link v-if="!page.props.auth?.user" href="/register">Create an account</Link><Link v-else href="/profile">Your account</Link></nav>
+    <nav aria-label="Footer navigation"><a href="#explore-map">Explore the map</a><a href="#featured-listings">Featured finds</a><a v-if="landing?.reviews?.length" href="#community-reviews">Reviews</a><a href="#download-aadi">Get the app</a><a href="#support">Support</a><Link href="/become-provider">Become a provider</Link><Link v-if="!page.props.auth?.user" href="/register">Create an account</Link><Link v-else href="/profile">Your account</Link><Link href="/privacy-policy">Privacy Policy</Link><Link href="/terms-of-service">Terms of Service</Link><Link href="/data-deletion">Data Deletion</Link></nav>
   </footer>
 </template>
 </Layout></template>
+
+<style scoped>
+.explore-directions { position:absolute; z-index:600; left:16px; bottom:16px; width:min(390px,calc(100% - 32px)); max-height:55%; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; -ms-overflow-style:none; }
+.explore-directions::-webkit-scrollbar { display:none; }
+@media(max-width:700px) { .explore-directions { left:12px; bottom:12px; width:min(390px,calc(100% - 24px)); max-height:55%; } }
+</style>

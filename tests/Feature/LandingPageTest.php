@@ -14,7 +14,7 @@ class LandingPageTest extends TestCase
 
     public function test_home_features_public_listings_across_categories_independently_of_map_filters(): void
     {
-        $owner = User::factory()->create(['landlord_status'=>'approved', 'vehicle_owner_status'=>'approved', 'service_provider_status'=>'approved']);
+        $owner = User::factory()->create(['landlord_status'=>'approved', 'vehicle_owner_status'=>'approved', 'service_provider_status'=>'approved', 'aadi_plus_until'=>now()->addYear()]);
         $market = app(Marketplace::class);
         foreach (array_keys(Marketplace::TYPES) as $service) {
             foreach (['active', 'draft', 'active', 'active'] as $index => $status) {

@@ -34,6 +34,7 @@ class ServiceListingResource extends JsonResource
             'responseTimeMinutes' => $this->response_time_minutes,
             'estimatedDurationMinutes' => $this->estimated_duration_minutes,
             'status' => $this->status,
+            'availabilityPaused' => (bool) $this->availability_paused || (bool) $this->provider?->isRestricted(),
             'images' => $this->images ?? [],
             'certifications' => $this->certifications ?? [],
             'viewsCount' => $this->views_count,

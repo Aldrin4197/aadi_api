@@ -6,6 +6,31 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 class ListingEngagementTest extends TestCase {
     use RefreshDatabase;
+    public function test_provider_metrics_count_views_and_current_saves_for_all_categories(): void {
+        $this->withoutVite();
+        $owner = User::factory()->create(['landlord_status'=>'approved','vehicle_owner_status'=>'approved','service_provider_status'=>'approved', 'aadi_plus_until'=>now()->addYear()]);
+        $viewer = User::factory()->create();
+        foreach (array_keys(Marketplace::TYPES) as $service) {
+            $record = app(Marketplace::class)->save($owner, $service, [
+                'title'=>'Test listing', 'description'=>'Test description', 'type'=>Marketplace::TYPES[$service][0],
+                'price'=>1000, 'status'=>'active', 'photos'=>[],
+                'location'=>['lat'=>11.77,'lng'=>124.88,'city'=>'Catbalogan','address'=>'Test address'],
+                'details'=>['brand'=>'Toyota','model'=>'Hiace','year'=>2024],
+            ]);
+            $this->actingAs($viewer)->get("/offers/$service/{$record->id}")->assertOk();
+            $this->get("/offers/$service/{$record->id}")->assertOk();
+            $this->put("/offers/$service/{$record->id}/save")->assertRedirect();
+            $this->actingAs($owner)->get("/offers/$service/{$record->id}")->assertOk();
+            $this->get('/my-listings')->assertInertia(fn ($page) => $page->where('listings', fn ($listings) =>
+                collect($listings)->contains(fn ($item) => $item['id'] === $record->id &&
+                    $item['analytics']['views7Days'] === 1 && $item['analytics']['currentSaves'] === 1)));
+            $this->travel(8)->days();
+            $this->get('/my-listings')->assertInertia(fn ($page) => $page->where('listings', fn ($listings) =>
+                collect($listings)->contains(fn ($item) => $item['id'] === $record->id &&
+                    $item['analytics']['views7Days'] === 0 && $item['analytics']['currentSaves'] === 1)));
+            $this->travelBack();
+        }
+    }
     public function test_saves_and_reviews_work_for_every_category_without_allowing_owner_reviews(): void {
         $owner = User::factory()->create(['landlord_status'=>'approved','vehicle_owner_status'=>'approved','service_provider_status'=>'approved']);
         $viewer = User::factory()->create();

@@ -3,9 +3,22 @@ use App\Http\Controllers\Marketplace\MarketplaceController as Market;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Controllers\Marketplace\ProviderApplicationController as Application;
 use Illuminate\Support\Facades\Route;
-Route::get('/explore', [Market::class,'index'])->name('map');
+Route::get('/explore', [Market::class,'index'])->middleware('page.available:explore')->name('map');
+Route::post('/offers/{service}/{id}/directions', \App\Http\Controllers\Marketplace\ListingDirectionsController::class)->middleware('throttle:30,1');
 Route::get('/offers/{service}/{id}', [Market::class,'show'])->middleware('auth');
 Route::middleware('auth')->group(function () {
+    Route::middleware(\App\Http\Middleware\EnsureApprovedProvider::class)->prefix('provider/records')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Marketplace\ProviderCrmController::class, 'index']);
+        Route::post('/tenancies', [\App\Http\Controllers\Marketplace\ProviderCrmController::class, 'createTenancy'])->middleware('throttle:30,1');
+        Route::post('/{record}/tenancy', [\App\Http\Controllers\Marketplace\ProviderCrmController::class, 'convert']);
+        Route::patch('/{record}', [\App\Http\Controllers\Marketplace\ProviderCrmController::class, 'update']);
+        Route::post('/{record}/payments', [\App\Http\Controllers\Marketplace\ProviderCrmController::class, 'payment']);
+        Route::patch('/{record}/payments/{payment}/void', [\App\Http\Controllers\Marketplace\ProviderCrmController::class, 'voidPayment']);
+    });
+    Route::get('/messages', [\App\Http\Controllers\Marketplace\ListingConversationController::class, 'index']);
+    Route::get('/messages/{conversation}', [\App\Http\Controllers\Marketplace\ListingConversationController::class, 'show']);
+    Route::post('/messages/{conversation}', [\App\Http\Controllers\Marketplace\ListingConversationController::class, 'reply'])->middleware('throttle:30,1');
+    Route::post('/offers/{service}/{id}/messages', [\App\Http\Controllers\Marketplace\ListingConversationController::class, 'start'])->middleware('throttle:30,1');
     Route::get('/requests', [\App\Http\Controllers\Marketplace\MarketplaceRequestController::class, 'index']);
     Route::get('/calendar', [\App\Http\Controllers\Marketplace\CalendarController::class, 'index']);
     Route::post('/calendar/events', [\App\Http\Controllers\Marketplace\CalendarController::class, 'store'])->middleware('throttle:30,1');
@@ -18,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-listings/{service}/{id}/edit', [Market::class,'form']);
     Route::post('/my-listings/{service}', [Market::class,'store']);
     Route::put('/my-listings/{service}/{id}', [Market::class,'update']);
+    Route::patch('/my-listings/{service}/{id}/availability', [Market::class,'availability']);
     Route::delete('/my-listings/{service}/{id}', [Market::class,'destroy']);
     Route::post('/listing-photos', [Market::class,'upload'])->middleware('throttle:30,1');
     Route::get('/become-provider', [Application::class,'index']);
@@ -37,7 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/offers/{service}/{id}/review', [\App\Http\Controllers\Marketplace\ListingEngagementController::class, 'deleteReview'])->middleware('throttle:30,1');
 });
 
-Route::get('/providers/{user}', \App\Http\Controllers\Marketplace\ProviderProfileController::class);
+Route::get('/providers/{user}', \App\Http\Controllers\Marketplace\ProviderProfileController::class)->middleware('page.available:providers');
 Route::get('/avatars/{user}/{filename}', [\App\Http\Controllers\AvatarController::class, 'show'])->name('avatars.show');
 
 Route::middleware(['auth', \App\Http\Middleware\EnsureAdmin::class])->group(function () {

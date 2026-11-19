@@ -8,6 +8,8 @@ import PersonalOnboarding from '@/Components/Onboarding/PersonalOnboarding.vue';
 import PwaNotice from '@/Components/Pwa/PwaNotice.vue';
 import EmailFeedback from '@/Components/Account/EmailFeedback.vue';
 import AppToast from '@/Components/AppToast.vue';
+import SeoHead from '@/Components/SeoHead.vue';
+import RealtimeBridge from '@/Components/RealtimeBridge.vue';
 import { ZiggyVue } from 'ziggy-js';
 import { createPinia } from 'pinia';
 
@@ -23,7 +25,7 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./Pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(Fragment, null, [h(PwaNotice), h(App, props), h(PersonalOnboarding), h(EmailFeedback), h(AppToast)]) })
+        createApp({ render: () => h(Fragment, null, [h(PwaNotice), h(App, props), h(SeoHead), h(RealtimeBridge), h(PersonalOnboarding), h(EmailFeedback), h(AppToast)]) })
             .use(plugin)
             .use(ZiggyVue)
             .use(createPinia())

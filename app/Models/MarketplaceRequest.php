@@ -11,12 +11,12 @@ class MarketplaceRequest extends Model
 
     protected $fillable = [
         'service', 'listing_id', 'listing_title', 'customer_id', 'provider_id',
-        'requested_at', 'driver_requested', 'note', 'status',
+        'requested_at', 'requested_until', 'driver_requested', 'note', 'status',
     ];
 
     protected function casts(): array
     {
-        return ['requested_at' => 'datetime', 'driver_requested' => 'boolean'];
+        return ['requested_at' => 'datetime', 'requested_until' => 'date', 'driver_requested' => 'boolean'];
     }
 
     public function customer()

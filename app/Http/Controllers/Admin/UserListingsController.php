@@ -2,9 +2,10 @@
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\Marketplace;
+use App\Services\{ListingBadgeService, Marketplace};
 use App\Support\AdminTable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 class UserListingsController extends Controller {
@@ -54,13 +55,21 @@ class UserListingsController extends Controller {
         }
         $query=$market->model($service)::where($service==='raketeer'?'provider_id':'owner_id',$user->id)->with($service==='raketeer'?'provider':'owner');
         if ($service==='spaces') $query->where('category','space_rental');
-        $results=$query->latest()->paginate(AdminTable::perPage($request, 12, [12, 24, 48]))->withQueryString()->through(fn($record)=>[
-            ...$market->dto($record,$service),
+        $page=$query->latest()->paginate(AdminTable::perPage($request, 12, [12, 24, 48]))->withQueryString();
+        $badges=app(ListingBadgeService::class)->forRecords($page->getCollection(),$service);
+        $results=$page->through(fn($record)=>[
+            ...$market->dto($record,$service,null,$badges[(string)$record->id]),
             'sourceStatus'=>$record->status instanceof \BackedEnum ? $record->status->value : $record->status,
             'updatedAt'=>$record->updated_at?->toIso8601String(),
         ]);
         return Inertia::render('Admin/Users/Listings',[
-            'owner'=>$user->only(['id','name','email','avatar_url','landlord_status','vehicle_owner_status','service_provider_status']),
+            'owner'=>[...$user->only(['id','name','email','avatar_url','landlord_status','vehicle_owner_status','service_provider_status','is_admin','restriction_type','restriction_reason','restricted_until']), 'deletion_scheduled_for'=>$user->deletion_scheduled_for?->toIso8601String(), 'aadi_plus_until'=>$user->aadi_plus_until?->toIso8601String(), 'restricted'=>$user->isRestricted(), 'aadiPlus'=>$user->hasAadiPlus()],
+            'restrictionReasons'=>AccountRestrictionController::REASONS,
+            'deletionReasons'=>\App\Models\AccountDeletion::ADMIN_REASONS,
+            'restrictionHistory'=>DB::table('account_restriction_events')->where('user_id', $user->id)
+                ->leftJoin('users as admins', 'admins.id', '=', 'account_restriction_events.admin_id')
+                ->orderByDesc('account_restriction_events.id')
+                ->get(['account_restriction_events.action', 'account_restriction_events.reason', 'account_restriction_events.until', 'account_restriction_events.created_at', 'admins.name as admin']),
             'results'=>$results,'counts'=>$counts,'service'=>$service,
         ]);
     }

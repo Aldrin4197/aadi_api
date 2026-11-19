@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TracksMarketplacePublication;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +14,7 @@ class ServiceListing extends Model
         return \App\Services\ListingPhotos::resolve($value);
     }
 
-    use HasUlids, SoftDeletes;
+    use HasUlids, SoftDeletes, TracksMarketplacePublication;
 
     protected $fillable = [
         'provider_id',
@@ -54,6 +55,7 @@ class ServiceListing extends Model
         'completion_count' => 'integer',
         'response_time_minutes' => 'integer',
         'estimated_duration_minutes' => 'integer',
+        'published_at' => 'datetime',
     ];
 
     // Relationships

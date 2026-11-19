@@ -3,10 +3,10 @@ import { ref } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import BookingDatePicker from './BookingDatePicker.vue';
 
-const props = defineProps({ listing: { type: Object, required: true } });
+const props = defineProps({ listing: { type: Object, required: true }, unavailableDates: { type: Array, default: () => [] } });
 const page = usePage();
 const open = ref(false);
-const form = useForm({ requestedAt: '', driverRequested: false, note: '', shareContact: false });
+const form = useForm({ requestedAt: '', requestedUntil: '', driverRequested: false, note: '', shareContact: false });
 const label = { spaces: 'Request property viewing', haul: 'Request vehicle rental', raketeer: 'Request service' }[props.listing.service];
 function submit() {
     form.post(`/offers/${props.listing.service}/${props.listing.id}/requests`, { preserveScroll: true });
@@ -15,7 +15,7 @@ function submit() {
 
 <template>
     <div class="request-box">
-        <p v-if="listing.isSample">This is a sample listing and does not accept requests.</p>
+        <p v-if="listing.isSample" class="request-sample">This is a sample listing and does not accept requests.</p>
         <button v-else-if="!open" type="button" class="button primary request-trigger" @click="open = true">{{ label }}</button>
         <form v-else class="request-form" @submit.prevent="submit">
             <h2>{{ label }}</h2>
@@ -24,12 +24,22 @@ function submit() {
             <p v-if="listing.service === 'spaces' && listing.contractRules" class="request-rules">Contract rules: {{ listing.contractRules }}</p>
             <div>
                 <strong>{{ listing.service === 'spaces' ? 'Preferred viewing date and time' : listing.service === 'haul' ? 'Rental start date' : 'Preferred start date' }}</strong>
-                <BookingDatePicker v-model="form.requestedAt" :timezone="page.props.timezone" :with-time="listing.service === 'spaces'" />
+                <BookingDatePicker v-model="form.requestedAt" :timezone="page.props.timezone" :with-time="listing.service === 'spaces'" :unavailable-ranges="unavailableDates" />
+            </div>
+            <label v-if="listing.service !== 'spaces'">Last day of rental or service
+                <input v-model="form.requestedUntil" type="date" :min="form.requestedAt || undefined" required />
+            </label>
+            <div v-if="listing.service !== 'spaces'">
+                <strong>Dates already booked</strong>
+                <ul v-if="unavailableDates.length">
+                    <li v-for="range in unavailableDates" :key="`${range.start}-${range.end}`">{{ range.start }}<template v-if="range.end !== range.start"> to {{ range.end }}</template></li>
+                </ul>
+                <p v-else>No accepted bookings are currently recorded.</p>
             </div>
             <label v-if="listing.service === 'haul' && listing.driverAvailable" class="request-check">
                 <input v-model="form.driverRequested" type="checkbox" /> Request a driver
             </label>
-            <p v-if="listing.service === 'haul'">Rental duration, driver charges and payment are arranged directly with the provider. The listed vehicle rate is per day.</p>
+            <p v-if="listing.service === 'haul'">The selected dates are inclusive. Driver charges and payment are arranged directly with the provider. The listed vehicle rate is per day.</p>
             <p v-else>Payment and further details are arranged directly with the provider.</p>
             <label>Message to provider (optional)<textarea v-model="form.note" maxlength="2000" rows="3"></textarea></label>
             <label class="request-check"><input v-model="form.shareContact" type="checkbox" required /> If the provider accepts, share my account email and phone with them and show me theirs.</label>

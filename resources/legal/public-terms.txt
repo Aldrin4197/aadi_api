@@ -1,0 +1,174 @@
+AADI TERMS OF SERVICE
+
+Effective date: November 30, 2026
+Website: Aadi - Rental Marketplace
+Website address: https://aadirentals.com
+
+1. ABOUT THESE TERMS
+
+These Terms govern your use of Aadi - Rental Marketplace ("Aadi"), operated by Aldrin Jay Delos Reyes, operating under the developer brand Drindlr.
+
+By using our services, you agree to these Terms. If you do not agree, please do not use the services.
+
+Our Privacy Policy explains how we handle personal information: the Privacy Policy page on https://aadirentals.com.
+
+2. OUR ROLE AS A PLATFORM
+
+Aadi connects users who offer or seek space rentals, vehicle rentals, and services. We provide features that help users discover listings, communicate, and arrange transactions directly with one another.
+
+Unless expressly stated otherwise, Aadi is not the owner, landlord, vehicle provider, employer, or service provider for listings published by users. Any rental, service, or other transaction agreement is between the participating users.
+
+Additional conditions for a particular platform feature will be presented before you use it.
+
+3. ELIGIBILITY
+
+You must be at least 18 years old to create an account or use features requiring registration.
+
+Aadi currently serves users in the Philippines. People under 18 may not register or use the platform.
+
+If you act on behalf of an organization or another person, you confirm that you have authority to do so.
+
+4. ACCOUNTS AND SIGN-IN
+
+You may register using email/password or an available social sign-in provider. Email/password registration requires your name, email address, password, and birthdate for an 18+ age check. To use account features, complete your profile with your birthdate, sex assigned at birth (or "Prefer not to say"), city, and full address. You may provide additional profile information, and certain features request additional details.
+
+Provide accurate account information and keep it reasonably up to date. Protect your login credentials and notify info@aadirentals.com promptly if you suspect unauthorized access.
+
+You must not impersonate another person or create an account using information you are not authorized to use. You are responsible for activity you authorize through your account.
+
+If you sign in with Google, your use of Google's services remains subject to Google's terms and policies. Google sign-in does not imply that Google sponsors, endorses, or operates Aadi.
+
+If you disconnect a sign-in provider, access may depend on whether another supported sign-in method is available.
+
+5. LISTINGS AND PROVIDER RESPONSIBILITIES
+
+Users offering properties, vehicles, or services must:
+
+- Provide accurate descriptions, photographs, prices, availability, and relevant conditions.
+- Have authority and any legally required permissions, licenses, or qualifications to make the offer.
+- Disclose material restrictions, charges, deposits, and relevant safety requirements before an agreement is made.
+- Avoid misleading claims about ownership, condition, qualifications, or availability.
+- Keep listings reasonably up to date and fulfill commitments made to other users.
+
+Users seeking rentals or services must review the relevant details and ensure that the proposed arrangement meets their needs before proceeding.
+
+6. PLATFORM FEES, PAYMENTS, AND TRANSACTION ARRANGEMENTS
+
+Aadi does not currently have checkout or billing for Aadi Plus or charge platform fees. Any future paid feature will be disclosed with its price and terms before purchase or enrollment.
+
+Aadi does not currently accept, collect, hold, or process payments for transactions between users. We do not provide escrow services or hold deposits on behalf of users.
+
+Users are responsible for agreeing directly on prices, payment methods, deposits, schedules, deliverables, and other transaction conditions before proceeding.
+
+Payments outside Aadi are arranged directly between participating parties. Aadi cannot reverse, release, or refund funds that it has not received or processed.
+
+If Aadi introduces payment features in the future, the applicable terms and privacy disclosures will be provided before users access those features.
+
+7. CANCELLATIONS, REFUNDS, AND DISPUTES
+
+Cancellation and refund arrangements are agreed upon between the users involved, subject to applicable law. Aadi does not issue refunds for payments made directly to another user.
+
+Users should first attempt to resolve transaction concerns with the other party. Suspected fraud, misleading listings, or abusive behavior may be reported to info@aadirentals.com.
+
+Aadi accepts reports, reviews available information, and verifies reported concerns for platform moderation. We may restrict or remove listings or accounts under these Terms. We do not mediate, arbitrate, or decide transaction disputes between users. Report verification does not guarantee reimbursement or dispute resolution and does not replace remedies available through relevant authorities.
+
+Nothing in this section removes Aadi's responsibility for its own conduct or limits rights that cannot lawfully be excluded.
+
+8. VERIFICATION, BADGES, AND REVIEWS
+
+Where available, a badge or verification label indicates only the specific checks or criteria described for that label. It does not guarantee a user's conduct, ownership rights, service quality, safety, or performance.
+
+Provider verification involves review of submitted IDs and certificates of ownership or other relevant supporting documents requested during the application process. Requirements depend on the provider role and offer. A verified label indicates that the submitted information has passed Aadi's review at that time; it is not a guarantee that every statement or document is authentic or that future conduct will be satisfactory.
+
+Ratings and reviews reflect their authors' experiences or opinions. Users must not fabricate reviews, manipulate ratings, or publish misleading feedback.
+
+Users should independently confirm relevant details before entering into a transaction.
+
+9. ACCEPTABLE USE
+
+You must not:
+
+- Use Aadi for unlawful, fraudulent, or deceptive activity.
+- Offer stolen property, illegal goods, unlawful services, exploitation, or activities that pose an unreasonable risk of harm.
+- Offer a property, vehicle, or service without the necessary authority, qualifications, permits, or permissions.
+- Publish another person's identification documents, private location, or contact information without authorization.
+- Publish fraudulent listings or misrepresent your identity, authority, ownership, or qualifications.
+- Harass, threaten, exploit, or harm another person.
+- Upload content that infringes intellectual property, privacy, or other rights.
+- Upload malware, compromise security, or access information without authorization.
+- Disrupt the platform, bypass access restrictions, or send spam.
+- Misuse another person's information or collect it for unauthorized purposes.
+
+When a provider accepts a listing request, each participant can see the other participant's email address and any phone number on their account. Use these details only for the relevant inquiry or transaction; do not redistribute them or use them for spam. Profile addresses are not public, but profile cities may be visible.
+
+Exercise reasonable care when sharing information, meeting other users, or making payments.
+
+10. USER CONTENT
+
+You retain ownership of content you submit, subject to the rights of others.
+
+By submitting content, you grant Aadi a nonexclusive, royalty-free license to host, store, reproduce, format, and display it only as necessary to operate the platform and provide its features.
+
+You confirm that you have the rights and permissions necessary to submit that content.
+
+We may remove or restrict content that violates these Terms, infringes rights, or creates a security or legal risk.
+
+When you delete content, we will stop using it except where temporary backup retention, legal obligations, or copies already shared with other users require otherwise, as explained in our Privacy Policy.
+
+11. WEBSITE INTELLECTUAL PROPERTY
+
+Except for user content and third-party materials, rights in Aadi's branding, original content, design, and software belong to Aldrin Jay Delos Reyes (Drindlr) or its licensors.
+
+You may use the website for its intended purposes. These Terms do not transfer ownership of our intellectual property. Do not reproduce, distribute, or commercially exploit protected materials without permission, except where permitted by law.
+
+12. THIRD-PARTY SERVICES
+
+External websites and integrated services operate under their own terms and privacy policies. We do not control independent third-party services, and we remain responsible for our own service and conduct.
+
+13. AVAILABILITY AND CHANGES
+
+We aim to keep Aadi available but cannot guarantee uninterrupted or error-free operation.
+
+We may maintain, update, or temporarily restrict features for operational or security reasons. Where required, we will provide notice of material changes and any remedies required by applicable law.
+
+14. SUSPENSION AND TERMINATION
+
+We may restrict listings or suspend or terminate access for material violations of these Terms, misuse of the platform, or security or legal risks.
+
+Where reasonably practicable, we will provide notice and an opportunity to address the issue. Immediate action may be necessary for serious abuse, security threats, or legal requirements.
+
+You may stop using Aadi at any time. To close your account, use the deletion feature in your account settings or contact info@aadirentals.com.
+
+Closing an Aadi account does not automatically cancel agreements or obligations you have independently entered into with another user.
+
+Account deletion through settings deactivates your account immediately and becomes permanent after 30 days. We may also deactivate or delete accounts under these Terms. Residual information may remain for the purposes described in our Privacy Policy. Personal information associated with a closed account is handled according to that Policy.
+
+15. DISCLAIMERS
+
+To the extent permitted by applicable law, Aadi is provided on an "as available" basis without guarantees that it will meet every user's requirements or remain uninterrupted, error-free, or free from all security risks.
+
+User listings may contain errors or become outdated. Report misleading or inaccurate content to info@aadirentals.com.
+
+We do not guarantee that users will complete transactions or fulfill their agreements. Nothing in these Terms excludes warranties or protections that cannot legally be excluded.
+
+16. LIABILITY
+
+To the extent permitted by applicable law, we are not responsible for indirect or consequential losses arising from use of, or inability to use, the platform.
+
+Nothing in these Terms excludes or limits liability for fraud, willful misconduct, or any matter for which liability cannot lawfully be excluded or limited.
+
+17. GOVERNING LAW AND DISPUTES WITH AADI
+
+These Terms are governed by the laws of the Republic of the Philippines, subject to mandatory protections that apply to you.
+
+For a dispute involving Aadi, contact info@aadirentals.com so we can attempt to resolve it. If unresolved, either party may pursue remedies through competent courts or authorities under applicable law.
+
+18. CHANGES TO THESE TERMS
+
+Updated Terms will be published on this page with a revised effective date. For material changes, we will provide reasonable notice and obtain agreement where required.
+
+19. CONTACT
+
+Aldrin Jay Delos Reyes, operating under the developer brand Drindlr
+Email: info@aadirentals.com
+Address: Catbalogan City, Samar, Philippines

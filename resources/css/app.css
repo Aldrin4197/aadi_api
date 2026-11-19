@@ -7,6 +7,14 @@
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @plugin "@tailwindcss/forms";
 
+:root {
+  --aadi-text-small: 0.8125rem;
+  --aadi-text-body: 0.9375rem;
+  --aadi-text-heading: 1.25rem;
+  --aadi-text-subheading: 1rem;
+  --aadi-text-page-title: clamp(1.75rem, 3vw, 2.125rem);
+}
+
 @theme {
   --font-sans: 'Quicksand', 'Figtree', ui-sans-serif, system-ui, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';

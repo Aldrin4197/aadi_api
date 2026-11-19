@@ -2,10 +2,11 @@
 import { computed } from 'vue';
 import { calendarDays } from './calendarDates.mjs';
 
-const props = defineProps({ month: { type: String, required: true }, selected: String, today: String, min: String, counts: { type: Object, default: () => ({}) } });
+const props = defineProps({ month: { type: String, required: true }, selected: String, today: String, min: String, counts: { type: Object, default: () => ({}) }, unavailableRanges: { type: Array, default: () => [] } });
 defineEmits(['select']);
 const days = computed(() => calendarDays(props.month));
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const unavailable = day => props.unavailableRanges.some(range => day >= range.start && day <= range.end);
 </script>
 
 <template>
@@ -14,8 +15,8 @@ const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         <template v-for="(day, index) in days" :key="day || `blank-${index}`">
             <span v-if="!day" aria-hidden="true"></span>
             <button v-else type="button" class="calendar-day" :class="{ selected: day === selected, today: day === today }"
-                :aria-label="`${day}${counts[day] ? `, ${counts[day]} scheduled` : ''}`"
-                :aria-pressed="day === selected" :disabled="!!min && day < min" @click="$emit('select', day)">
+                :aria-label="`${day}${counts[day] ? `, ${counts[day]} scheduled` : ''}${unavailable(day) ? ', booked' : ''}`"
+                :aria-pressed="day === selected" :disabled="(!!min && day < min) || unavailable(day)" @click="$emit('select', day)">
                 <span>{{ Number(day.slice(-2)) }}</span><span v-if="counts[day]" class="day-dot" aria-hidden="true"></span>
             </button>
         </template>

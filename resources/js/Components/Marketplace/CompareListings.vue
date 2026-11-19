@@ -32,7 +32,7 @@ defineExpose({ open: () => dialog.value?.showModal() });
           <tr><th scope="row">Type / scope</th><td v-for="item in items" :key="compareKey(item)">{{ readable(item.type) }}<span v-if="item.comparison?.scope"> · {{ item.comparison.scope }}</span></td></tr>
           <tr><th scope="row">Listed features / skills</th><td v-for="item in items" :key="compareKey(item)">{{ item.comparison?.features?.join(', ') || 'Not specified — ask the provider' }}</td></tr>
           <tr><th scope="row">Not included</th><td v-for="item in items" :key="compareKey(item)">Confirm exclusions and extra charges with the provider.</td></tr>
-          <tr><th scope="row">Listed status</th><td v-for="item in items" :key="compareKey(item)">{{ item.status === 'active' ? 'Available' : readable(item.status) }}</td></tr>
+          <tr><th scope="row">Listed status</th><td v-for="item in items" :key="compareKey(item)">{{ item.availabilityPaused ? (item.service === 'spaces' ? 'Occupied / unavailable' : 'Unavailable') : item.status === 'active' ? 'Available' : readable(item.status) }}</td></tr>
           <tr><th scope="row">Provider</th><td v-for="item in items" :key="compareKey(item)">{{ item.ownerName || 'Not provided' }}</td></tr>
           <tr><th scope="row">Next step</th><td v-for="item in items" :key="compareKey(item)"><ListingViewButton :item="item"/></td></tr>
         </tbody>

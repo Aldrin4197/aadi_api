@@ -22,7 +22,7 @@ class ProfileVerificationTest extends TestCase {
         $first=$user->fresh()->avatar_path;Storage::disk('public')->assertExists($first);
         $this->post('/profile/avatar',['avatar'=>UploadedFile::fake()->image('next.png',512,512)])->assertRedirect();
         Storage::disk('public')->assertMissing($first);$second=$user->fresh()->avatar_path;
-        $this->patch('/profile',['name'=>$user->name,'email'=>$user->email,'phone'=>'09123456789','bio'=>'Local repair specialist','city'=>'Catbalogan','address'=>'Private address','is_admin'=>true])->assertRedirect();
+        $this->patch('/profile',['name'=>$user->name,'email'=>$user->email,'phone'=>'09123456789','bio'=>'Local repair specialist','city'=>'Catbalogan','address'=>'Private address','birth_date'=>'1990-01-01','sex_assigned_at_birth'=>'prefer_not_to_say','is_admin'=>true])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('Private address',$user->fresh()->address);$this->assertFalse($user->fresh()->is_admin);
         $this->assertArrayNotHasKey('address',$user->fresh()->toArray());
         $this->delete('/profile/avatar')->assertRedirect();Storage::disk('public')->assertMissing($second);$this->assertNull($user->fresh()->avatar_url);

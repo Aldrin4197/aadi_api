@@ -26,6 +26,7 @@ const metrics = [
     { key: 'viewings', label: 'Viewings', color: '#1fa6a0' },
     { key: 'users', label: 'New users', color: '#12744a' },
     { key: 'listings', label: 'New listings', color: '#b45f12' },
+    { key: 'reports', label: 'Reports submitted', color: '#b45f12' },
 ];
 const metric = ref(metrics.find(m => (props.analytics.trend.series[m.key] || []).some(n => n > 0))?.key ?? 'views');
 const active = computed(() => metrics.find(m => m.key === metric.value));
@@ -99,6 +100,26 @@ const hasFunnelData = computed(() => props.analytics.funnel.some(step => step.co
             </div>
 
             <div class="grid-sub">
+                <section class="panel" aria-labelledby="reports-title">
+                    <header class="panel-head"><div><h2 id="reports-title">Account reports</h2><p>Current status across all time; review decisions in the last {{ days }} days.</p></div><Link href="/admin/reports?status=all" class="panel-link">Reports →</Link></header>
+                    <h3 class="report-heading">Current status</h3>
+                    <ul class="report-counts"><li v-for="row in analytics.reports.statuses" :key="row.status"><span>{{ humanize(row.status) }}</span><strong>{{ row.count.toLocaleString() }}</strong></li></ul>
+                    <h3 class="report-heading">Review decisions · last {{ days }} days</h3>
+                    <ul class="report-counts"><li v-for="row in analytics.reports.decisions" :key="row.action"><span>{{ { confirm: 'Confirmed', dismiss: 'Dismissed', reverse: 'Reversed' }[row.action] }}</span><strong>{{ row.count.toLocaleString() }}</strong></li></ul>
+                    <p class="report-note">Decisions are events; a report can be confirmed and later reversed.</p>
+                </section>
+                <section class="panel" aria-labelledby="deletions-title">
+                    <header class="panel-head"><div><h2 id="deletions-title">Account deletions</h2><p>Why people leave · last {{ days }} days · {{ analytics.deletions.total.toLocaleString() }} requests.</p></div></header>
+                    <ul v-if="analytics.deletions.reasons.length" class="funnel">
+                        <li v-for="row in analytics.deletions.reasons" :key="row.reason">
+                            <div class="funnel-label"><strong>{{ row.label }}</strong><span>{{ row.count.toLocaleString() }}<small> · {{ row.percent }}%</small></span></div>
+                            <div class="bar" role="img" :aria-label="`${row.label}: ${row.count}`"><i :style="{ width: `${row.percent}%` }" /></div>
+                        </li>
+                    </ul>
+                    <p v-else class="empty">No deletion requests in this period.</p>
+                    <ul class="report-counts"><li v-for="row in analytics.deletions.statuses" :key="row.status"><span>{{ humanize(row.status) }}</span><strong>{{ row.count.toLocaleString() }}</strong></li></ul>
+                    <p class="report-note">Reasons are kept for 6 months after the account is gone, without personal details.</p>
+                </section>
                 <section class="panel" aria-labelledby="funnel-title">
                     <header class="panel-head"><div><h2 id="funnel-title">Engagement</h2><p>What happens after someone views a property.</p></div></header>
                     <ul v-if="hasFunnelData" class="funnel">
@@ -164,6 +185,11 @@ const hasFunnelData = computed(() => props.analytics.funnel.some(step => step.co
 .chart { position:relative; height:290px; }
 .empty { font-size:13px; color:#586e6c; margin:0; }
 .more { margin:12px 0 0; font-size:12px; color:#7b918d; }
+.report-heading { margin:0 0 8px; font-size:12px; font-weight:700; color:#42665e; }
+.report-counts { list-style:none; margin:0 0 16px; padding:0; }
+.report-counts li { display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px solid #eef2f1; font-size:13px; }
+.report-counts strong { font-variant-numeric:tabular-nums; }
+.report-note { margin:0; font-size:11px; color:#637b76; line-height:1.5; }
 
 .funnel, .types, .top { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
 .funnel { gap:18px; }

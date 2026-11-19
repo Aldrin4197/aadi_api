@@ -16,6 +16,8 @@ return [
 
     'default' => env('MAIL_MAILER', 'log'),
 
+    'activity_notifications' => env('AADI_NOTIFICATION_EMAIL_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Mailer Configurations

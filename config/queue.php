@@ -15,6 +15,8 @@ return [
 
     'default' => env('QUEUE_CONNECTION', 'database'),
 
+    'hostinger_cron' => env('AADI_QUEUE_CRON_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Queue Connections

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\RealtimePublisher;
 use Illuminate\Http\Request;
 
 /** The signed-in user's own notification inbox, used by the navbar bell. */
@@ -32,6 +33,7 @@ class NotificationController extends Controller
     public function read(Request $request, string $id)
     {
         $request->user()->notifications()->whereKey($id)->firstOrFail()->markAsRead();
+        app(RealtimePublisher::class)->publish((string) $request->user()->id, 'notification');
 
         return $this->count($request);
     }
@@ -39,6 +41,7 @@ class NotificationController extends Controller
     public function readAll(Request $request)
     {
         $request->user()->unreadNotifications()->update(['read_at' => now()]);
+        app(RealtimePublisher::class)->publish((string) $request->user()->id, 'notification');
 
         return $this->count($request);
     }

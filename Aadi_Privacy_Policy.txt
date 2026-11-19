@@ -1,0 +1,156 @@
+AADI PRIVACY POLICY
+
+Effective date: November 30, 2026
+Website: Aadi - Rental Marketplace
+Website address: https://aadirentals.com
+
+1. ABOUT THIS POLICY
+
+Aldrin Jay Delos Reyes, operating under the developer brand Drindlr operates Aadi - Rental Marketplace ("Aadi", "we", "us", or "our"). This Privacy Policy explains how we collect, use, store, and share personal information when you visit our website, create an account, or use our platform.
+
+Aadi connects users seeking or offering space rentals, vehicle rentals, and services. Transactions are arranged directly between users. Aadi does not currently accept, collect, hold, or process transaction payments.
+
+Privacy contact: info@aadirentals.com
+Contact address: Catbalogan City, Samar, Philippines
+
+2. INFORMATION WE COLLECT
+
+Depending on the features you use, we may collect:
+
+- Required account information: Your name, email address, phone number, profile photograph, address, and date of birth. These support account administration, contact features, and age eligibility. Email/password registration also requires a password. Missing required information may prevent completion of your account.
+- Listing and inquiry information: Descriptions, photographs, prices, availability, contact details, and information you submit when offering or seeking rentals or services.
+- Communications and content: Messages, inquiries, reviews, reports, support requests, and uploads submitted through supported platform features.
+- Technical information: IP address, browser and device information, access times, and activity logs used to operate and protect the website.
+- Cookies and similar technologies: Information used to maintain sessions, remember preferences, and support website functionality.
+
+We also collect identification documents and certificates of ownership or other supporting documents submitted for provider verification. We use them to assess identity and claimed ownership or authority. Verification documents are not public and are accessible only to authorized administrators and service providers necessary for secure storage and processing.
+
+Your account location is private to you within the user-facing platform and is not displayed to other users. Authorized personnel and necessary service providers may process it to operate and protect your account. Information you voluntarily put in a public listing or message is subject to the visibility of that feature.
+
+3. GOOGLE SIGN-IN
+
+If you choose to sign in with Google, we receive the basic account information you authorize Google to share, such as your name, email address, profile picture, and Google account identifier.
+
+We use this information to create or identify your Aadi account, authenticate access, and display your profile.
+
+We do not receive your Google password. Basic Google sign-in does not give us access to Gmail messages, Google Drive files, or other private Google content.
+
+You can manage or revoke access through your Google Account settings. Revoking access does not automatically delete information already stored in your Aadi account. To request deletion, contact info@aadirentals.com.
+
+Email/password and Google sign-in are currently supported. Other social sign-in methods are not currently available.
+
+4. HOW WE USE INFORMATION
+
+We use personal information to:
+
+- Create, authenticate, and manage accounts.
+- Publish listings and provide search, inquiry, and communication features.
+- Support interactions between users.
+- Respond to support requests and reports.
+- Send necessary account, security, and service notices.
+- Detect fraud, investigate abuse, and protect users and the platform.
+- Troubleshoot problems and improve website performance.
+- Meet applicable legal obligations.
+
+We also review provider verification documents and use our own internal analytics to understand platform usage, troubleshoot issues, and improve features. Internal analytics may use activity records and technical information described above. We do not currently use advertising trackers, send promotional messages, sell personal information, or share it for advertising.
+
+5. GROUNDS FOR PROCESSING
+
+Depending on the activity and applicable law, we process information to provide services you request, comply with legal obligations, pursue legitimate interests such as platform security, or act on your consent.
+
+For sensitive personal information, including relevant information in IDs and dates of birth, we obtain specific consent for the stated purpose unless another lawful exception applies. Accepting general platform terms does not replace consent where it is required.
+
+Where processing relies on consent, you may withdraw it by contacting us. Withdrawal does not affect processing lawfully carried out before withdrawal.
+
+6. PUBLIC INFORMATION AND SHARING
+
+Information you deliberately submit to publicly visible listings, profiles, or reviews may be accessible to other people. Avoid including information you do not want to make public.
+
+Names, profile photographs, published listings, and reviews are publicly visible. Provider phone numbers and email addresses are revealed to the requesting user only after the provider accepts a viewing request. Account location and verification documents are not publicly displayed. Users should share any additional directions or transaction details deliberately through the available communication features.
+
+We may share information with:
+
+- Other users, as needed for features you choose to use, such as sending an inquiry or message.
+- Service providers supporting hosting, storage, authentication, email delivery, and other platform operations, to the extent necessary to perform those services.
+- Authorities or other parties where required by law or reasonably necessary to address fraud, security incidents, or threats to safety.
+- A successor operator in connection with a merger, acquisition, or transfer, subject to applicable privacy requirements.
+
+Hostinger provides hosting, database storage, email services, and uploaded-file storage. Google provides Google sign-in. We plan to use separate backup storage, such as Google Drive; if introduced, it will be used for backup and recovery, subject to the access and retention limits in this Policy. This planned backup arrangement does not give Aadi access to users' personal Google Drive files.
+
+We do not sell personal information or disclose it to advertisers for advertising purposes. Necessary operational disclosures described above are separate from advertising uses.
+
+7. PAYMENTS AND FINANCIAL INFORMATION
+
+Aadi does not currently accept or process payments for transactions between users. We do not request payment card details, bank account credentials, or online banking passwords to complete transactions through the platform.
+
+If you arrange payment directly with another user or an external payment provider, information you share with that party is subject to their practices and any applicable privacy policy.
+
+Information you voluntarily include in messages, inquiries, or uploaded content may be stored as part of those features. Avoid sharing payment credentials or other sensitive financial information through the platform.
+
+8. COOKIES
+
+We use essential cookies or similar technologies for functions such as login sessions, security, and saved preferences.
+
+Our analytics are for internal platform operation and improvement. We do not use advertising trackers. Where a nonessential tracking technology requires consent, we will request it before use.
+
+You may manage cookies through your browser settings. Disabling some cookies may prevent parts of the website from functioning properly.
+
+9. DATA RETENTION
+
+We retain personal information only as long as reasonably necessary for the purposes described in this Policy, including providing services, resolving disputes, protecting the platform, and meeting legal obligations.
+
+Account information needed to provide an active account is retained while that account remains active. When you submit an account-deletion request, a 30-day waiting period applies before account deletion is completed.
+
+Following account deletion, residual information and data may be retained for up to six months where necessary for security, report verification, record integrity, and backup recovery. This includes relevant account records, listings, messages, reviews, verification documents, support reports, logs, and backup copies. Such retained records are not used to continue presenting you as an active user.
+
+The six-month residual retention period runs from the date account deletion is completed. Records no longer necessary for these purposes may be deleted earlier. After the retention period, personal information is deleted or irreversibly anonymized unless a specific legal obligation or the establishment, exercise, or defense of legal claims requires longer retention. Longer retention is limited to the necessary records and purpose.
+
+Backups, including any separate backup service introduced later, are subject to this same residual retention limit. Information restored for recovery remains subject to applicable deletion requests.
+
+10. INFORMATION SECURITY
+
+We use reasonable technical and organizational measures designed to protect personal information against unauthorized access, loss, misuse, or disclosure. No internet service or storage system is completely secure, so we cannot guarantee absolute security.
+
+11. INTERNATIONAL PROCESSING
+
+Our service providers may process or store information outside your country of residence.
+
+The applicable processing locations depend on the infrastructure used by Hostinger and Google. We do not represent that all information is stored exclusively in the Philippines.
+
+Where applicable, we take steps to protect information processed internationally.
+
+12. YOUR PRIVACY RIGHTS
+
+Under applicable Philippine privacy law, including the Data Privacy Act of 2012, your rights may include being informed, accessing and correcting information, objecting to processing, requesting erasure or blocking, withdrawing consent, data portability, and seeking damages where applicable. You may also file a complaint with the National Privacy Commission (https://privacy.gov.ph). These rights are subject to applicable conditions and exceptions.
+
+To exercise these rights, email info@aadirentals.com. We may need to verify your identity. Requests may be subject to legal exceptions, including obligations to retain particular records.
+
+13. ACCOUNT AND DATA DELETION
+
+To request account deletion, submit a request through your account settings. You may also contact info@aadirentals.com for assistance.
+
+Account deletion is completed after a 30-day waiting period following submission of the request, subject to identity verification and applicable legal requirements. This is the account-deletion waiting period, not a blanket deadline for every privacy request. We will address privacy requests within applicable legal requirements and explain any lawful retention or processing restriction. Residual data retention is described in Section 9.
+
+Deleting an account may permanently remove access to associated content and services. Copies already received or independently retained by another user may remain outside our control.
+
+14. CHILDREN'S PRIVACY
+
+Our platform is intended for users aged 18 and above in the Philippines.
+
+People under 18 are not eligible to register or use the platform. We do not knowingly permit accounts for minors.
+
+If you believe a child has provided information contrary to these requirements, contact info@aadirentals.com so we can investigate and take appropriate action.
+
+15. THIRD-PARTY SERVICES
+
+External websites and services have their own privacy practices. Review their policies before providing personal information.
+
+16. CHANGES TO THIS POLICY
+
+We may update this Policy as the platform or our practices change. The current version will appear on this page with an updated effective date. Where required, we will provide additional notice or obtain consent before implementing relevant changes.
+
+17. CONTACT
+
+Aldrin Jay Delos Reyes, operating under the developer brand Drindlr
+Email: info@aadirentals.com
+Address: Catbalogan City, Samar, Philippines

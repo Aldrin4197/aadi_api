@@ -22,6 +22,10 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt([...$credentials, 'is_admin' => true], $request->boolean('remember'))) {
+            if (Auth::user()->isRestricted()) {
+                Auth::logout();
+                return back()->withErrors(['email' => 'This account is currently restricted. Please contact support.'])->onlyInput('email');
+            }
             $request->session()->regenerate();
 
             return redirect()->route('admin.dashboard');

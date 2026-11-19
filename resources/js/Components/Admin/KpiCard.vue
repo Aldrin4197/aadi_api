@@ -15,6 +15,7 @@ const icons = {
     reviews: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z',
     viewings: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
     tickets: 'M3 4h18v13H8l-5 4z',
+    reports: 'M5 21V4m0 1h12l-2 4 2 4H5',
     backlog: 'M4 6h16M4 12h16M4 18h10',
     response: 'M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     resolution: 'M5 12.5l4.2 4.2L19 7',

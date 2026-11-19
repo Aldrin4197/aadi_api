@@ -6,8 +6,11 @@ use App\Enums\ViewingStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ViewingRequestResource;
 use App\Models\Listing;
+use App\Models\User;
 use App\Models\ViewingRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ViewingRequestController extends Controller
 {
@@ -43,17 +46,24 @@ class ViewingRequestController extends Controller
             ], 400);
         }
 
-        $viewingRequest = ViewingRequest::create([
-            'listing_id' => $listing->id,
-            'listing_title' => $listing->title,
-            'tenant_id' => $user->id,
-            'tenant_name' => $user->name,
-            'owner_id' => $listing->owner_id,
-            'owner_name' => $listing->owner_name,
-            'requested_at' => $validated['requestedAt'],
-            'status' => ViewingStatus::PENDING,
-            'note' => $validated['note'] ?? null,
-        ]);
+        $viewingRequest = DB::transaction(function () use ($listing, $user, $validated) {
+            $owner = User::whereKey($listing->owner_id)->lockForUpdate()->firstOrFail();
+            if ($owner->isRestricted()) {
+                throw ValidationException::withMessages(['listingId' => 'This provider is not currently accepting requests.']);
+            }
+
+            return ViewingRequest::create([
+                'listing_id' => $listing->id,
+                'listing_title' => $listing->title,
+                'tenant_id' => $user->id,
+                'tenant_name' => $user->name,
+                'owner_id' => $listing->owner_id,
+                'owner_name' => $listing->owner_name,
+                'requested_at' => $validated['requestedAt'],
+                'status' => ViewingStatus::PENDING,
+                'note' => $validated['note'] ?? null,
+            ]);
+        });
 
         return new ViewingRequestResource($viewingRequest);
     }
@@ -75,43 +85,50 @@ class ViewingRequestController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        // Status transition logic
-        $newStatus = $validated['status'] ?? null;
-
-        if ($newStatus) {
-            // Owner actions
-            if ($viewingRequest->owner_id === $user->id) {
-                if ($newStatus === 'confirmed') {
-                    $viewingRequest->status = ViewingStatus::CONFIRMED;
-                } elseif ($newStatus === 'declined') {
-                    $viewingRequest->status = ViewingStatus::DECLINED;
-                } elseif ($newStatus === 'rescheduled' && isset($validated['proposedAt'])) {
-                    $viewingRequest->status = ViewingStatus::RESCHEDULED;
-                    $viewingRequest->proposed_at = $validated['proposedAt'];
+        return DB::transaction(function () use ($viewingRequest, $user, $validated) {
+            $newStatus = $validated['status'] ?? null;
+            if ($newStatus === 'confirmed') {
+                $owner = User::whereKey($viewingRequest->owner_id)->lockForUpdate()->firstOrFail();
+                if ($owner->isRestricted()) {
+                    throw ValidationException::withMessages(['status' => 'This provider is not currently accepting requests.']);
                 }
             }
 
-            // Tenant actions
-            if ($viewingRequest->tenant_id === $user->id) {
-                if ($newStatus === 'pending' && isset($validated['requestedAt'])) {
-                    $viewingRequest->status = ViewingStatus::PENDING;
-                    $viewingRequest->requested_at = $validated['requestedAt'];
-                    $viewingRequest->proposed_at = null;
-                } elseif ($newStatus === 'confirmed' && $viewingRequest->status === ViewingStatus::RESCHEDULED) {
-                    // Accept proposed time
-                    $viewingRequest->status = ViewingStatus::CONFIRMED;
-                    $viewingRequest->requested_at = $viewingRequest->proposed_at;
+            if ($newStatus) {
+                // Owner actions
+                if ($viewingRequest->owner_id === $user->id) {
+                    if ($newStatus === 'confirmed') {
+                        $viewingRequest->status = ViewingStatus::CONFIRMED;
+                    } elseif ($newStatus === 'declined') {
+                        $viewingRequest->status = ViewingStatus::DECLINED;
+                    } elseif ($newStatus === 'rescheduled' && isset($validated['proposedAt'])) {
+                        $viewingRequest->status = ViewingStatus::RESCHEDULED;
+                        $viewingRequest->proposed_at = $validated['proposedAt'];
+                    }
+                }
+
+                // Tenant actions
+                if ($viewingRequest->tenant_id === $user->id) {
+                    if ($newStatus === 'pending' && isset($validated['requestedAt'])) {
+                        $viewingRequest->status = ViewingStatus::PENDING;
+                        $viewingRequest->requested_at = $validated['requestedAt'];
+                        $viewingRequest->proposed_at = null;
+                    } elseif ($newStatus === 'confirmed' && $viewingRequest->status === ViewingStatus::RESCHEDULED) {
+                        // Accept proposed time
+                        $viewingRequest->status = ViewingStatus::CONFIRMED;
+                        $viewingRequest->requested_at = $viewingRequest->proposed_at;
+                    }
                 }
             }
-        }
 
-        if (isset($validated['note'])) {
-            $viewingRequest->note = $validated['note'];
-        }
+            if (isset($validated['note'])) {
+                $viewingRequest->note = $validated['note'];
+            }
 
-        $viewingRequest->save();
+            $viewingRequest->save();
 
-        return new ViewingRequestResource($viewingRequest->fresh());
+            return new ViewingRequestResource($viewingRequest->fresh());
+        });
     }
 
     public function destroy(Request $request, string $id)

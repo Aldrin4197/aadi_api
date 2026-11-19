@@ -35,6 +35,8 @@ Before opening/submitting a provider application, users accept the account agree
 
 `/legal/terms` is a public, read-only view when publication and enforcement are enabled. `/legal/accept` requires authentication. Backend validation requires explicit acknowledgments; client-side required checkboxes are not the enforcement boundary.
 
+The separately supplied public documents are available at `/privacy-policy` and `/terms-of-service`, including before acceptance. Their source text is in `resources/legal/public-privacy.txt` and `resources/legal/public-terms.txt`; the effective date shown is November 30, 2026. These pages do not publish or enable the separate versioned acceptance bundle. Before enabling acceptance, reconcile the reviewed bundle with the public documents and complete the outstanding privacy, retention, consent, and legal-review decisions.
+
 ## Records and versioning
 
 Each record contains the authenticated user ID, context, version, SHA-256 digest, exact JSON snapshot, and acceptance timestamp. User IDs, timestamps, and document text are server-derived. Duplicate acceptance is idempotent and preserves the original timestamp. Reusing an accepted version with changed text is rejected; publish a new version instead. No IP/device fingerprint is collected by this feature. Account deletion cascades to these records: review that retention behavior before release.

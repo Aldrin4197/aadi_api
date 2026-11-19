@@ -8,6 +8,7 @@ use App\Enums\VehicleOwnerStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Support\ProfileFields;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -21,12 +22,14 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => ['required', Password::defaults()],
             'name' => 'required|string|max:255',
-        ]);
+            'birth_date' => ProfileFields::birthDateRules(adult: true),
+        ], ['birth_date.before_or_equal' => ProfileFields::ADULT_MESSAGE]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
+            'birth_date' => $validated['birth_date'],
             'landlord_status' => LandlordStatus::NONE,
             'vehicle_owner_status' => VehicleOwnerStatus::NONE,
             'service_provider_status' => ServiceProviderStatus::NONE,
@@ -59,6 +62,9 @@ class AuthController extends Controller
                 'message' => 'Invalid email or password.',
             ], 401);
         }
+        if ($user->isRestricted()) {
+            return response()->json(['message' => 'This account is currently restricted. Please contact support.'], 403);
+        }
 
         $token = $user->createToken('mobile')->plainTextToken;
 
@@ -79,6 +85,13 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return new UserResource($request->user()->load('badges'));
+    }
+
+    public function destroy(\App\Http\Requests\DeleteAccountRequest $request, \App\Services\AccountDeletionService $deletion)
+    {
+        $record = $deletion->schedule($request->user(), $request->validated('reason'), $request->validated('note'), 'user');
+
+        return response()->json(['message' => 'Account deactivated and scheduled for permanent deletion.', 'scheduled_for' => $record->scheduled_for->toIso8601String()], 202);
     }
 
     public function applyForLandlord(Request $request)

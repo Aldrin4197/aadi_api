@@ -14,7 +14,7 @@ class PublicProviderProfileTest extends TestCase {
         app(Marketplace::class)->save($user, 'spaces', $data);
         app(Marketplace::class)->save($user, 'spaces', [...$data,'title'=>'Draft listing','status'=>'draft']);
         $response = $this->getJson('/api/v1/providers/'.$user->id)->assertOk()->assertJsonPath('provider.name',$user->name)->assertJsonPath('counts.spaces',1)->assertJsonCount(1,'results.data');
-        foreach (['email','phone','address','documents','avatar_path'] as $key) $this->assertArrayNotHasKey($key,$response->json('provider'));
+        foreach (['email','phone','address','birth_date','sex_assigned_at_birth','documents','avatar_path'] as $key) $this->assertArrayNotHasKey($key,$response->json('provider'));
         $this->assertArrayNotHasKey('description',$response->json('results.data.0'));
         $this->assertArrayNotHasKey('lat',$response->json('results.data.0.location'));
         $this->getJson('/api/v1/providers/'.$user->id.'?service=invalid')->assertUnprocessable();

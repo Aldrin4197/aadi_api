@@ -12,6 +12,7 @@ defineProps<{ socialProviders?: string[] }>();
 const form = useForm({
     name: '',
     email: '',
+    birth_date: '',
     password: '',
     password_confirmation: '',
 });
@@ -61,6 +62,13 @@ const submit = () => {
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="birth_date" value="Birthdate" />
+                <TextInput id="birth_date" type="date" class="mt-1 block w-full" v-model="form.birth_date" required autocomplete="bday" />
+                <p class="mt-2 text-sm text-gray-600">You must be at least 18 to register. Your birthdate is private.</p>
+                <InputError class="mt-2" :message="form.errors.birth_date" />
             </div>
 
             <div class="mt-4">

@@ -31,6 +31,12 @@ php artisan aadi:mail-test you@example.com --verification
 
 The first sends a plain message, the second sends the real confirmation email. On failure the command prints the exact error. Delivery errors during registration and resend are also written to `storage/logs/laravel.log`; the user sees "could not be sent, try resending" and can retry from the verify page.
 
+## In-app notification emails
+
+After confirming SMTP and queue delivery, set `AADI_NOTIFICATION_EMAIL_ENABLED=true`, clear or refresh the configuration cache, and restart persistent workers. Each new in-app notification then queues one immediate email after the database transaction commits. The email contains a generic notice and a link to Aadi, not the notification text or message content. This includes messages and notifications to administrators, and may result in an additional email for support replies that already have their own email.
+
+The switch defaults to `false` so a deployment does not unexpectedly email existing users. Turning it on does not send emails for older notifications. Queue or mail failures are logged and queued mail is retried up to three times; monitor failed jobs as described in [Hostinger deployment](HOSTINGER_DEPLOYMENT.md). SMTP delivery may still be rejected, delayed, or filtered after acceptance. Consider mailbox quotas and user preferences before enabling high-volume notification mail.
+
 ## Deliverability
 
 The domain already publishes Hostinger's SPF and DKIM records plus a DMARC policy (currently `p=none`). Once messages are arriving reliably you can tighten DMARC to `p=quarantine`.

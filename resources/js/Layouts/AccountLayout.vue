@@ -13,7 +13,7 @@ const page = usePage();
 const { compact, animate, toggle: toggleCompact } = useSidebarCollapse('aadi-account-compact');
 const drawer = ref(null);
 const drawerOpen = ref(false);
-const title = computed(() => page.url.startsWith('/saved-listings') ? 'Saved listings' : page.url.startsWith('/requests') ? 'Requests' : page.url.startsWith('/calendar') ? 'Calendar' : page.url.startsWith('/dashboard') ? 'Dashboard' : page.url.startsWith('/profile') ? 'Profile' : page.url.startsWith('/settings') ? 'Settings' : page.url.startsWith('/my-listings') ? 'My listings' : page.url.startsWith('/admin/approvals') ? 'Review applications' : 'Provider roles');
+const title = computed(() => page.url.startsWith('/saved-listings') ? 'Saved listings' : page.url.startsWith('/requests') || page.url.startsWith('/messages') ? 'Inbox' : page.url.startsWith('/calendar') ? 'Calendar' : page.url.startsWith('/dashboard') ? 'Dashboard' : page.url.startsWith('/profile') ? 'Profile' : page.url.startsWith('/settings') ? 'Settings' : page.url.startsWith('/my-listings') ? 'My listings' : page.url.startsWith('/admin/approvals') ? 'Review applications' : 'Provider roles');
 function closeDrawer() { drawer.value?.close(); drawerOpen.value = false; }
 function openDrawer() { drawer.value?.showModal(); drawerOpen.value = true; }
 let desktop;
@@ -42,7 +42,7 @@ watch(() => page.url, closeDrawer);
         <button class="account-mobile-toggle" aria-label="Open account navigation" aria-controls="account-drawer" :aria-expanded="drawerOpen" @click="openDrawer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
         <div class="account-header-title"><span>My account</span><strong>{{ title }}</strong></div>
         <Link href="/explore" class="account-explore-link">Open map ↗</Link>
-        <NotificationBell />
+        <NotificationBell v-if="page.props.auth?.profileComplete" />
         <AccountMenu />
       </header>
       <div id="account-content" tabindex="-1" class="account-content">

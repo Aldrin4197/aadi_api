@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import CalendarGrid from '@/Components/CalendarGrid.vue';
 import { monthLabel, shiftMonth, todayInTimezone } from '@/Components/calendarDates.mjs';
 
-const props = defineProps({ modelValue: { type: String, default: '' }, timezone: { type: String, required: true }, withTime: Boolean });
+const props = defineProps({ modelValue: { type: String, default: '' }, timezone: { type: String, required: true }, withTime: Boolean, unavailableRanges: { type: Array, default: () => [] } });
 const emit = defineEmits(['update:modelValue']);
 const today = computed(() => todayInTimezone(props.timezone));
 const date = ref(props.modelValue.slice(0, 10));
@@ -21,10 +21,10 @@ watch(date, value => { if (value) month.value = value.slice(0, 7); });
             <strong>{{ monthLabel(month) }}</strong>
             <button type="button" aria-label="Next month" @click="month = shiftMonth(month, 1)">›</button>
         </div>
-        <CalendarGrid :month="month" :selected="date" :today="today" :min="today" @select="date = $event" />
+        <CalendarGrid :month="month" :selected="date" :today="today" :min="today" :unavailable-ranges="unavailableRanges" @select="date = $event" />
         <label>Selected date <input v-model="date" type="date" :min="today" required /></label>
         <label v-if="withTime">Preferred time <input v-model="time" type="time" required /></label>
-        <p>Dates are a preference, not confirmed availability. Times use {{ timezone }}.</p>
+        <p>Booked dates are disabled on the calendar. Dates remain requests until accepted. Times use {{ timezone }}.</p>
     </div>
 </template>
 

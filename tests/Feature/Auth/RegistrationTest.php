@@ -21,6 +21,7 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'birth_date' => '1990-01-01',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);

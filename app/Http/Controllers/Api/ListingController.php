@@ -29,7 +29,7 @@ class ListingController extends Controller
 
         $availableOnly = $validated['availableOnly'] ?? true;
 
-        $query = $this->market->nearby(Listing::query(), 'spaces', (float) $validated['lat'], (float) $validated['lng'], (float) $validated['radiusKm'], true);
+        $query = $this->market->nearby(Listing::with('owner'), 'spaces', (float) $validated['lat'], (float) $validated['lng'], (float) $validated['radiusKm'], true);
 
         if ($availableOnly) {
             $query->where('status', ListingStatus::ACTIVE->value);
@@ -69,7 +69,7 @@ class ListingController extends Controller
 
     public function listingsByOwner(string $ownerId)
     {
-        $listings = Listing::where('owner_id', $ownerId)->get();
+        $listings = Listing::with('owner')->where('owner_id', $ownerId)->get();
 
         return ListingResource::collection($listings);
     }

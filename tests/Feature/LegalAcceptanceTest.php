@@ -35,6 +35,14 @@ class LegalAcceptanceTest extends TestCase
         $this->get('/legal/terms')->assertOk();
         $this->post('/legal/accept',$this->payload())->assertRedirect('/login');
     }
+    public function test_public_policy_pages_remain_accessible_before_acceptance(): void {
+        $bundle=json_decode(file_get_contents($this->bundlePath),true); $bundle['status']='draft'; file_put_contents($this->bundlePath,json_encode($bundle));
+        $this->get('/privacy-policy')->assertOk();
+        $this->get('/terms-of-service')->assertOk();
+        $this->actingAs(User::factory()->create());
+        $this->get('/privacy-policy')->assertOk();
+        $this->get('/terms-of-service')->assertOk();
+    }
     public function test_authenticated_acceptance_is_explicit_and_idempotent(): void {
         $user=User::factory()->create();$this->actingAs($user);
         $this->post('/legal/accept',array_replace($this->payload(),['terms'=>false]))->assertSessionHasErrors('terms');

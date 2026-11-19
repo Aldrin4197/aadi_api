@@ -32,6 +32,12 @@
         -webkit-tap-highlight-color:transparent;
         -webkit-user-select:none;
         user-select:none;
+        padding:0;
+        border:0;
+        background:transparent;
+        font-family:inherit;
+        text-decoration:none;
+        cursor:pointer;
     }
     .mobile-bottom-nav-link svg {
         width:22px;
@@ -45,6 +51,40 @@
     .mobile-bottom-nav-link[aria-current="page"] { color:#137671; font-weight:700; }
     .mobile-bottom-nav-link:active { background:#eff5f2; }
     .mobile-bottom-nav-link:focus-visible { outline:2px solid #137671; outline-offset:-3px; border-radius:8px; }
+    .mobile-quick-dialog {
+        position:fixed;
+        inset:auto 0 0;
+        box-sizing:border-box;
+        width:100%;
+        max-width:none;
+        max-height:min(80dvh, 620px);
+        margin:0;
+        padding:0;
+        border:0;
+        background:transparent;
+        color:#183e3c;
+        overflow:visible;
+    }
+    .mobile-quick-dialog::backdrop { background:rgb(18 43 40 / .38); }
+    .mobile-quick-sheet {
+        max-height:min(80dvh, 620px);
+        padding:16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+        overflow-y:auto;
+        overscroll-behavior:contain;
+        border-radius:18px 18px 0 0;
+        background:#fff;
+        box-shadow:0 -8px 32px rgb(18 43 40 / .12);
+    }
+    .mobile-quick-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+    .mobile-quick-header h2 { margin:0; color:#183e3c; font-size:18px; font-weight:700; }
+    .mobile-quick-close { min-height:40px; padding:8px 12px; border:1px solid #dce6e2; border-radius:9px; background:#fff; color:#586e6c; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+    .mobile-quick-section + .mobile-quick-section { margin-top:18px; }
+    .mobile-quick-section h3 { margin:0 0 8px; color:#586e6c; font-size:12px; font-weight:700; }
+    .mobile-quick-section nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .mobile-quick-link { display:flex; align-items:center; gap:9px; min-width:0; min-height:54px; padding:10px; border:1px solid #e4ece9; border-radius:10px; background:#f7faf8; color:#183e3c; font-size:13px; font-weight:600; line-height:1.3; text-decoration:none; }
+    .mobile-quick-link svg { width:20px; height:20px; flex:none; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+    .mobile-quick-link[aria-current="page"] { border-color:#a6d2c8; background:#e9f5f1; color:#137671; }
+    .mobile-quick-dialog :is(button,a):focus-visible { outline:2px solid #137671; outline-offset:2px; }
     .marketplace.has-mobile-navigation .map-explorer {
         height:calc(100dvh - 66px - env(safe-area-inset-top, 0px) - var(--mobile-navigation-height));
         min-height:320px;

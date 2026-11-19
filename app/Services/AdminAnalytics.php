@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Listing;
+use App\Models\AccountReport;
 use App\Models\ListingView;
 use App\Models\ServiceListing;
 use App\Models\User;
@@ -38,6 +39,10 @@ class AdminAnalytics
         $spaceReviews = $window(DB::table('marketplace_reviews')->where('service', 'spaces'), 'created_at');
         $viewings = $window(ViewingRequest::query(), 'created_at');
         $users = $window(User::query(), 'created_at');
+        $reports = $window(AccountReport::where('created_at', '<', today()->addDay()), 'created_at');
+        $reportStatuses = AccountReport::selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $reportDecisions = DB::table('account_report_reviews')->where('created_at', '>=', $since)
+            ->where('created_at', '<', today()->addDay())->selectRaw('action, count(*) as total')->groupBy('action')->pluck('total', 'action');
         $listings = $o->merge(array_map(fn ($c) => $window($c['model']::query(), 'created_at'), self::CATEGORIES), $dates);
 
         $totalListings = 0;
@@ -63,15 +68,37 @@ class AdminAnalytics
                 $kpi('viewings', 'Viewing requests', $viewings['current'], $viewings, null, null, 'viewings', 'Requests to see a property'),
                 $kpi('users', 'New users', $users['current'], $users, null, null, 'users', number_format($totalUsers).' accounts in total'),
                 $kpi('listings', 'New listings', $listings['current'], $listings, null, null, 'listings', number_format($liveListings).' of '.number_format($totalListings).' listings are live'),
+                [...$kpi('reports', 'Reports submitted', $reports['current'], $reports, null, null, 'reports', 'Account reports submitted'), 'href' => '/admin/reports?status=all', 'invert' => true],
             ],
             'trend' => [
                 'dates' => $dates,
-                'series' => ['views' => $views['daily'], 'saves' => $saves['daily'], 'reviews' => $reviews['daily'], 'viewings' => $viewings['daily'], 'users' => $users['daily'], 'listings' => $listings['daily']],
+                'series' => ['views' => $views['daily'], 'saves' => $saves['daily'], 'reviews' => $reviews['daily'], 'viewings' => $viewings['daily'], 'users' => $users['daily'], 'listings' => $listings['daily'], 'reports' => $reports['daily']],
             ],
+            'reports' => [
+                'statuses' => array_map(fn ($status) => ['status' => $status, 'count' => (int) ($reportStatuses[$status] ?? 0)], ['pending', 'confirmed', 'dismissed', 'reversed']),
+                'decisions' => array_map(fn ($action) => ['action' => $action, 'count' => (int) ($reportDecisions[$action] ?? 0)], ['confirm', 'dismiss', 'reverse']),
+            ],
+            'deletions' => $this->deletions($since),
             'funnel' => $funnel,
             'types' => $types['rows'],
             'topListings' => $top,
             'insights' => $this->insights($days, $views, $users, $funnel, $top, $types['missing'], $rating, $reviews['current'], $totalUsers),
+        ];
+    }
+
+    private function deletions(\Illuminate\Support\Carbon $since): array
+    {
+        $base = \App\Models\AccountDeletion::where('requested_at', '>=', $since);
+        $total = (clone $base)->count();
+        $labels = \App\Models\AccountDeletion::labels();
+        $reasons = (clone $base)->selectRaw('reason, count(*) as total')->groupBy('reason')->orderByDesc('total')->pluck('total', 'reason')
+            ->map(fn ($count, $reason) => ['reason' => $reason, 'label' => $labels[$reason] ?? $reason, 'count' => (int) $count, 'percent' => round($count / max($total, 1) * 100)])->values()->all();
+        $status = (clone $base)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+
+        return [
+            'total' => $total,
+            'reasons' => $reasons,
+            'statuses' => array_map(fn ($s) => ['status' => $s, 'count' => (int) ($status[$s] ?? 0)], ['scheduled', 'completed', 'cancelled']),
         ];
     }
 

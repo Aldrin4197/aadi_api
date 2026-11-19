@@ -24,6 +24,11 @@ class DatabaseSeederTest extends TestCase
         $this->post('/admin/login', ['email' => $admin->email, 'password' => 'password'])
             ->assertRedirect('/admin/dashboard');
         $this->assertAuthenticatedAs($admin);
+        $this->get('/admin/dashboard')->assertRedirect('/profile');
+        $this->patch('/profile', [
+            'name' => $admin->name, 'email' => $admin->email, 'birth_date' => '1990-01-01',
+            'sex_assigned_at_birth' => 'prefer_not_to_say', 'city' => 'Catbalogan', 'address' => 'Private address',
+        ])->assertSessionHasNoErrors();
         $this->withoutVite()->get('/admin/dashboard')->assertOk();
     }
 

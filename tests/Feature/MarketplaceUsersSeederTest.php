@@ -73,6 +73,11 @@ class MarketplaceUsersSeederTest extends TestCase
         $maria = User::where('email', 'maria@users.aadi.example')->sole();
         $this->post('/login', ['email'=>$maria->email, 'password'=>'password'])->assertRedirect();
         $this->assertAuthenticatedAs($maria);
+        $this->get('/my-listings')->assertRedirect('/profile');
+        $this->patch('/profile', [
+            'name'=>$maria->name, 'email'=>$maria->email, 'birth_date'=>'1990-01-01',
+            'sex_assigned_at_birth'=>'prefer_not_to_say', 'city'=>'Catbalogan', 'address'=>'Private address',
+        ])->assertSessionHasNoErrors();
         $this->withoutVite()->get('/my-listings')->assertInertia(fn (Assert $page) => $page
             ->has('listings', 3)->where('listings', fn ($items) => collect($items)->every(fn ($item) => $item['ownerId'] === $maria->id)));
         $foreign = Listing::where('owner_id', '!=', $maria->id)->firstOrFail();

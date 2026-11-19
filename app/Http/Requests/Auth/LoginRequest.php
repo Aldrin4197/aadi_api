@@ -50,6 +50,10 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::user()->isRestricted()) {
+            Auth::logout();
+            throw ValidationException::withMessages(['email' => 'This account is currently restricted. Please contact support.']);
+        }
         RateLimiter::clear($this->throttleKey());
     }
 

@@ -1,5 +1,6 @@
 <script setup>
 import ListingOwner from './ListingOwner.vue';
+import ListingBadges from './ListingBadges.vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import ListingImage from './ListingImage.vue';
@@ -33,15 +34,15 @@ function backdrop(event) {
             <div class="preview-image"><ListingImage :src="item.photos?.[0]" :alt="item.title" :service="item.service" :type="item.type" /></div>
             <div class="preview-body">
                 <p class="preview-category">{{ categories[item.service] || 'Listing' }}</p>
+                <ListingBadges :badges="item.badges" />
                 <h2>{{ item.title }}</h2>
                 <p class="preview-where">{{ item.location?.city || 'Location details available after login' }}<template v-if="item.type"> · <span class="preview-type">{{ item.type.replace(/([A-Z])/g, ' $1') }}</span></template></p>
-                <p class="preview-rate"><strong>{{ formatPrice(item.price) }}</strong> / {{ item.priceUnit }}</p>
+                <p v-if="item.availabilityPaused" class="preview-category">{{ item.service === 'spaces' ? 'Occupied / unavailable' : 'Currently unavailable' }}</p><p class="preview-rate"><strong>{{ formatPrice(item.price) }}</strong> / {{ item.priceUnit }}</p>
                 <p class="preview-note">Listed rates may exclude additional charges. Confirm availability and terms with the provider.</p>
-                <ListingOwner :listing="item"/>
+                <ListingOwner :listing="item" preview />
                 <footer>
                     <p v-if="!page.props.auth?.user">Preview freely. Log in or register to access full listing details.</p>
-                    <Link :href="`/offers/${item.service}/${item.id}`" class="preview-primary">{{ page.props.auth?.user ? 'View full details' : 'Log in to view full details' }} <span aria-hidden="true">→</span></Link>
-                    <button type="button" class="preview-back" @click="close">Keep exploring</button>
+                    <Link :href="`/offers/${item.service}/${item.id}`" class="preview-primary">View Full Listing <span aria-hidden="true">→</span></Link>
                 </footer>
             </div>
         </dialog>
@@ -55,17 +56,15 @@ function backdrop(event) {
 .listing-preview header button { width:44px; height:44px; border:0; background:transparent; font-size:26px; cursor:pointer; }
 .preview-image { overflow:hidden; min-height:320px; }
 .preview-body { display:flex; flex-direction:column; padding:24px 28px; min-width:0; }
-.preview-body h2 { font-size:26px; line-height:1.25; font-weight:700; margin:8px 0 10px; overflow-wrap:anywhere; }
-.preview-body p { margin:6px 0; font-size:14px; line-height:1.6; overflow-wrap:anywhere; }
+.preview-body h2 { font-size:var(--aadi-text-heading); line-height:1.3; font-weight:700; margin:8px 0 10px; overflow-wrap:anywhere; }
+.preview-body p { margin:6px 0; font-size:var(--aadi-text-body); line-height:1.6; overflow-wrap:anywhere; }
 .preview-category { color:#137671; font-weight:700; }
 .preview-type { text-transform:capitalize; }
 .preview-rate strong { font-size:26px; }
-.preview-body .preview-note { color:#586e6c; font-size:12px; margin:12px 0 0; }
-.preview-body :deep(.listing-owner) { margin:16px 0; padding:16px 0 0; }
+.preview-body .preview-note { color:#586e6c; font-size:var(--aadi-text-small); margin:12px 0 0; }
 .preview-body footer { margin-top:auto; border-top:1px solid #dcece9; padding-top:14px; }
 .preview-body footer p { margin:0; font-size:12px; color:#586e6c; }
 .preview-primary { display:flex; align-items:center; justify-content:space-between; gap:16px; background:#1ba8a1; color:#fff; border-radius:10px; padding:14px 18px; margin-top:12px; text-decoration:none; font-size:14px; font-weight:700; }
-.preview-back { display:block; width:100%; min-height:44px; margin-top:4px; border:0; background:transparent; color:#0b3a38; cursor:pointer; font-size:14px; }
 .listing-preview :is(a,button):focus-visible { outline:2px solid #137671; outline-offset:3px; }
 @media(max-width:860px) {
   .listing-preview { width:min(540px,calc(100% - 32px)); }
@@ -78,12 +77,10 @@ function backdrop(event) {
   .listing-preview { width:calc(100% - 24px); max-height:calc(100dvh - 24px); }
   .listing-preview header { padding:0 8px 0 18px; }
   .preview-body { padding:16px 18px; }
-  .preview-body h2 { font-size:21px; margin:4px 0 6px; }
+  .preview-body h2 { margin:4px 0 6px; }
   .preview-rate strong { font-size:22px; }
   .preview-body .preview-note { margin:8px 0 0; }
-  .preview-body :deep(.listing-owner) { margin:10px 0; padding-top:12px; }
   .preview-body footer { margin-top:10px; padding-top:10px; }
   .preview-primary { padding:12px 16px; margin-top:8px; }
-  .preview-back { min-height:40px; }
 }
 </style>

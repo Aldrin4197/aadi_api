@@ -31,6 +31,8 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'seo' => \App\Support\PublicPageSeo::forRequest($request),
+            'realtime' => $request->user()?->hasCompleteProfile() ? \App\Services\RealtimePublisher::clientConfig() : null,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'ticket' => fn () => $request->session()->get('ticket'),
@@ -39,7 +41,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'notifications' => ['unread' => fn () => $request->user() ? $request->user()->unreadNotifications()->count() : 0],
             'auth' => [
-                'user' => $request->user() ? [...$request->user()->only(['id', 'name', 'email', 'is_admin', 'avatar_url']), 'emailVerified' => $request->user()->hasVerifiedEmail()] : null,
+                'user' => $request->user() ? [...$request->user()->only(['id', 'name', 'email', 'is_admin', 'avatar_url']), 'emailVerified' => $request->user()->hasVerifiedEmail(), 'aadiPlus' => app(\App\Services\AadiPlusPerks::class)->memberVisible($request->user())] : null,
+                'perks' => $request->user() ? app(\App\Services\AadiPlusPerks::class)->summary($request->user()) : null,
+                'profileComplete' => $request->user()?->hasCompleteProfile() ?? false,
                 'onboarding' => $request->user() ? ['status'=>$request->user()->onboarding_status, 'data'=>$request->user()->onboarding_data] : null,
                 'isProvider' => $request->user()?->isApprovedProvider() ?? false,
                 'providerRoles' => $request->user() ? [

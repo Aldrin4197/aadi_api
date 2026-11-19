@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Listing;
+use App\Models\AccountReport;
 use App\Models\ListingView;
 use App\Models\ProviderApplication;
 use App\Models\ServiceListing;
@@ -41,6 +42,8 @@ class AdminOverview
         ], $dates);
         $reviews = $this->window(DB::table('marketplace_reviews'), 'created_at', $since, $previousSince, $dates);
         $viewings = $this->window(ViewingRequest::query(), 'created_at', $since, $previousSince, $dates);
+        $reports = $this->window(AccountReport::where('created_at', '<', today()->addDay()), 'created_at', $since, $previousSince, $dates);
+        $pendingReports = AccountReport::where('status', 'pending')->count();
         $engagement = $this->merge([$saves, $reviews, $viewings], $dates);
 
         $supply = collect(self::SERVICES)->map(function ($s, $key) {
@@ -90,13 +93,18 @@ class AdminOverview
                     'hint' => $ticketsActive === 0 ? 'No open requests' : ($ticketsUnanswered > 0 ? "{$ticketsUnanswered} without a reply" : 'All have a reply'), 'href' => '/admin/tickets',
                 ],
                 [
+                    'key' => 'reports', 'label' => 'Pending reports', 'value' => $pendingReports, 'delta' => null, 'series' => [],
+                    'tone' => $pendingReports > 0 ? 'warning' : 'good', 'icon' => 'reports', 'scope' => 'Right now',
+                    'hint' => "{$reports['current']} submitted in the last {$days} days", 'href' => '/admin/reports',
+                ],
+                [
                     'key' => 'verified', 'label' => 'Email verified', 'value' => $totalUsers ? round($verified / $totalUsers * 100) : 0, 'suffix' => '%', 'delta' => null, 'series' => [], 'tone' => 'neutral',
                     'hint' => "{$verified} of {$totalUsers} users", 'icon' => 'verified',
                 ],
             ],
             'trend' => [
                 'dates' => $dates,
-                'series' => ['users' => $users['daily'], 'listings' => $listings['daily'], 'views' => $views['daily'], 'engagement' => $engagement['daily']],
+                'series' => ['users' => $users['daily'], 'listings' => $listings['daily'], 'views' => $views['daily'], 'engagement' => $engagement['daily'], 'reports' => $reports['daily']],
             ],
             'supply' => $supply,
             'pipeline' => $pipeline,

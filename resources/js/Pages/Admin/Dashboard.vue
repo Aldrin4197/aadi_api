@@ -24,6 +24,7 @@ const metrics = [
     { key: 'listings', label: 'New listings', color: '#e08a2c' },
     { key: 'views', label: 'Listing views', color: '#3b82f6' },
     { key: 'engagement', label: 'Engagement', color: '#8b5cf6' },
+    { key: 'reports', label: 'Reports submitted', color: '#b45f12' },
 ];
 const metric = ref(metrics.find(m => (props.overview.trend.series[m.key] || []).some(n => n > 0))?.key ?? 'users');
 const active = computed(() => metrics.find(m => m.key === metric.value));

@@ -52,8 +52,11 @@ class MarketplaceTest extends TestCase {
         $this->get('/login')->assertOk();
         $this->get('/register')->assertOk();
         $this->post('/register', ['name'=>'New customer', 'email'=>'customer@example.com',
-            'password'=>'password', 'password_confirmation'=>'password'])->assertRedirect($url);
+            'birth_date'=>'1990-01-01', 'password'=>'password', 'password_confirmation'=>'password'])->assertRedirect(route('verification.notice'));
         $this->assertAuthenticated();
+        $this->get($url)->assertRedirect('/profile');
+        $this->patch('/profile', ['name'=>'New customer', 'email'=>'customer@example.com', 'birth_date'=>'1990-01-01',
+            'sex_assigned_at_birth'=>'prefer_not_to_say', 'city'=>'Catbalogan', 'address'=>'Private address'])->assertSessionHasNoErrors();
         $this->get($url)->assertOk();
         $this->get('/admin/dashboard')->assertForbidden();
     }

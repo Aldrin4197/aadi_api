@@ -9,6 +9,8 @@ use Illuminate\Validation\Rule;
 /** Canonical customer-facing contract over the existing admin/API tables. */
 class Marketplace
 {
+    public function __construct(private ListingBadgeService $listingBadges, private AadiPlusPerks $perks) {}
+
     public const TYPES = [
         'spaces' => ['bedspace', 'boardingHouse', 'apartment', 'house', 'commercial'],
         'haul' => ['multicab', 'van', 'jeepney', 'truck', 'suv', 'motorcycle', 'bicycle'],
@@ -49,8 +51,10 @@ class Marketplace
             ->whereRaw("($distance) <= $radius", $bindings)
             ->orderByRaw($distance, $bindings);
     }
-    public function dto(Model $r, string $service): array {
+    public function dto(Model $r, string $service, ?User $viewer = null, ?array $badges = null): array {
         $space = $service === 'spaces'; $vehicle = $service === 'haul';
+        $owner = $service === 'raketeer' ? $r->provider : $r->owner;
+        $badges ??= $this->listingBadges->forRecords([$r], $service, $viewer)[(string) $r->id];
         return [
             'id' => (string) $r->id, 'service' => $service,
             'ownerId' => (string) ($service === 'raketeer' ? $r->provider_id : $r->owner_id),
@@ -58,7 +62,9 @@ class Marketplace
             'ownerEmailVerified' => ($service === 'raketeer' ? $r->provider : $r->owner)?->email_verified_at !== null,
             'ownerAvatarUrl' => ($service === 'raketeer' ? $r->provider : $r->owner)?->avatar_url,
             'ownerBio' => ($service === 'raketeer' ? $r->provider : $r->owner)?->bio,
+            'ownerAadiPlus' => $this->perks->memberVisible($owner),
             'providerApproved' => ($service === 'raketeer' ? $r->provider : $r->owner)?->{$this->statusField($service)}?->value === 'approved',
+            'badges' => $badges,
             'title' => $r->title, 'description' => $r->description,
             'type' => $space ? $r->type?->value : ($vehicle ? $r->vehicle_type : $r->service_type),
             'price' => (float) ($space ? $r->price : ($vehicle ? $r->price_per_day : $r->price_amount)),
@@ -73,6 +79,7 @@ class Marketplace
                 'address' => $space ? $r->address : ($vehicle ? $r->location : $r->service_area), 'city' => $space ? $r->city : null],
             'photos' => ($space ? $r->photos : $r->images) ?? [],
             'status' => $this->listingStatus($r, $service),
+            'availabilityPaused' => (bool) $r->availability_paused || ($owner && $owner->isRestricted()),
             'details' => $vehicle ? array_filter(['brand' => $r->brand, 'model' => $r->model, 'year' => $r->year, 'transmission' => $r->transmission, 'fuel' => $r->fuel_type, 'seats' => $r->seating_capacity], fn ($value) => $value !== null && $value !== '') : (!$space ? array_filter(['category' => $r->service_category, 'response minutes' => $r->response_time_minutes, 'estimated minutes' => $r->estimated_duration_minutes], fn ($value) => $value !== null && $value !== '') : []),
             'comparison' => [
                 'features' => array_values(array_filter(($space ? $r->amenities : ($vehicle ? $r->features : $r->skills_required)) ?? [], 'is_string')),
@@ -82,7 +89,7 @@ class Marketplace
             'createdAt' => $r->created_at->toIso8601String(),
         ];
     }
-    public function search(array $filters): array {
+    public function search(array $filters, ?User $viewer = null): array {
         $service = $filters['service'] ?? 'spaces';
         $space = $service === 'spaces';
         $priceColumn = $space ? 'price' : ($service === 'haul' ? 'price_per_day' : 'price_amount');
@@ -101,18 +108,26 @@ class Marketplace
             $this->nearby($query, $service, (float) $filters['lat'], (float) $filters['lng'], (float) ($filters['radiusKm'] ?? 10));
         } else $query->latest();
         $page = $query->paginate(30)->withQueryString();
-        return ['data' => $page->getCollection()->map(fn ($r) => $this->dto($r, $service))->values(),
+        $records = $page->getCollection();
+        if ($this->perks->enabled() && $this->perks->all()['priority_placement']['enabled']) {
+            $records = $records->sortByDesc(fn ($r) => (int) (($service === 'raketeer' ? $r->provider : $r->owner)?->hasAadiPlus() ?? false))->values();
+        }
+        $badges = $this->listingBadges->forRecords($records, $service, $viewer);
+        return ['data' => $records->map(fn ($r) => $this->dto($r, $service, $viewer, $badges[(string) $r->id]))->values(),
             'meta' => ['total' => $page->total(), 'currentPage' => $page->currentPage(), 'lastPage' => $page->lastPage()]];
     }
-    public function validated(Request $request, string $service): array {
+    public function validated(Request $request, string $service, ?Model $record = null): array {
         $this->model($service);
+        // Keep what a listing already has, so an expired membership never blocks editing it.
+        $current = count(($service === 'spaces' ? $record?->photos : $record?->images) ?? []);
+        $photoLimit = max(min($this->perks->limit('listing_photos', $request->user()) ?? 12, 12), $current);
         return $request->validate([
             'title' => 'required|string|max:255', 'description' => 'required|string|max:10000',
             'type' => ['required', Rule::in(self::TYPES[$service])], 'price' => 'required|numeric|min:0|max:99999999.99',
             'status' => ['required', Rule::in($service === 'spaces' ? ['draft','active','reserved','rented','archived'] : ($service === 'haul' ? ['draft','active','reserved','rented'] : ['draft','active','reserved']))],
             'location.lat' => 'required|numeric|between:-90,90', 'location.lng' => 'required|numeric|between:-180,180',
             'location.address' => 'required|string|max:255', 'location.city' => 'nullable|string|max:255',
-            'photos' => 'present|array|max:12', 'photos.*' => 'required|url:http,https|max:2048',
+            'photos' => 'present|array|max:'.$photoLimit, 'photos.*' => 'required|url:http,https|max:2048',
             'details.brand' => ($service === 'haul' ? 'required' : 'nullable').'|string|max:100',
             'details.model' => ($service === 'haul' ? 'required' : 'nullable').'|string|max:100',
             'details.year' => ($service === 'haul' ? 'required' : 'nullable').'|integer|min:1950|max:'.(date('Y')+1),
@@ -122,11 +137,23 @@ class Marketplace
             'driverAvailable' => 'sometimes|boolean',
         ]);
     }
+    /** Published listings across all categories; subject to the active listings perk. */
+    public function activeCount(User $owner): int {
+        return Listing::where('owner_id', $owner->id)->where('status', 'active')->count()
+            + VehicleListing::where('owner_id', $owner->id)->where('status', 'available')->count()
+            + ServiceListing::where('provider_id', $owner->id)->where('status', 'available')->count();
+    }
+    private function assertCanPublish(User $owner): void {
+        $limit = $this->perks->limit('active_listings', $owner);
+        if ($owner->is_admin || $limit === null || $this->activeCount($owner) < $limit) return;
+        throw \Illuminate\Validation\ValidationException::withMessages(['status' => "You can have up to {$limit} published listings. ".($owner->hasAadiPlus() ? 'Unpublish one first.' : 'Unpublish one, or upgrade to Aadi Plus for a higher limit.')]);
+    }
     public function save(User $user, string $service, array $data, ?Model $record = null): Model {
         if ($record) $this->authorize($user, $record, $service);
         abort_unless($user->is_admin || $this->approved($user, $service), 403, 'Apply and get approved for this provider role before managing listings.');
         $owner = $record ? User::findOrFail($record->{$this->ownerColumn($service)}) : $user;
         abort_if($data['status'] === 'active' && !$this->approved($owner, $service), 403, 'Provider approval is required to publish. Save a draft while your application is reviewed.');
+        if ($data['status'] === 'active' && !($record && $this->listingStatus($record, $service) === 'active')) $this->assertCanPublish($owner);
         if ($service === 'spaces') $status = $data['status'];
         else $status = match($data['status']) { 'active' => 'available', 'draft' => 'inactive', 'rented' => 'rented', default => $service === 'haul' ? 'maintenance' : 'busy' };
         $base = ['title' => $data['title'], 'description' => $data['description'], 'status' => $status];
@@ -141,7 +168,8 @@ class Marketplace
             if (array_key_exists('contractRules', $fields)) { $fields['contract_rules'] = $fields['contractRules']; unset($fields['contractRules']); }
         }
         $record ??= new ($this->model($service));
-        $record->fill([...$base, ...$fields])->save();
+        $record->fill([...$base, ...$fields]);
+        $record->save();
         return $record->fresh();
     }
 }

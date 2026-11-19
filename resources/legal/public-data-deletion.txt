@@ -1,0 +1,35 @@
+AADI DATA DELETION INSTRUCTIONS
+
+Effective date: November 30, 2026
+Website: Aadi - Rental Marketplace
+Website address: https://aadirentals.com
+
+1. DELETE YOUR ACCOUNT YOURSELF
+
+You can delete your Aadi account at any time. You will be asked to choose a reason for leaving; we keep that reason (not linked to you) for up to 6 months for analytics. This also applies to accounts created with Google or Facebook.
+
+- Sign in to Aadi at https://aadirentals.com.
+- Open Settings, then go to Delete Account.
+- Confirm with your current password. If you signed up with Google or Facebook, you may instead type your account email address.
+
+Your account is deactivated immediately and you will be signed out. It is permanently deleted after 30 days. To keep it, email info@aadirentals.com before then. After permanent deletion the account cannot be recovered.
+
+2. WHAT IS DELETED
+
+Deleting your account removes your profile, including your private birthdate, sex assigned at birth and address, your avatar and uploaded listing photos, your listings, saved items, messages, requests, calendar events, notifications and linked Google or Facebook sign-in connections.
+
+Provider verification documents are also deleted.
+
+3. WHAT MAY REMAIN
+
+Provider rental, job, viewing and manually recorded payment history, including the customer's name, is retained for 6 months after the first associated account is permanently deleted. A remaining provider with the relevant approved role can view this history read-only until that deadline. The scheduled deletion process removes it after the deadline; a delayed process may delay physical deletion.
+
+Copies that other users already received, such as messages they have in their own conversations or information they saved independently, are outside our control. We may keep limited records where the law requires or where needed to handle a dispute, abuse report or security issue, as described in our Privacy Policy. Routine backups are overwritten on their normal schedule.
+
+4. CAN'T SIGN IN?
+
+If you cannot sign in, email info@aadirentals.com from the email address on your account with the subject "Account deletion request". We may ask you to verify your identity before deleting the account.
+
+5. FACEBOOK AND GOOGLE
+
+Removing Aadi from your Facebook or Google account settings stops that provider from sharing new information with Aadi, but it does not delete your Aadi account. Delete your Aadi account using the steps above or by emailing us.

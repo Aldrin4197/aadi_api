@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\TracksMarketplacePublication;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +14,7 @@ class VehicleListing extends Model
         return \App\Services\ListingPhotos::resolve($value);
     }
 
-    use HasUlids, SoftDeletes;
+    use HasUlids, SoftDeletes, TracksMarketplacePublication;
 
     protected $fillable = [
         'owner_id',
@@ -60,6 +61,7 @@ class VehicleListing extends Model
         'seating_capacity' => 'integer',
         'available_from' => 'date',
         'available_to' => 'date',
+        'published_at' => 'datetime',
         'driver_available' => 'boolean',
     ];
 

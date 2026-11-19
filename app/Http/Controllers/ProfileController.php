@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\AccountDeletionService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProfileController extends Controller
 {
@@ -19,17 +22,20 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         return Inertia::render('Profile/Edit', [
-            'profile' => $request->user()->only(['name','email','phone','bio','city','address','avatar_url','email_verified_at']),
+            'profile' => $request->user()->only(['name','email','phone','bio','city','address','birth_date','sex_assigned_at_birth','avatar_url','email_verified_at']),
+            'profileIncomplete' => !$request->user()->hasCompleteProfile(),
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-        ]);
+        ])->toResponse($request)->header('Cache-Control', 'private, no-store');
     }
 
-    public function settings(Request $request): Response
+    public function settings(Request $request): InertiaResponse
     {
         return Inertia::render('Account/Settings', [
             'socialProviders' => app(\App\Services\SocialLogin::class)->providers(),
-            'connectedProviders' => \Illuminate\Support\Facades\DB::table('social_accounts')->where('user_id', $request->user()->id)->pluck('provider'),
+            'connectedProviders' => $connected = \Illuminate\Support\Facades\DB::table('social_accounts')->where('user_id', $request->user()->id)->pluck('provider'),
+            'email' => $request->user()->email,
+            'usesSocialLogin' => $connected->isNotEmpty(),
             'status' => session('status'),
         ]);
     }
@@ -53,21 +59,16 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(DeleteAccountRequest $request, AccountDeletionService $deletion): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
 
+        $record = $deletion->schedule($user, $request->validated('reason'), $request->validated('note'), 'user');
+
         Auth::logout();
-
-        $user->delete();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return Redirect::to('/login')->with('status', 'Your account is deactivated and will be permanently deleted on '.$record->scheduled_for->format('F j, Y').'. To keep it, contact info@aadirentals.com before then.');
     }
 }

@@ -13,6 +13,20 @@ class ListingEngagement {
         if ($recent->exists()) return;
         ListingView::create(['listing_id' => $listingId, 'user_id' => $viewer?->id, 'ip_address' => $ip, 'viewed_at' => now()]);
     }
+    /** Count detail views from each visitor at most once per 30 minutes. */
+    public function recordMarketplaceView(string $service, string $listingId, ?User $viewer, ?string $ip, string $ownerId): void {
+        if ($service === 'spaces') {
+            $this->recordView($listingId, $viewer, $ip, $ownerId);
+            return;
+        }
+        if ($viewer && ($viewer->is_admin || (string) $viewer->id === $ownerId)) return;
+        $query = DB::table('marketplace_listing_views')->where('service', $service)->where('listing_id', $listingId)
+            ->where('viewed_at', '>=', now()->subMinutes(30))
+            ->when($viewer, fn ($q) => $q->where('user_id', $viewer->id), fn ($q) => $q->whereNull('user_id')->where('ip_address', $ip));
+        if ($query->exists()) return;
+        DB::table('marketplace_listing_views')->insert(['service' => $service, 'listing_id' => $listingId,
+            'user_id' => $viewer?->id, 'ip_address' => $ip, 'viewed_at' => now()]);
+    }
     public function saves(string $service, string $id) {
         return $service === 'spaces'
             ? DB::table('favorites')->where('listing_id', $id)

@@ -6,6 +6,7 @@ use App\Enums\ListingCategory;
 use App\Enums\ListingStatus;
 use App\Enums\ListingType;
 use App\Enums\VerificationStatus;
+use App\Models\Concerns\TracksMarketplacePublication;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ class Listing extends Model
         return \App\Services\ListingPhotos::resolve($value);
     }
 
-    use HasFactory, HasUlids;
+    use HasFactory, HasUlids, TracksMarketplacePublication;
 
     protected $fillable = [
         'owner_id',
@@ -57,6 +58,7 @@ class Listing extends Model
             'attributes' => 'array',
             'rating_average' => 'decimal:2',
             'rating_count' => 'integer',
+            'published_at' => 'datetime',
         ];
     }
 

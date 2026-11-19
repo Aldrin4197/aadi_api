@@ -9,6 +9,7 @@ defineProps<{
     profile?: Record<string, any>;
     mustVerifyEmail?: boolean;
     status?: string;
+    profileIncomplete?: boolean;
 }>();
 </script>
 
@@ -18,6 +19,7 @@ defineProps<{
     <AccountLayout>
         <main class="account-page account-profile">
             <AccountPageHeader title="Profile" description="Manage your personal details and profile photo."/>
+            <p v-if="profileIncomplete" role="status" class="notice">Complete your birthdate, sex assigned at birth, city and full address to use account features. Your city may be public; the other details are private.</p>
             <p v-if="status === 'delivery-failed'" role="alert" class="mb-4 text-sm text-red-700">The verification email could not be sent. Please try again shortly.</p>
             <section class="profile-section" aria-label="Profile photo"><AvatarEditor/></section>
             <section class="profile-section" aria-label="Personal information">

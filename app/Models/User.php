@@ -22,7 +22,7 @@ use Laravel\Sanctum\HasApiTokens;
     'landlord_status', 
     'phone', 
     'avatar_url',
-    'bio', 'city', 'address',
+    'bio', 'city', 'address', 'birth_date', 'sex_assigned_at_birth',
     'vehicle_owner_status',
     'vehicle_owner_business_name',
     'vehicle_owner_licenses',
@@ -35,7 +35,7 @@ use Laravel\Sanctum\HasApiTokens;
     'service_provider_service_area',
     'service_provider_years_experience',
 ])]
-#[Hidden(['password', 'remember_token', 'address', 'avatar_path', 'onboarding_data', 'onboarding_status'])]
+#[Hidden(['password', 'remember_token', 'address', 'birth_date', 'sex_assigned_at_birth', 'avatar_path', 'onboarding_data', 'onboarding_status', 'aadi_plus_until'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     public function getAvatarUrlAttribute($value): ?string
@@ -65,6 +65,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'rating_average' => 'decimal:2',
             'rating_count' => 'integer',
             'trust_score' => 'integer',
+            'restricted_until' => 'datetime',
+            'deletion_scheduled_for' => 'datetime',
+            'aadi_plus_until' => 'datetime',
             'vehicle_owner_licenses' => 'array',
             'vehicle_owner_inventory' => 'array',
             'vehicle_owner_certificates' => 'array',
@@ -79,6 +82,31 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return collect([$this->landlord_status, $this->vehicle_owner_status, $this->service_provider_status])
             ->contains(fn ($status) => $status?->value === 'approved');
+    }
+
+    public function isScheduledForDeletion(): bool
+    {
+        return $this->deletion_scheduled_for !== null;
+    }
+
+    public function isRestricted(): bool
+    {
+        return $this->isScheduledForDeletion()
+            || $this->restriction_type === 'disabled'
+            || ($this->restriction_type === 'locked' && $this->restricted_until !== null && $this->restricted_until->isFuture());
+    }
+
+    public function hasAadiPlus(): bool
+    {
+        return $this->aadi_plus_until?->isFuture() ?? false;
+    }
+
+    public function hasCompleteProfile(): bool
+    {
+        return filled($this->birth_date)
+            && in_array($this->sex_assigned_at_birth, \App\Support\ProfileFields::SEX_OPTIONS, true)
+            && filled($this->city)
+            && filled($this->address);
     }
 
     /**
